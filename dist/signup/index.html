@@ -636,25 +636,24 @@
     text('btn-signup-label','Đang xử lý…');
 
     try {
-        const resp = await fetch(SUPABASE_URL + '/functions/v1/verify-signup', {
+      const resp = await fetch(SUPABASE_URL + '/functions/v1/verify-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            email,
-            password:       pw,
-            turnstileToken,
-            displayName:    email.split('@')[0],
+          email,
+          password:       pw,
+          turnstileToken,
+          displayName:    email.split('@')[0],
         }),
-        });
-        const result = await resp.json();
-        const error  = resp.ok ? null : { message: result.error };
+      });
 
-      if (error) {
-        globalErr(0,
-          error.message.includes('already registered')
-            ? 'Email này đã được đăng ký. Vui lòng đăng nhập hoặc dùng email khác.'
-            : error.message
-        );
+      // Parse JSON safely — body có thể rỗng nếu network error
+      let result = {};
+      try { result = await resp.json(); } catch { /* ignore */ }
+
+      if (!resp.ok) {
+        const msg = typeof result.error === 'string' ? result.error : 'Có lỗi xảy ra. Vui lòng thử lại.';
+        globalErr(0, msg);
         return;
       }
 
@@ -664,7 +663,7 @@
       startCountdown();
 
     } catch (err) {
-      globalErr(0, 'Có lỗi xảy ra. Vui lòng thử lại.');
+      globalErr(0, 'Không thể kết nối máy chủ. Vui lòng kiểm tra mạng và thử lại.');
       console.error(err);
     } finally {
       setBusy('btn-signup','btn-signup-spin','btn-signup-arrow', false);

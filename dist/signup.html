@@ -219,8 +219,8 @@
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
         const supabase = createClient(
-            'https://uppoxhpagynrcylvamvl.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcG94aHBhZ3lucmN5bHZhbXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MjY2NjcsImV4cCI6MjA4OTUwMjY2N30.PZwPgNiHIsy1ndDF56oN2Ox5dAy6LNNwyYELCg7Ipjk'
+            'https://vvmksgsqvgcdebkqqhpe.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2bWtzZ3NxdmdjZGVia3FxaHBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NDYzNzgsImV4cCI6MjA5MDAyMjM3OH0.MNOikjsOW_-fBNTyes4H6N9biTQSRppBKCmZ3jGP5aU'
         )
 
         const form = document.getElementById('signupForm')
@@ -309,7 +309,7 @@
                 // Redirect to Dropbox OAuth
                 // The state parameter will include user ID for callback
                 const state = btoa(JSON.stringify({ userId: user.id }))
-                const redirectUri = 'https://uppoxhpagynrcylvamvl.supabase.co/functions/v1/dropbox-callback'
+                const redirectUri = 'https://vvmksgsqvgcdebkqqhpe.supabase.co/functions/v1/dropbox-callback'
                 const clientId = 'llkjsunfk3fjnyv'
                 
                 const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&token_access_type=offline`

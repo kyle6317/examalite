@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Đăng ký - Exama Lite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Custom styles để override Tailwind và thêm design system tokens */
+        :root {
+            --color-paper-50: #faf9f6;
+            --color-paper-100: #f4f2ec;
+            --color-paper-200: #e8e4d9;
+            --color-paper-300: #d6d0c4;
+            --color-ink-100: #e0ddd7;
+            --color-ink-200: #b8b3a8;
+            --color-ink-300: #8c8679;
+            --color-ink-400: #5e5a52;
+            --color-ink-500: #3a3731;
+            --color-ink-600: #27251f;
+            --color-ink-700: #1a1814;
+            --color-accent-50: #f0f4f8;
+            --color-accent-100: #d9e5f0;
+            --color-accent-200: #adc5df;
+            --color-accent-300: #7aa3c8;
+            --color-accent-400: #4e84b4;
+            --color-accent-500: #2d6899;
+            --color-accent-600: #1f5280;
+            --color-accent-700: #153d60;
+            --color-success-50: #f0f7f0;
+            --color-success-500: #256825;
+            --color-danger-50: #fdf0f0;
+            --color-danger-500: #8a2020;
+        }
+        
+        body {
+            background-color: var(--color-paper-50);
+            font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+        }
+        
+        .font-serif {
+            font-family: 'Noto Serif', Georgia, serif;
+        }
+        
+        /* Custom focus ring */
+        input:focus {
+            outline: none;
+            border-color: var(--color-accent-400);
+            box-shadow: 0 0 0 3px rgba(77, 132, 180, 0.14);
+        }
+        
+        /* Touch target size for mobile */
+        @media (max-width: 768px) {
+            button, 
+            input[type="submit"],
+            .touch-target {
+                min-height: 44px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="min-h-screen flex flex-col lg:flex-row">
+        <!-- Left side: Giới thiệu (desktop) -->
+        <div class="hidden lg:flex lg:w-1/2 bg-[#faf9f6] items-center justify-center p-8">
+            <div class="max-w-md">
+                <div class="mb-8">
+                    <svg class="w-12 h-12 text-accent-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h1 class="font-serif text-4xl text-ink-700 mb-4">Chào mừng đến với Exama Lite</h1>
+                <p class="text-ink-500 text-lg leading-relaxed mb-6">
+                    Nền tảng tạo đề ôn tập đơn giản, lưu trữ an toàn trên Dropbox của riêng bạn.
+                </p>
+                <div class="bg-white border border-paper-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-accent-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div class="text-sm text-ink-500">
+                            <p class="font-medium mb-1">Cần có tài khoản Dropbox</p>
+                            <p class="text-ink-400">Chưa có? <a href="https://www.dropbox.com/referrals/AAB9XS5qHgAJ8nU9liW5s1rkOKy7uslvEvk?src=global9" target="_blank" class="text-accent-500 hover:text-accent-600">Đăng ký ngay</a> để nhận thêm dung lượng miễn phí.</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-ink-400 text-sm">
+                    Đã có tài khoản? <a href="login.html" class="text-accent-500 hover:text-accent-600 font-medium">Đăng nhập</a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Right side: Form đăng ký -->
+        <div class="flex-1 flex items-center justify-center p-6 lg:p-8">
+            <div class="w-full max-w-md">
+                <!-- Mobile header (chỉ hiển thị trên mobile) -->
+                <div class="lg:hidden text-center mb-8">
+                    <svg class="w-12 h-12 text-accent-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h2 class="font-serif text-2xl text-ink-700">Đăng ký Exama Lite</h2>
+                    <p class="text-ink-400 text-sm mt-2">Tạo tài khoản mới</p>
+                </div>
+                
+                <!-- Desktop header -->
+                <div class="hidden lg:block mb-8">
+                    <h2 class="font-serif text-3xl text-ink-700 mb-2">Tạo tài khoản</h2>
+                    <p class="text-ink-400">Điền thông tin để bắt đầu</p>
+                </div>
+                
+                <!-- Form đăng ký -->
+                <form id="signupForm" class="space-y-5">
+                    <div>
+                        <label class="block text-ink-500 text-sm font-medium mb-2">Tên đăng nhập *</label>
+                        <input type="text" id="username" name="username" required
+                               class="w-full px-4 py-3 border border-paper-300 rounded-lg bg-white text-ink-600 placeholder-ink-300"
+                               placeholder="Chọn tên đăng nhập">
+                        <p id="usernameError" class="text-sm text-danger-500 mt-1 hidden"></p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-ink-500 text-sm font-medium mb-2">Mật khẩu *</label>
+                        <input type="password" id="password" name="password" required
+                               class="w-full px-4 py-3 border border-paper-300 rounded-lg bg-white text-ink-600"
+                               placeholder="Tạo mật khẩu">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-ink-500 text-sm font-medium mb-2">Xác nhận mật khẩu *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required
+                               class="w-full px-4 py-3 border border-paper-300 rounded-lg bg-white text-ink-600"
+                               placeholder="Nhập lại mật khẩu">
+                    </div>
+                    
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" id="acceptTerms" required class="mt-1 w-4 h-4 text-accent-500 border-paper-300 rounded">
+                        <label for="acceptTerms" class="text-sm text-ink-500">
+                            Tôi đồng ý với <a href="terms.html" target="_blank" class="text-accent-500">Điều khoản sử dụng</a> và 
+                            <a href="privacy.html" target="_blank" class="text-accent-500">Chính sách bảo mật</a>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" id="submitBtn"
+                            class="w-full bg-accent-500 hover:bg-accent-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                        Đăng ký
+                    </button>
+                </form>
+                
+                <!-- Mobile link đăng nhập -->
+                <p class="lg:hidden text-center text-ink-400 text-sm mt-6">
+                    Đã có tài khoản? <a href="login.html" class="text-accent-500 font-medium">Đăng nhập</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal kết nối Dropbox -->
+    <div id="dropboxModal" class="fixed inset-0 bg-black/35 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 p-6 shadow-lg">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-accent-50 rounded-full mb-4">
+                    <svg class="w-8 h-8 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+                <h3 class="font-serif text-xl text-ink-700 mb-2">Kết nối Dropbox</h3>
+                <p class="text-ink-500 mb-6">Để lưu trữ bài kiểm tra, bạn cần kết nối với tài khoản Dropbox của mình.</p>
+                <button id="connectDropboxBtn" class="w-full bg-accent-500 hover:bg-accent-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                    Kết nối với Dropbox
+                </button>
+                <button id="skipDropboxBtn" class="w-full mt-3 text-ink-400 hover:text-ink-600 py-3 px-4 text-sm">
+                    Kết nối sau
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://uppoxhpagynrcylvamvl.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcG94aHBhZ3lucmN5bHZhbXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MjY2NjcsImV4cCI6MjA4OTUwMjY2N30.PZwPgNiHIsy1ndDF56oN2Ox5dAy6LNNwyYELCg7Ipjk';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let pendingUser = null;
+        
+        // Check URL parameters for Dropbox callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        
+        if (code && state) {
+            handleDropboxCallback(code, state);
+        }
+        
+        async function handleDropboxCallback(code, state) {
+            try {
+                // Gọi edge function để xử lý callback
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/dropbox-auth`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({ code, state })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.userId) {
+                    // Lưu user ID vào localStorage
+                    localStorage.setItem('exama_user_id', data.userId);
+                    // Chuyển về app
+                    window.location.href = 'app.html';
+                } else {
+                    alert('Kết nối Dropbox thất bại. Vui lòng thử lại.');
+                    window.location.href = 'signup.html';
+                }
+            } catch (error) {
+                console.error('Dropbox callback error:', error);
+                alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                window.location.href = 'signup.html';
+            }
+        }
+        
+        // Handle signup form
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const acceptTerms = document.getElementById('acceptTerms').checked;
+            
+            // Validate
+            if (!username || !password) {
+                alert('Vui lòng điền đầy đủ thông tin');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                alert('Mật khẩu xác nhận không khớp');
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert('Mật khẩu phải có ít nhất 6 ký tự');
+                return;
+            }
+            
+            if (!acceptTerms) {
+                alert('Vui lòng đồng ý với Điều khoản sử dụng');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Đang xử lý...';
+            
+            try {
+                // Tạo user với Supabase Auth
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: `${username}@exama.local`, // Tạo email từ username
+                    password: password,
+                    options: {
+                        data: {
+                            username: username,
+                            display_name: username
+                        }
+                    }
+                });
+                
+                if (authError) throw authError;
+                
+                if (authData.user) {
+                    pendingUser = authData.user;
+                    
+                    // Lưu thông tin user vào user_profiles
+                    const { error: profileError } = await supabase
+                        .from('user_profiles')
+                        .insert({
+                            id: authData.user.id,
+                            username: username,
+                            display_name: username,
+                            created_at: new Date().toISOString()
+                        });
+                    
+                    if (profileError) {
+                        console.error('Profile error:', profileError);
+                        // Vẫn tiếp tục dù có lỗi profile
+                    }
+                    
+                    // Hiển thị modal kết nối Dropbox
+                    showDropboxModal();
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                alert(error.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Đăng ký';
+            }
+        });
+        
+        function showDropboxModal() {
+            const modal = document.getElementById('dropboxModal');
+            modal.classList.remove('hidden');
+        }
+        
+        // Handle Dropbox connection
+        document.getElementById('connectDropboxBtn').addEventListener('click', () => {
+            if (!pendingUser) {
+                alert('Vui lòng đăng ký trước');
+                return;
+            }
+            
+            // Tạo state để xác thực callback
+            const state = btoa(JSON.stringify({
+                userId: pendingUser.id,
+                timestamp: Date.now()
+            }));
+            
+            // Dropbox OAuth URL
+            const DROPBOX_APP_KEY = 'llkjsunfk3fjnyv';
+            const redirectUri = encodeURIComponent(`${window.location.origin}/signup.html`);
+            const dropboxAuthUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${DROPBOX_APP_KEY}&response_type=code&redirect_uri=${redirectUri}&state=${state}&token_access_type=offline`;
+            
+            window.location.href = dropboxAuthUrl;
+        });
+        
+        document.getElementById('skipDropboxBtn').addEventListener('click', () => {
+            if (pendingUser) {
+                localStorage.setItem('exama_user_id', pendingUser.id);
+                window.location.href = 'app.html';
+            }
+        });
+    </script>
+</body>
+</html>

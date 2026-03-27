@@ -1,262 +1,319 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - Exama Lite</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif:wght@400;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        paper: {
-                            50: '#faf9f6',
-                            100: '#f4f2ec',
-                            200: '#e8e4d9',
-                            300: '#d6d0c4'
-                        },
-                        ink: {
-                            100: '#e0ddd7',
-                            200: '#b8b3a8',
-                            300: '#8c8679',
-                            400: '#5e5a52',
-                            500: '#3a3731',
-                            600: '#27251f',
-                            700: '#1a1814'
-                        },
-                        accent: {
-                            50: '#f0f4f8',
-                            100: '#d9e5f0',
-                            200: '#adc5df',
-                            300: '#7aa3c8',
-                            400: '#4e84b4',
-                            500: '#2d6899',
-                            600: '#1f5280',
-                            700: '#153d60'
-                        },
-                        danger: {
-                            50: '#fdf0f0',
-                            100: '#f5d5d5',
-                            200: '#e8a0a0',
-                            300: '#d05f5f',
-                            400: '#b03838',
-                            500: '#8a2020'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['DM Sans', 'system-ui', 'sans-serif'],
-                        serif: ['Noto Serif', 'Georgia', 'serif']
-                    }
-                }
-            }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập — Exama Lite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: { 50:'#faf9f6', 100:'#f4f2ec', 200:'#e8e4d9', 300:'#d6d0c4' },
+            ink:   { 100:'#e0ddd7', 200:'#b8b3a8', 300:'#8c8679', 400:'#5e5a52', 500:'#3a3731', 600:'#27251f', 700:'#1a1814' },
+            accent:{ 50:'#f0f4f8', 100:'#d9e5f0', 200:'#adc5df', 300:'#7aa3c8', 400:'#4e84b4', 500:'#2d6899', 600:'#1f5280', 700:'#153d60' },
+            success:{ 50:'#f0f7f0', 200:'#a0cfa0', 300:'#5fa85f', 500:'#256825' },
+            danger: { 50:'#fdf0f0', 200:'#e8a0a0', 300:'#d05f5f', 400:'#b03838', 500:'#8a2020' },
+          },
+          fontFamily: {
+            serif: ['"Noto Serif"', 'Georgia', 'serif'],
+            sans:  ['"DM Sans"', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            paper:       '0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06)',
+            focus:       '0 0 0 3px rgba(77,132,180,0.14)',
+            'focus-err': '0 0 0 3px rgba(208,95,95,0.12)',
+          },
         }
-    </script>
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+  </style>
 </head>
-<body class="bg-paper-50 font-sans text-ink-500">
-    <div class="min-h-screen grid lg:grid-cols-2">
-        <!-- Left Hero Section (Desktop only) -->
-        <div class="hidden lg:flex flex-col justify-center px-12 xl:px-20 bg-gradient-to-br from-accent-500 to-accent-700">
-            <div class="max-w-md">
-                <h1 class="font-serif text-4xl font-bold text-white mb-4">Chào mừng quay lại</h1>
-                <p class="text-accent-100 text-lg leading-relaxed">
-                    Đăng nhập để quản lý đề ôn tập của bạn.
-                </p>
-            </div>
-        </div>
 
-        <!-- Right Form Section -->
-        <div class="flex items-center justify-center px-6 py-12 lg:px-12">
-            <div class="w-full max-w-md">
-                <!-- Mobile Hero -->
-                <div class="lg:hidden mb-8 text-center">
-                    <h1 class="font-serif text-3xl font-bold text-ink-700 mb-2">Exama Lite</h1>
-                    <p class="text-ink-400 text-sm">Tạo đề ôn tập đơn giản</p>
-                </div>
+<body class="bg-paper-50 min-h-screen font-sans text-ink-500">
 
-                <!-- Form Card -->
-                <div class="bg-white rounded-lg shadow-md p-8">
-                    <h2 class="font-serif text-2xl font-bold text-ink-700 mb-2">Đăng nhập</h2>
-                    <p class="text-ink-400 text-sm mb-6">
-                        Chưa có tài khoản? 
-                        <a href="/signup.html" class="text-accent-500 hover:text-accent-600 font-medium">Đăng ký</a>
-                    </p>
+<div class="flex min-h-screen">
 
-                    <form id="loginForm" class="space-y-4">
-                        <!-- Username -->
-                        <div>
-                            <label for="username" class="block text-xs font-semibold text-ink-600 uppercase tracking-wide mb-2">
-                                Tên đăng nhập
-                            </label>
-                            <input 
-                                type="text" 
-                                id="username" 
-                                name="username"
-                                required
-                                class="w-full px-4 py-2.5 border border-paper-300 rounded-md bg-paper-50 text-ink-600 placeholder-ink-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-colors"
-                                placeholder="username"
-                            >
-                        </div>
-
-                        <!-- Password -->
-                        <div>
-                            <label for="password" class="block text-xs font-semibold text-ink-600 uppercase tracking-wide mb-2">
-                                Mật khẩu
-                            </label>
-                            <input 
-                                type="password" 
-                                id="password" 
-                                name="password"
-                                required
-                                class="w-full px-4 py-2.5 border border-paper-300 rounded-md bg-paper-50 text-ink-600 placeholder-ink-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-colors"
-                                placeholder="••••••••"
-                            >
-                        </div>
-
-                        <!-- Error Message -->
-                        <div id="errorMessage" class="hidden bg-danger-50 border border-danger-200 rounded-md p-3">
-                            <p class="text-danger-500 text-sm"></p>
-                        </div>
-
-                        <!-- Forgot Password -->
-                        <div class="flex items-center justify-between">
-                            <div></div>
-                            <a href="#" id="forgotPassword" class="text-sm text-accent-500 hover:text-accent-600">
-                                Quên mật khẩu?
-                            </a>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button 
-                            type="submit" 
-                            id="submitButton"
-                            class="w-full bg-accent-500 hover:bg-accent-600 text-white font-semibold py-3 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2"
-                        >
-                            Đăng nhập
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="hidden lg:flex flex-col justify-center flex-1 px-14 py-16 bg-accent-700 relative overflow-hidden select-none">
+    <!-- grid texture -->
+    <div class="absolute inset-0 opacity-[0.04]"
+         style="background-image:repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 40px)">
     </div>
 
-    <!-- Forgot Password Modal -->
-    <div id="forgotModal" class="hidden fixed inset-0 bg-ink-700/50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-8">
-            <h3 class="font-serif text-xl font-bold text-ink-700 mb-4">Quên mật khẩu?</h3>
-            <p class="text-ink-400 mb-6">
-                Để khôi phục tài khoản, bạn cần tạo một tài khoản mới và liên kết lại với tài khoản Dropbox cũ. 
-                Dữ liệu của bạn sẽ không bị mất vì toàn bộ được lưu trên Dropbox.
-            </p>
-            <div class="flex gap-3">
-                <a 
-                    href="/signup.html"
-                    class="flex-1 bg-accent-500 hover:bg-accent-600 text-white font-semibold py-3 rounded-md transition-colors duration-150 text-center"
-                >
-                    Tạo tài khoản mới
-                </a>
-                <button 
-                    id="closeForgotModal"
-                    class="flex-1 border border-paper-300 hover:bg-paper-100 text-ink-600 font-semibold py-3 rounded-md transition-colors duration-150"
-                >
-                    Đóng
-                </button>
-            </div>
-        </div>
+    <div class="relative z-10 max-w-md">
+      <!-- brand -->
+      <div class="flex items-center gap-2.5 mb-10">
+        <span class="font-serif text-2xl font-bold text-white tracking-tight">Exama Lite</span>
+        <span class="w-2 h-2 rounded-full bg-accent-300"></span>
+      </div>
+
+      <h1 class="font-serif text-[32px] font-bold text-white leading-tight mb-4">
+        Chào mừng<br>quay lại
+      </h1>
+      <p class="text-[15px] text-white/70 leading-relaxed mb-10">
+        Đăng nhập để tiếp tục soạn đề, quản lý bài ôn và chia sẻ với học sinh của bạn.
+      </p>
+
+      <!-- feature list -->
+      <ul class="space-y-3">
+        <li class="flex items-center gap-3 text-[13.5px] text-white/70">
+          <span class="w-5 h-5 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0">
+            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </span>
+          Nhiều loại câu hỏi: trắc nghiệm, điền từ, đúng/sai
+        </li>
+        <li class="flex items-center gap-3 text-[13.5px] text-white/70">
+          <span class="w-5 h-5 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0">
+            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </span>
+          Dữ liệu hoàn toàn thuộc về bạn — lưu trên Dropbox
+        </li>
+        <li class="flex items-center gap-3 text-[13.5px] text-white/70">
+          <span class="w-5 h-5 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0">
+            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </span>
+          Chia sẻ link làm bài — không cần đăng nhập
+        </li>
+      </ul>
     </div>
+  </div>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+  <!-- ══ RIGHT PANEL ══ -->
+  <div class="flex-1 lg:flex-none lg:w-[500px] flex items-center justify-center px-6 py-10 lg:px-12">
+    <div class="w-full max-w-[380px]">
 
-        const supabase = createClient(
-            'https://vvmksgsqvgcdebkqqhpe.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2bWtzZ3NxdmdjZGVia3FxaHBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NDYzNzgsImV4cCI6MjA5MDAyMjM3OH0.MNOikjsOW_-fBNTyes4H6N9biTQSRppBKCmZ3jGP5aU'
-        )
+      <!-- Mobile brand -->
+      <div class="flex items-center gap-2 mb-8 lg:hidden">
+        <span class="font-serif text-xl font-bold text-ink-700">Exama Lite</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span>
+      </div>
 
-        const form = document.getElementById('loginForm')
-        const errorMessage = document.getElementById('errorMessage')
-        const submitButton = document.getElementById('submitButton')
-        const forgotPassword = document.getElementById('forgotPassword')
-        const forgotModal = document.getElementById('forgotModal')
-        const closeForgotModal = document.getElementById('closeForgotModal')
+      <h2 class="font-serif text-[26px] font-bold text-ink-700 leading-tight mb-1.5">Đăng nhập</h2>
+      <p class="text-[14px] text-ink-300 mb-7">
+        Chưa có tài khoản?
+        <a href="/signup" class="text-accent-500 hover:text-accent-600 underline underline-offset-2 transition-colors">Đăng ký</a>
+      </p>
 
-        function showError(message) {
-            errorMessage.querySelector('p').textContent = message
-            errorMessage.classList.remove('hidden')
+      <!-- Alert -->
+      <div id="alert" class="hidden items-start gap-2.5 px-3.5 py-3 rounded-md border text-[13.5px] leading-snug mb-5">
+        <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/>
+        </svg>
+        <span id="alert-text"></span>
+      </div>
+
+      <form id="login-form" novalidate>
+
+        <!-- Email -->
+        <div class="mb-4">
+          <label for="email" class="block text-[14px] font-medium text-ink-500 mb-1.5">
+            Email <span class="text-danger-400">*</span>
+          </label>
+          <input id="email" type="email" autocomplete="email" autocapitalize="none" spellcheck="false"
+            placeholder="vd: nguyenvana@gmail.com"
+            class="w-full text-[14px] text-ink-500 bg-white border border-paper-300 rounded-md px-3.5 py-[9px] outline-none transition-all duration-150 placeholder:text-ink-200 focus:border-accent-400 focus:shadow-focus" />
+          <p id="err-email" class="hidden text-[12px] text-danger-400 mt-1.5"></p>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="password" class="block text-[14px] font-medium text-ink-500">
+              Mật khẩu <span class="text-danger-400">*</span>
+            </label>
+            <a href="/forgot-password" class="text-[13px] text-accent-500 hover:text-accent-600 underline underline-offset-2 transition-colors">
+              Quên mật khẩu?
+            </a>
+          </div>
+          <div class="relative">
+            <input id="password" type="password" autocomplete="current-password"
+              placeholder="Nhập mật khẩu"
+              class="w-full text-[14px] text-ink-500 bg-white border border-paper-300 rounded-md px-3.5 py-[9px] pr-10 outline-none transition-all duration-150 placeholder:text-ink-200 focus:border-accent-400 focus:shadow-focus" />
+            <button type="button" id="toggle-pw" aria-label="Hiện / ẩn mật khẩu"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-ink-300 hover:text-ink-500 transition-colors p-0.5">
+              <svg id="eye" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+              </svg>
+              <svg id="eye-off" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/>
+              </svg>
+            </button>
+          </div>
+          <p id="err-password" class="hidden text-[12px] text-danger-400 mt-1.5"></p>
+        </div>
+
+        <!-- Submit -->
+        <button id="login-btn" type="submit"
+          class="w-full flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 active:bg-accent-700 text-white text-[14px] font-semibold rounded-md px-4 py-[10px] transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed">
+          <svg id="spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          <span id="btn-text">Đăng nhập</span>
+        </button>
+
+      </form>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-3 my-6">
+        <div class="flex-1 h-px bg-paper-200"></div>
+        <span class="text-[12px] text-ink-200 select-none">hoặc</span>
+        <div class="flex-1 h-px bg-paper-200"></div>
+      </div>
+
+      <!-- Forgot password note -->
+      <div class="bg-paper-100 border border-paper-200 rounded-md px-4 py-3.5">
+        <p class="text-[13px] text-ink-400 leading-relaxed">
+          <strong class="text-ink-500 font-medium">Quên mật khẩu?</strong>
+          Do dữ liệu được lưu trên Dropbox của bạn, bạn chỉ cần
+          <a href="/signup" class="text-accent-500 hover:text-accent-600 underline underline-offset-2">tạo tài khoản mới</a>
+          và kết nối lại với Dropbox cũ — dữ liệu sẽ không bị mất.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+  const supabase = createClient(
+    'https://vvmksgsqvgcdebkqqhpe.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2bWtzZ3NxdmdjZGVia3FxaHBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NDYzNzgsImV4cCI6MjA5MDAyMjM3OH0.MNOikjsOW_-fBNTyes4H6N9biTQSRppBKCmZ3jGP5aU'
+  )
+
+  const $ = id => document.getElementById(id)
+  const emailEl    = $('email')
+  const passwordEl = $('password')
+  const alertEl    = $('alert')
+  const alertText  = $('alert-text')
+  const spinner    = $('spinner')
+  const btnText    = $('btn-text')
+  const loginBtn   = $('login-btn')
+
+  // ── Helpers ──
+  const showErr = (id, msg) => { const el = $(id); el.textContent = msg; el.classList.remove('hidden') }
+  const clearErr = id => { const el = $(id); el.textContent = ''; el.classList.add('hidden') }
+
+  function setInputErr(input, hasErr) {
+    if (hasErr) {
+      input.style.borderColor = '#d05f5f'
+      input.style.boxShadow   = '0 0 0 3px rgba(208,95,95,0.12)'
+    } else {
+      input.style.borderColor = ''
+      input.style.boxShadow   = ''
+    }
+  }
+
+  function showAlert(msg) {
+    alertEl.className = 'flex items-start gap-2.5 px-3.5 py-3 rounded-md border text-[13.5px] leading-snug mb-5 bg-danger-50 border-danger-200 text-danger-500'
+    alertText.textContent = msg
+  }
+  function hideAlert() {
+    alertEl.className = 'hidden items-start gap-2.5 px-3.5 py-3 rounded-md border text-[13.5px] leading-snug mb-5'
+  }
+
+  function setLoading(on) {
+    loginBtn.disabled = on
+    spinner.classList.toggle('hidden', !on)
+    btnText.textContent = on ? 'Đang xử lý...' : 'Đăng nhập'
+  }
+
+  // ── Password toggle ──
+  $('toggle-pw').addEventListener('click', () => {
+    const show = passwordEl.type === 'password'
+    passwordEl.type = show ? 'text' : 'password'
+    $('eye').classList.toggle('hidden', show)
+    $('eye-off').classList.toggle('hidden', !show)
+  })
+
+  // ── Blur validation ──
+  emailEl.addEventListener('blur', () => {
+    const v = emailEl.value.trim()
+    if (!v) { showErr('err-email', 'Vui lòng nhập địa chỉ email.'); setInputErr(emailEl, true); return }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { showErr('err-email', 'Địa chỉ email không hợp lệ.'); setInputErr(emailEl, true); return }
+    clearErr('err-email'); setInputErr(emailEl, false)
+  })
+  passwordEl.addEventListener('blur', () => {
+    if (!passwordEl.value) { showErr('err-password', 'Vui lòng nhập mật khẩu.'); setInputErr(passwordEl, true) }
+    else { clearErr('err-password'); setInputErr(passwordEl, false) }
+  })
+
+  // ── Redirect nếu đã đăng nhập ──
+  ;(async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) window.location.replace('/app')
+  })()
+
+  // ── Submit ──
+  $('login-form').addEventListener('submit', async e => {
+    e.preventDefault()
+    hideAlert()
+
+    const email    = emailEl.value.trim()
+    const password = passwordEl.value
+    let err = false
+
+    if (!email) {
+      showErr('err-email', 'Vui lòng nhập địa chỉ email.')
+      setInputErr(emailEl, true)
+      err = true
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showErr('err-email', 'Địa chỉ email không hợp lệ.')
+      setInputErr(emailEl, true)
+      err = true
+    } else {
+      clearErr('err-email')
+      setInputErr(emailEl, false)
+    }
+
+    if (!password) {
+      showErr('err-password', 'Vui lòng nhập mật khẩu.')
+      setInputErr(passwordEl, true)
+      err = true
+    } else {
+      clearErr('err-password')
+      setInputErr(passwordEl, false)
+    }
+
+    if (err) return
+
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (error) {
+        if (error.message.toLowerCase().includes('invalid') || error.status === 400) {
+          showAlert('Email hoặc mật khẩu không đúng. Vui lòng thử lại.')
+          setInputErr(emailEl, true)
+          setInputErr(passwordEl, true)
+        } else if (error.message.toLowerCase().includes('email not confirmed')) {
+          showAlert('Email chưa được xác nhận. Vui lòng kiểm tra hộp thư của bạn.')
+        } else {
+          showAlert(`Đã xảy ra lỗi: ${error.message}`)
         }
+        return
+      }
 
-        function hideError() {
-            errorMessage.classList.add('hidden')
-        }
+      window.location.replace('/app')
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault()
-            hideError()
+    } catch {
+      showAlert('Không thể kết nối tới máy chủ. Vui lòng thử lại.')
+    } finally {
+      setLoading(false)
+    }
+  })
+</script>
 
-            const username = document.getElementById('username').value.trim()
-            const password = document.getElementById('password').value
-
-            // Create fake email from username
-            const email = `${username}@examalite.local`
-
-            submitButton.disabled = true
-            submitButton.textContent = 'Đang đăng nhập...'
-
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                })
-
-                if (error) {
-                    if (error.message.includes('Invalid login credentials')) {
-                        showError('Tên đăng nhập hoặc mật khẩu không đúng.')
-                    } else {
-                        showError(error.message)
-                    }
-                    submitButton.disabled = false
-                    submitButton.textContent = 'Đăng nhập'
-                    return
-                }
-
-                if (data.user) {
-                    // Redirect to app
-                    window.location.href = '/app.html'
-                }
-
-            } catch (error) {
-                showError('Đã xảy ra lỗi. Vui lòng thử lại.')
-                console.error(error)
-                submitButton.disabled = false
-                submitButton.textContent = 'Đăng nhập'
-            }
-        })
-
-        // Forgot password modal
-        forgotPassword.addEventListener('click', (e) => {
-            e.preventDefault()
-            forgotModal.classList.remove('hidden')
-        })
-
-        closeForgotModal.addEventListener('click', () => {
-            forgotModal.classList.add('hidden')
-        })
-
-        // Close modal on overlay click
-        forgotModal.addEventListener('click', (e) => {
-            if (e.target === forgotModal) {
-                forgotModal.classList.add('hidden')
-            }
-        })
-
-        // Check if already logged in
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-            window.location.href = '/app.html'
-        }
-    </script>
 </body>
 </html>

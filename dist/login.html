@@ -120,6 +120,33 @@
   const SUPABASE_URL      = 'https://hmzowbcufyobdfwdfcaw.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtem93YmN1ZnlvYmRmd2RmY2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Nzk1OTQsImV4cCI6MjA5MDM1NTU5NH0.EXsVJ1vQjkPB8YgcHJjTpRvDWBzlKqI8tkD56I3eKlk';
 
+  /* ── Xử lý fragment từ Supabase magic link ── */
+  (function handleFragment() {
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('access_token')) return;
+
+    const params       = new URLSearchParams(hash.slice(1)); // bỏ dấu #
+    const accessToken  = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    if (!accessToken) return;
+
+    // Xóa fragment khỏi URL ngay (token không nên hiện trên thanh địa chỉ)
+    history.replaceState(null, '', window.location.pathname);
+
+    // Decode JWT payload để lấy thông tin user (không cần verify phía client)
+    let user = null;
+    try {
+      const payload = JSON.parse(atob(accessToken.split('.')[1]));
+      user = { id: payload.sub, email: payload.email };
+    } catch { /* decode lỗi thì user = null, vẫn lưu token */ }
+
+    localStorage.setItem('sb_access_token',  accessToken);
+    localStorage.setItem('sb_refresh_token', refreshToken || '');
+    localStorage.setItem('sb_user',          JSON.stringify(user));
+
+    window.location.replace('/app');
+  })();
+
   const emailEl    = document.getElementById('email');
   const passEl     = document.getElementById('password');
   const btnLogin   = document.getElementById('btn-login');

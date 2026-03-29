@@ -11,20 +11,14 @@
     :root {
       --paper-50: #faf9f6;
       --paper-200: #e8e4d9;
-
       --ink-500: #3a3731;
       --ink-600: #27251f;
       --ink-300: #8c8679;
-
       --accent-500: #2d6899;
       --accent-600: #1f5280;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: var(--paper-50);
@@ -47,19 +41,8 @@
       width: 90%;
     }
 
-    h1 {
-      font-family: "Noto Serif", serif;
-      font-size: 32px;
-      color: var(--ink-600);
-      margin-bottom: 12px;
-    }
-
-    p {
-      font-size: 14px;
-      color: var(--ink-300);
-      margin-bottom: 16px;
-      line-height: 1.6;
-    }
+    h1 { font-family: "Noto Serif", serif; font-size: 32px; color: var(--ink-600); margin-bottom: 12px; }
+    p  { font-size: 14px; color: var(--ink-300); margin-bottom: 16px; line-height: 1.6; }
 
     .badge {
       display: inline-block;
@@ -82,40 +65,32 @@
       font-weight: 500;
     }
 
-    .link:hover {
-      color: var(--accent-600);
-      text-decoration: underline;
-    }
+    .link:hover { color: var(--accent-600); text-decoration: underline; }
 
-    footer {
-      margin-top: 24px;
-      font-size: 12px;
-      color: var(--ink-300);
-    }
+    footer { margin-top: 24px; font-size: 12px; color: var(--ink-300); }
   </style>
 </head>
 
 <body>
   <div class="container">
     <div class="badge">Exama Lite</div>
-
     <h1>Coming Soon</h1>
-
+    <p>Exama Lite is a lightweight exam and assessment management platform.</p>
     <p>
-      Exama Lite is a lightweight exam and assessment management platform.
-    </p>
-
-    <p>
-      Learn more:
-      <br />
+      Learn more:<br/>
       <a href="https://github.com/kyle6317/examalite" class="link" target="_blank">
         github.com/kyle6317/examalite
       </a>
     </p>
-
-    <footer>
-      © 2026 Exama. All rights reserved.
-    </footer>
+    <footer>© 2026 Exama. All rights reserved.</footer>
   </div>
+
+  <script>
+    // Nếu Supabase redirect về trang này kèm fragment xác thực,
+    // chuyển ngay sang /login để xử lý — fragment được giữ nguyên.
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+      window.location.replace('/login' + window.location.hash);
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Exama Lite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: { 50:'#faf9f6', 100:'#f4f2ec', 200:'#e8e4d9', 300:'#d6d0c4' },
+            ink:   { 200:'#b8b3a8', 300:'#8c8679', 400:'#5e5a52', 500:'#3a3731', 600:'#27251f', 700:'#1a1814' },
+            accent:{ 100:'#d9e5f0', 500:'#2d6899', 600:'#1f5280' },
+            danger:{ 50:'#fdf0f0', 200:'#e8a0a0', 400:'#b03838' },
+          },
+          fontFamily: {
+            serif: ['"Noto Serif"', 'Georgia', 'serif'],
+            sans:  ['"DM Sans"', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>body { font-family: 'DM Sans', system-ui, sans-serif; }</style>
+</head>
+<body class="bg-paper-50 text-ink-500 min-h-screen font-sans">
+
+<!-- Màn chờ trong khi kiểm tra session -->
+<div id="loading" class="min-h-screen flex items-center justify-center">
+  <p class="text-sm text-ink-300">Đang tải...</p>
+</div>
+
+<!-- Nội dung chính (ẩn cho đến khi xác nhận session) -->
+<div id="app" class="hidden min-h-screen flex flex-col">
+
+  <!-- Topbar -->
+  <header class="h-14 flex items-center justify-between px-6 bg-white border-b border-paper-200">
+    <span class="font-serif text-[18px] font-bold text-ink-700">Exama Lite</span>
+    <button
+      id="btn-logout"
+      class="flex items-center gap-2 px-3.5 py-2 text-sm font-medium text-ink-400 bg-paper-100 border border-paper-200 rounded-[6px] cursor-pointer
+             hover:bg-paper-200 hover:text-ink-600 transition-colors duration-150"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"/>
+      </svg>
+      Đăng xuất
+    </button>
+  </header>
+
+  <!-- Body -->
+  <main class="flex-1 flex items-center justify-center px-6 py-16">
+    <div class="w-full max-w-sm bg-white border border-paper-200 rounded-lg p-6" style="box-shadow:0 1px 3px 0 rgba(58,55,49,0.08)">
+
+      <!-- Status: logged in -->
+      <div class="flex items-center gap-2 mb-5">
+        <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
+        <span class="text-xs font-semibold uppercase tracking-wide text-ink-300" style="letter-spacing:0.07em">Đã đăng nhập</span>
+      </div>
+
+      <p class="text-sm text-ink-400 mb-1">Email</p>
+      <p id="user-email" class="text-sm font-medium text-ink-600 mb-4 break-all">—</p>
+
+      <p class="text-sm text-ink-400 mb-1">User ID</p>
+      <p id="user-id" class="text-xs text-ink-300 font-mono break-all">—</p>
+
+      <hr class="border-paper-200 my-5" />
+
+      <p class="text-sm text-ink-300 leading-relaxed">
+        Trang dashboard đang được xây dựng. Đây là trang tạm thời để xác nhận trạng thái đăng nhập.
+      </p>
+    </div>
+  </main>
+</div>
+
+<script>
+  const SUPABASE_URL      = 'https://hmzowbcufyobdfwdfcaw.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtem93YmN1ZnlvYmRmd2RmY2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Nzk1OTQsImV4cCI6MjA5MDM1NTU5NH0.EXsVJ1vQjkPB8YgcHJjTpRvDWBzlKqI8tkD56I3eKlk';
+
+  /* ── Đọc session từ localStorage ── */
+  function getSession() {
+    try {
+      return {
+        accessToken:  localStorage.getItem('sb_access_token'),
+        refreshToken: localStorage.getItem('sb_refresh_token'),
+        user:         JSON.parse(localStorage.getItem('sb_user') || 'null'),
+      };
+    } catch { return null; }
+  }
+
+  function clearSession() {
+    localStorage.removeItem('sb_access_token');
+    localStorage.removeItem('sb_refresh_token');
+    localStorage.removeItem('sb_user');
+  }
+
+  /* ── Thử refresh token khi access token hết hạn ── */
+  async function refreshSession(refreshToken) {
+    const res  = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body:    JSON.stringify({ refresh_token: refreshToken }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    localStorage.setItem('sb_access_token',  data.access_token);
+    localStorage.setItem('sb_refresh_token', data.refresh_token);
+    localStorage.setItem('sb_user',          JSON.stringify(data.user));
+    return data;
+  }
+
+  /* ── Kiểm tra session có hợp lệ không ── */
+  async function verifySession(accessToken) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${accessToken}` },
+    });
+    return res.ok ? await res.json() : null;
+  }
+
+  /* ── Khởi động ── */
+  async function init() {
+    const session = getSession();
+
+    if (!session?.accessToken) {
+      window.location.href = '/login';
+      return;
+    }
+
+    // Xác minh access token với Supabase
+    let user = await verifySession(session.accessToken);
+
+    // Nếu hết hạn, thử refresh
+    if (!user && session.refreshToken) {
+      const refreshed = await refreshSession(session.refreshToken);
+      if (refreshed) {
+        user = refreshed.user;
+      }
+    }
+
+    if (!user) {
+      clearSession();
+      window.location.href = '/login';
+      return;
+    }
+
+    // Hiển thị app
+    document.getElementById('user-email').textContent = user.email || '—';
+    document.getElementById('user-id').textContent    = user.id    || '—';
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+  }
+
+  /* ── Logout ── */
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    const session = getSession();
+    // Gọi Supabase logout để vô hiệu hóa token phía server
+    if (session?.accessToken) {
+      await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+        method:  'POST',
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${session.accessToken}` },
+      }).catch(() => {});
+    }
+    clearSession();
+    window.location.href = '/login';
+  });
+
+  init();
+</script>
+</body>
+</html>

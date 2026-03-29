@@ -6,7 +6,7 @@
   <title>Đăng ký — Exama Lite</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -16,17 +16,17 @@
             paper: { 50:'#faf9f6', 100:'#f4f2ec', 200:'#e8e4d9', 300:'#d6d0c4' },
             ink:   { 100:'#e0ddd7', 200:'#b8b3a8', 300:'#8c8679', 400:'#5e5a52', 500:'#3a3731', 600:'#27251f', 700:'#1a1814' },
             accent:{ 50:'#f0f4f8', 100:'#d9e5f0', 200:'#adc5df', 300:'#7aa3c8', 400:'#4e84b4', 500:'#2d6899', 600:'#1f5280', 700:'#153d60' },
-            success:{ 50:'#f0f7f0', 200:'#a0cfa0', 300:'#5fa85f', 500:'#256825' },
-            danger: { 50:'#fdf0f0', 200:'#e8a0a0', 300:'#d05f5f', 400:'#b03838', 500:'#8a2020' },
+            danger:{ 50:'#fdf0f0', 100:'#f5d5d5', 200:'#e8a0a0', 300:'#d05f5f', 400:'#b03838', 500:'#8a2020' },
+            success:{ 50:'#f0f7f0', 200:'#a0cfa0', 500:'#256825' },
           },
           fontFamily: {
             serif: ['"Noto Serif"', 'Georgia', 'serif'],
             sans:  ['"DM Sans"', 'system-ui', 'sans-serif'],
           },
           boxShadow: {
-            paper:    '0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06)',
-            focus:    '0 0 0 3px rgba(77,132,180,0.14)',
-            'focus-err': '0 0 0 3px rgba(208,95,95,0.12)',
+            paper:   '0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06)',
+            focus:   '0 0 0 3px rgba(77,132,180,0.14)',
+            'focus-d':'0 0 0 3px rgba(208,95,95,0.12)',
           },
         }
       }
@@ -34,378 +34,332 @@
   </script>
   <style>
     body { font-family: 'DM Sans', system-ui, sans-serif; }
-    /* Custom checkbox — only non-Tailwind-expressible styles */
-    input[type="checkbox"].chk { appearance:none; -webkit-appearance:none; width:16px; height:16px; flex-shrink:0; border:1.5px solid #b8b3a8; border-radius:3px; background:#fff; cursor:pointer; position:relative; transition:background .12s,border-color .12s; margin-top:2px; }
-    input[type="checkbox"].chk:checked { background:#2d6899; border-color:#2d6899; }
-    input[type="checkbox"].chk:checked::after { content:''; position:absolute; left:4px; top:1px; width:5px; height:9px; border:2px solid #fff; border-top:none; border-left:none; transform:rotate(45deg); }
-    input[type="checkbox"].chk:focus { outline:none; box-shadow:0 0 0 3px rgba(77,132,180,0.14); }
+    input[type="checkbox"] { appearance: none; -webkit-appearance: none; position: relative; cursor: pointer; }
+    input[type="checkbox"]:checked { background-color: #2d6899; border-color: #2d6899; }
+    input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 2px; top: 0px;
+      width: 9px; height: 5px;
+      border-left: 2px solid #fff;
+      border-bottom: 2px solid #fff;
+      transform: rotate(-45deg);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin 0.7s linear infinite; }
   </style>
 </head>
-
-<body class="bg-paper-50 min-h-screen font-sans text-ink-500">
+<body class="bg-paper-50 text-ink-500 min-h-screen font-sans">
 
 <div class="flex min-h-screen">
 
-  <!-- ══ LEFT PANEL ══ -->
-  <div class="hidden lg:flex flex-col justify-center flex-1 px-14 py-16 bg-accent-700 relative overflow-hidden select-none">
-    <!-- grid texture -->
-    <div class="absolute inset-0 opacity-[0.04]"
-         style="background-image:repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 40px)">
-    </div>
+  <!-- ── Left panel (desktop only) ── -->
+  <div class="hidden md:flex flex-1 flex-col justify-center px-14 py-16 bg-paper-100 border-r border-paper-200">
+    <a href="/" class="font-serif text-[22px] font-bold text-ink-700 mb-12 no-underline">Exama Lite</a>
+    <h1 class="font-serif text-[30px] font-bold text-ink-700 leading-tight mb-4">
+      Chào mừng đến với<br/>Exama Lite
+    </h1>
+    <p class="text-[15px] text-ink-400 leading-relaxed mb-10 max-w-sm">
+      Tạo và chia sẻ đề ôn tập trực tuyến. Không cần cài đặt, không cần phần mềm — chỉ cần một tài khoản.
+    </p>
+    <ul class="list-none p-0 m-0 flex flex-col gap-3">
+      <li class="flex items-start gap-2.5 text-sm text-ink-400 leading-relaxed">
+        <span class="mt-[7px] w-1.5 h-1.5 rounded-full bg-accent-400 flex-shrink-0"></span>
+        Tải lên PDF hoặc DOCX để tạo câu hỏi nhanh chóng
+      </li>
+      <li class="flex items-start gap-2.5 text-sm text-ink-400 leading-relaxed">
+        <span class="mt-[7px] w-1.5 h-1.5 rounded-full bg-accent-400 flex-shrink-0"></span>
+        Chia sẻ link làm bài — không yêu cầu học sinh đăng nhập
+      </li>
+      <li class="flex items-start gap-2.5 text-sm text-ink-400 leading-relaxed">
+        <span class="mt-[7px] w-1.5 h-1.5 rounded-full bg-accent-400 flex-shrink-0"></span>
+        Chế độ học tập và kiểm thử trong cùng một đề
+      </li>
+    </ul>
+  </div>
 
-    <div class="relative z-10 max-w-md">
-      <!-- brand -->
-      <div class="flex items-center gap-2.5 mb-10">
-        <span class="font-serif text-2xl font-bold text-white tracking-tight">Exama Lite</span>
-        <span class="w-2 h-2 rounded-full bg-accent-300"></span>
+  <!-- ── Right panel ── -->
+  <div class="w-full md:w-[460px] md:flex-shrink-0 flex flex-col justify-start md:justify-center px-6 md:px-12 py-14">
+
+    <!-- Mobile logo -->
+    <a href="/" class="md:hidden font-serif text-[20px] font-bold text-ink-700 mb-8 no-underline">Exama Lite</a>
+
+    <!-- ═══ Step 1: Form ═══ -->
+    <div id="step-form">
+      <h2 class="font-serif text-2xl font-bold text-ink-700 mb-1.5">Tạo tài khoản</h2>
+      <p class="text-sm text-ink-300 mb-8 leading-relaxed">Điền thông tin bên dưới để bắt đầu.</p>
+
+      <!-- Global error alert -->
+      <div id="alert-error" class="hidden gap-2.5 items-start px-4 py-3 rounded-md border border-danger-200 bg-danger-50 text-danger-400 text-sm leading-relaxed mb-5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+        </svg>
+        <span id="alert-error-text"></span>
       </div>
 
-      <h1 class="font-serif text-[32px] font-bold text-white leading-tight mb-4">
-        Chào mừng đến<br>với Exama Lite
-      </h1>
-      <p class="text-[15px] text-white/70 leading-relaxed mb-8">
-        Nền tảng tạo và chia sẻ đề ôn tập đơn giản. Soạn đề, lưu trên Dropbox của bạn, chia sẻ với học sinh chỉ bằng một link.
+      <!-- Email -->
+      <div class="flex flex-col gap-1.5 mb-4">
+        <label for="email" class="text-sm font-medium text-ink-500">
+          Email <span class="text-danger-300">*</span>
+        </label>
+        <input
+          id="email" type="email" autocomplete="email"
+          placeholder="you@example.com"
+          class="w-full text-sm text-ink-500 bg-white border border-paper-300 rounded-[6px] px-3.5 py-2.5 outline-none placeholder-ink-200
+                 focus:border-accent-400 focus:shadow-focus transition-all duration-150"
+        />
+        <span id="email-error" class="hidden text-xs text-danger-400"></span>
+      </div>
+
+      <!-- Password -->
+      <div class="flex flex-col gap-1.5 mb-4">
+        <label for="password" class="text-sm font-medium text-ink-500">
+          Mật khẩu <span class="text-danger-300">*</span>
+        </label>
+        <input
+          id="password" type="password" autocomplete="new-password"
+          placeholder="Ít nhất 8 ký tự"
+          class="w-full text-sm text-ink-500 bg-white border border-paper-300 rounded-[6px] px-3.5 py-2.5 outline-none placeholder-ink-200
+                 focus:border-accent-400 focus:shadow-focus transition-all duration-150"
+        />
+        <span id="password-error" class="hidden text-xs text-danger-400"></span>
+      </div>
+
+      <!-- Confirm password -->
+      <div class="flex flex-col gap-1.5 mb-5">
+        <label for="password-confirm" class="text-sm font-medium text-ink-500">
+          Nhập lại mật khẩu <span class="text-danger-300">*</span>
+        </label>
+        <input
+          id="password-confirm" type="password" autocomplete="new-password"
+          placeholder="Nhập lại mật khẩu"
+          class="w-full text-sm text-ink-500 bg-white border border-paper-300 rounded-[6px] px-3.5 py-2.5 outline-none placeholder-ink-200
+                 focus:border-accent-400 focus:shadow-focus transition-all duration-150"
+        />
+        <span id="confirm-error" class="hidden text-xs text-danger-400"></span>
+      </div>
+
+      <!-- Terms checkbox -->
+      <div class="flex items-start gap-2.5 mb-1.5">
+        <input
+          id="terms" type="checkbox"
+          class="w-4 h-4 mt-0.5 border-[1.5px] border-ink-200 rounded-[3px] bg-white flex-shrink-0"
+        />
+        <label for="terms" class="text-[13px] text-ink-400 leading-relaxed cursor-pointer select-none">
+          Tôi đồng ý với
+          <a href="/terms" class="text-accent-500 no-underline hover:underline">Điều khoản sử dụng</a>
+          và
+          <a href="/privacy" class="text-accent-500 no-underline hover:underline">Chính sách bảo mật</a>
+        </label>
+      </div>
+      <span id="terms-error" class="hidden text-xs text-danger-400 mb-5 block"></span>
+
+      <!-- Submit -->
+      <button
+        id="btn-signup" type="button"
+        class="w-full flex items-center justify-center gap-2 mt-4 px-5 py-2.5 text-sm font-semibold text-white bg-accent-500 rounded-[6px] cursor-pointer
+               hover:bg-accent-600 active:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 mb-5 border-0"
+      >
+        <svg id="btn-spinner" class="hidden w-4 h-4 spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke="white" stroke-width="3" stroke-opacity="0.25"></circle>
+          <path fill="white" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+        <span id="btn-text">Tạo tài khoản</span>
+      </button>
+
+      <p class="text-center text-[13px] text-ink-300">
+        Đã có tài khoản?
+        <a href="/login" class="text-accent-500 font-medium no-underline hover:underline">Đăng nhập</a>
+      </p>
+    </div>
+
+    <!-- ═══ Step 2: Confirm email ═══ -->
+    <div id="step-confirm" class="hidden">
+      <div class="w-12 h-12 rounded-full bg-accent-100 flex items-center justify-center mb-5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-accent-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/>
+        </svg>
+      </div>
+
+      <h2 class="font-serif text-[22px] font-bold text-ink-700 mb-2">Kiểm tra hộp thư của bạn</h2>
+      <p class="text-sm text-ink-400 leading-relaxed mb-7">
+        Chúng tôi đã gửi link xác nhận đến
+        <strong id="confirm-email-display" class="text-ink-600 font-semibold"></strong>.
+        Nhấn vào link trong email để kích hoạt tài khoản.
       </p>
 
-      <!-- Dropbox callout -->
-      <div class="bg-white/[0.08] border border-white/[0.15] rounded-lg p-4 mb-8">
-        <p class="text-[13px] text-white/80 leading-relaxed">
-          <strong class="text-white font-semibold">Bạn cần có tài khoản Dropbox</strong> để lưu trữ đề ôn. Nếu chưa có, tạo qua link mời để nhận thêm dung lượng miễn phí.
-        </p>
-        <a href="https://www.dropbox.com/referrals/AAB9XS5qHgAJ8nU9liW5s1rkOKy7uslvEvk?src=global9"
-           target="_blank" rel="noopener"
-           class="inline-flex items-center gap-1 mt-2.5 text-[13px] font-medium text-accent-300 hover:text-white transition-colors underline underline-offset-2">
-          Tạo tài khoản Dropbox →
-        </a>
-      </div>
+      <!-- Provider button(s) injected by JS -->
+      <div id="email-provider-btns" class="flex flex-col gap-2.5 mb-7"></div>
 
-      <!-- feature list -->
-      <ul class="space-y-3">
-        <li class="flex items-center gap-3 text-[13.5px] text-white/70">
-          <span class="w-5 h-5 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0">
-            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-          </span>
-          Nhiều loại câu hỏi: trắc nghiệm, điền từ, đúng/sai
-        </li>
-        <li class="flex items-center gap-3 text-[13.5px] text-white/70">
-          <span class="w-5 h-5 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0">
-            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-          </span>
-          Dữ liệu hoàn toàn thuộc về bạn — lưu trên Dropbox
-        </li>
-        <li class="flex items-center gap-3 text-[13.5px] text-white/70">
-          <span class="w-5 h-5 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0">
-            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-          </span>
-          Chia sẻ link làm bài — không cần đăng nhập
-        </li>
-      </ul>
+      <p class="text-xs text-ink-300 leading-relaxed text-center pt-5 border-t border-paper-200">
+        Không thấy email? Kiểm tra thư mục Spam hoặc Promotions.
+      </p>
     </div>
+
   </div>
-
-  <!-- ══ RIGHT PANEL ══ -->
-  <div class="flex-1 lg:flex-none lg:w-[500px] flex items-center justify-center px-6 py-10 lg:px-12">
-    <div class="w-full max-w-[380px]">
-
-      <!-- Mobile brand -->
-      <div class="flex items-center gap-2 mb-8 lg:hidden">
-        <span class="font-serif text-xl font-bold text-ink-700">Exama Lite</span>
-        <span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span>
-      </div>
-
-      <!-- ═══ STEP 1: FORM ═══ -->
-      <div id="step-signup">
-        <h2 class="font-serif text-[26px] font-bold text-ink-700 leading-tight mb-1.5">Tạo tài khoản</h2>
-        <p class="text-[14px] text-ink-300 mb-7">
-          Đã có tài khoản?
-          <a href="/login" class="text-accent-500 hover:text-accent-600 underline underline-offset-2 transition-colors">Đăng nhập</a>
-        </p>
-
-        <!-- Alert -->
-        <div id="alert" class="hidden items-start gap-2.5 px-3.5 py-3 rounded-md border text-[13.5px] leading-snug mb-5">
-          <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/>
-          </svg>
-          <span id="alert-text"></span>
-        </div>
-
-        <form id="signup-form" novalidate>
-
-          <!-- Email -->
-          <div class="mb-4">
-            <label for="email" class="block text-[14px] font-medium text-ink-500 mb-1.5">
-              Email <span class="text-danger-400">*</span>
-            </label>
-            <input id="email" type="email" autocomplete="email" autocapitalize="none" spellcheck="false"
-              placeholder="vd: nguyenvana@gmail.com"
-              class="w-full text-[14px] text-ink-500 bg-white border border-paper-300 rounded-md px-3.5 py-[9px] outline-none transition-all duration-150 placeholder:text-ink-200 focus:border-accent-400 focus:shadow-focus" />
-            <p id="err-email" class="hidden text-[12px] text-danger-400 mt-1.5"></p>
-          </div>
-
-          <!-- Password -->
-          <div class="mb-4">
-            <label for="password" class="block text-[14px] font-medium text-ink-500 mb-1.5">
-              Mật khẩu <span class="text-danger-400">*</span>
-            </label>
-            <div class="relative">
-              <input id="password" type="password" autocomplete="new-password"
-                placeholder="Ít nhất 8 ký tự"
-                class="w-full text-[14px] text-ink-500 bg-white border border-paper-300 rounded-md px-3.5 py-[9px] pr-10 outline-none transition-all duration-150 placeholder:text-ink-200 focus:border-accent-400 focus:shadow-focus" />
-              <button type="button" id="toggle-pw" aria-label="Hiện / ẩn mật khẩu"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-ink-300 hover:text-ink-500 transition-colors p-0.5">
-                <svg id="eye" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                </svg>
-                <svg id="eye-off" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/>
-                </svg>
-              </button>
-            </div>
-            <!-- Strength bar -->
-            <div id="strength-wrap" class="hidden mt-2">
-              <div class="h-[3px] rounded-full bg-paper-200 overflow-hidden mb-1">
-                <div id="strength-bar" class="h-full rounded-full transition-all duration-200" style="width:0%"></div>
-              </div>
-              <span id="strength-label" class="text-[11px] font-semibold uppercase tracking-wide text-ink-300"></span>
-            </div>
-            <p id="err-password" class="hidden text-[12px] text-danger-400 mt-1.5"></p>
-          </div>
-
-          <!-- Confirm Password -->
-          <div class="mb-5">
-            <label for="confirm" class="block text-[14px] font-medium text-ink-500 mb-1.5">
-              Nhập lại mật khẩu <span class="text-danger-400">*</span>
-            </label>
-            <input id="confirm" type="password" autocomplete="new-password"
-              placeholder="Nhập lại mật khẩu"
-              class="w-full text-[14px] text-ink-500 bg-white border border-paper-300 rounded-md px-3.5 py-[9px] outline-none transition-all duration-150 placeholder:text-ink-200 focus:border-accent-400 focus:shadow-focus" />
-            <p id="err-confirm" class="hidden text-[12px] text-danger-400 mt-1.5"></p>
-          </div>
-
-          <!-- Terms -->
-          <div class="flex items-start gap-2.5 mb-6">
-            <input type="checkbox" id="agree" class="chk" />
-            <label for="agree" class="text-[13.5px] text-ink-400 leading-snug cursor-pointer select-none">
-              Tôi đồng ý với
-              <a href="/terms" class="text-accent-500 hover:text-accent-600 underline underline-offset-2">Điều khoản sử dụng</a>
-              và
-              <a href="/privacy" class="text-accent-500 hover:text-accent-600 underline underline-offset-2">Chính sách bảo mật</a>.
-            </label>
-          </div>
-
-          <!-- Submit -->
-          <button id="signup-btn" type="submit"
-            class="w-full flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 active:bg-accent-700 text-white text-[15px] font-medium rounded-md py-2.5 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
-            <svg id="spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-            </svg>
-            <span id="btn-text">Tạo tài khoản</span>
-          </button>
-
-        </form>
-      </div>
-
-      <!-- ═══ STEP 2: CONNECT DROPBOX ═══ -->
-      <div id="step-dropbox" class="hidden text-center">
-
-        <div class="w-16 h-16 rounded-2xl bg-accent-100 flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-accent-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75z"/>
-          </svg>
-        </div>
-
-        <h2 class="font-serif text-[24px] font-bold text-ink-700 leading-tight mb-2">Kết nối Dropbox</h2>
-        <p class="text-[14px] text-ink-400 leading-relaxed mb-1.5 max-w-[300px] mx-auto">
-          Tài khoản đã được tạo thành công. Bước cuối là kết nối Dropbox để lưu trữ đề ôn của bạn.
-        </p>
-        <p id="welcome-user" class="text-[13px] font-medium text-accent-600 mb-7"></p>
-
-        <div class="bg-accent-50 border border-accent-200 rounded-md px-4 py-3 mb-7 text-left">
-          <p class="text-[13px] text-accent-700 leading-relaxed">
-            Exama Lite chỉ truy cập vào thư mục riêng của ứng dụng trên Dropbox — không đọc các file khác của bạn.
-          </p>
-        </div>
-
-        <a id="dropbox-btn"
-           href="#"
-           class="flex items-center justify-center gap-2.5 w-full bg-[#0061FF] hover:bg-[#0050d0] text-white text-[15px] font-medium rounded-md py-2.5 transition-colors duration-150 mb-4">
-          <!-- Dropbox logo -->
-          <svg class="w-5 h-5" viewBox="0 0 40 33" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 0L0 6.5 10 13l10-6.5zM30 0L20 6.5 30 13l10-6.5zM0 19.5L10 26l10-6.5L10 13zM30 13l-10 6.5 10 6.5 10-6.5zM10 27.48l10 6.52 10-6.52-10-6.5z"/>
-          </svg>
-          Kết nối với Dropbox
-        </a>
-
-        <p class="text-[12px] text-ink-300 leading-snug">
-          Sau khi xác nhận trên Dropbox, bạn sẽ được chuyển về trang quản lý đề ôn.
-        </p>
-      </div>
-
-    </div>
-  </div>
-
 </div>
 
-<!-- ══ SCRIPT ══ -->
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+<script>
+  const SUPABASE_URL      = 'https://hmzowbcufyobdfwdfcaw.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtem93YmN1ZnlvYmRmd2RmY2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Nzk1OTQsImV4cCI6MjA5MDM1NTU5NH0.EXsVJ1vQjkPB8YgcHJjTpRvDWBzlKqI8tkD56I3eKlk';
 
-  const supabase = createClient(
-    'https://nwlnlsqgfcsubqdwlznl.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53bG5sc3FnZmNzdWJxZHdsem5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTYxNTksImV4cCI6MjA5MDE3MjE1OX0.oh9RkJsH2incvz7wZ24x8QZqHd-pAmqoRXQ_43D5kQk'
-  )
+  /* ── Email provider map ── */
+  const PROVIDERS = [
+    {
+      label: 'Mở Gmail',
+      test:  /@gmail\.com$/i,
+      url:   'https://mail.google.com/',
+      svg:   `<svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M6 10h36v28H6z"/><path fill="#fff" d="M6 10l18 13L42 10"/><path fill="#FBBC05" d="M6 10v28l10-14z"/><path fill="#34A853" d="M42 10v28L32 24z"/><path fill="#4285F4" d="M6 38l16-14 2 1.4 2-1.4 16 14z"/><path fill="#EA4335" d="M6 10l18 13L42 10H6z"/></svg>`
+    },
+    {
+      label: 'Mở Outlook',
+      test:  /@(outlook|hotmail|live|msn)\./i,
+      url:   'https://outlook.live.com/mail/',
+      svg:   `<svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="4" fill="#0078D4"/><rect x="6" y="14" width="22" height="20" rx="1" fill="#fff"/><ellipse cx="17" cy="24" rx="6" ry="5.5" fill="#0078D4"/><ellipse cx="17" cy="24" rx="4" ry="4" fill="#fff"/><path fill="#fff" d="M28 14l14 9-14 9V14z"/></svg>`
+    },
+    {
+      label: 'Mở Proton Mail',
+      test:  /@(proton\.me|protonmail\.com)$/i,
+      url:   'https://mail.proton.me/',
+      svg:   `<svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="4" fill="#6D4AFF"/><path fill="#fff" d="M10 13h17c5.5 0 9 3.2 9 8s-3.5 8-9 8h-9v6H10V13zm8 11h8c2.5 0 4-1.3 4-3s-1.5-3-4-3h-8v6z"/></svg>`
+    },
+    {
+      label: 'Mở Yahoo Mail',
+      test:  /@(yahoo|ymail)\./i,
+      url:   'https://mail.yahoo.com/',
+      svg:   `<svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="4" fill="#6001D2"/><path fill="#fff" d="M8 13h12l4 9 4-9h12L28 29v9H20v-9L8 13z"/></svg>`
+    },
+    {
+      label: 'Mở iCloud Mail',
+      test:  /@(icloud|me|mac)\.com$/i,
+      url:   'https://www.icloud.com/mail/',
+      svg:   `<svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="4" fill="#1C1C1E"/><path fill="#fff" d="M35 30.5c3 0 5.5-2.4 5.5-5.5 0-2.8-2-5.1-4.7-5.5C35 16.1 32.2 13.5 29 13.5c-1.5 0-2.9.5-4 1.4-1-1-2.4-1.6-3.9-1.6C17.8 13.3 15 16.2 15 19.8c0 .3 0 .6.1.9C13 21.5 11.5 23.3 11.5 25.5c0 2.8 2.2 5 5 5H35z"/></svg>`
+    },
+  ];
 
-  // Elements
-  const $ = id => document.getElementById(id)
-  const emailEl    = $('email'), passwordEl = $('password'), confirmEl = $('confirm')
-  const agreeEl    = $('agree')
-  const alertEl    = $('alert'),    alertText = $('alert-text')
-  const spinner    = $('spinner'),  btnText   = $('btn-text'), signupBtn = $('signup-btn')
-  const strengthWrap = $('strength-wrap'), strengthBar = $('strength-bar'), strengthLabel = $('strength-label')
-  const stepSignup = $('step-signup'), stepDropbox = $('step-dropbox')
+  /* ── DOM refs ── */
+  const emailEl   = document.getElementById('email');
+  const passEl    = document.getElementById('password');
+  const confEl    = document.getElementById('password-confirm');
+  const termsEl   = document.getElementById('terms');
+  const btnSignup = document.getElementById('btn-signup');
 
-  // ── Helpers ──
-  const showErr = (id, msg) => { const el = $(id); el.textContent = msg; el.classList.remove('hidden') }
-  const clearErr = id => { const el = $(id); el.textContent = ''; el.classList.add('hidden') }
-
-  function setInputErr(input, hasErr) {
-    if (hasErr) {
-      input.style.borderColor = '#d05f5f'
-      input.style.boxShadow   = '0 0 0 3px rgba(208,95,95,0.12)'
+  /* ── Error helpers ── */
+  function fieldErr(spanId, inputEl, msg) {
+    const span = document.getElementById(spanId);
+    if (msg) {
+      span.textContent = msg;
+      span.classList.remove('hidden');
+      inputEl.classList.add('!border-danger-300');
     } else {
-      input.style.borderColor = ''
-      input.style.boxShadow   = ''
+      span.textContent = '';
+      span.classList.add('hidden');
+      inputEl.classList.remove('!border-danger-300');
     }
   }
 
-  function showAlert(msg) {
-    alertEl.className = 'flex items-start gap-2.5 px-3.5 py-3 rounded-md border text-[13.5px] leading-snug mb-5 bg-danger-50 border-danger-200 text-danger-500'
-    alertText.textContent = msg
+  function termsErr(msg) {
+    const span = document.getElementById('terms-error');
+    if (msg) { span.textContent = msg; span.classList.remove('hidden'); }
+    else      { span.textContent = ''; span.classList.add('hidden');    }
   }
-  function hideAlert() { alertEl.className = alertEl.className.replace('flex', 'hidden') }
 
+  function globalErr(msg) {
+    const el = document.getElementById('alert-error');
+    document.getElementById('alert-error-text').textContent = msg;
+    if (msg) { el.classList.remove('hidden'); el.classList.add('flex'); }
+    else      { el.classList.add('hidden');   el.classList.remove('flex'); }
+  }
+
+  /* ── Clear on input ── */
+  emailEl.addEventListener('input',  () => fieldErr('email-error',   emailEl, ''));
+  passEl.addEventListener('input',   () => fieldErr('password-error', passEl, ''));
+  confEl.addEventListener('input',   () => fieldErr('confirm-error',  confEl, ''));
+  termsEl.addEventListener('change', () => termsErr(''));
+
+  /* ── Loading state ── */
   function setLoading(on) {
-    signupBtn.disabled = on
-    spinner.classList.toggle('hidden', !on)
-    btnText.textContent = on ? 'Đang xử lý...' : 'Tạo tài khoản'
+    btnSignup.disabled = on;
+    document.getElementById('btn-spinner').classList.toggle('hidden', !on);
+    document.getElementById('btn-text').textContent = on ? 'Đang xử lý...' : 'Tạo tài khoản';
   }
 
-  // ── Password toggle ──
-  $('toggle-pw').addEventListener('click', () => {
-    const show = passwordEl.type === 'password'
-    passwordEl.type = show ? 'text' : 'password'
-    $('eye').classList.toggle('hidden', show)
-    $('eye-off').classList.toggle('hidden', !show)
-  })
+  /* ── Submit ── */
+  btnSignup.addEventListener('click', async () => {
+    const email    = emailEl.value.trim();
+    const password = passEl.value;
+    const confirm  = confEl.value;
+    const agreed   = termsEl.checked;
 
-  // ── Password strength ──
-  const levels = [
-    { score:20, label:'Rất yếu',   color:'#d05f5f', w:'15%' },
-    { score:40, label:'Yếu',       color:'#d9a93a', w:'35%' },
-    { score:60, label:'Trung bình',color:'#d9a93a', w:'55%' },
-    { score:80, label:'Khá',       color:'#5fa85f', w:'75%' },
-    { score:100,label:'Mạnh',      color:'#256825', w:'100%'},
-  ]
-  function calcStrength(pw) {
-    let s = 0
-    if (pw.length >= 8)  s += 20
-    if (pw.length >= 12) s += 10
-    if (/[A-Z]/.test(pw)) s += 20
-    if (/[0-9]/.test(pw)) s += 20
-    if (/[^A-Za-z0-9]/.test(pw)) s += 20
-    if (pw.length >= 16) s += 10
-    return Math.min(s, 100)
-  }
-  passwordEl.addEventListener('input', () => {
-    if (!passwordEl.value) { strengthWrap.classList.add('hidden'); return }
-    strengthWrap.classList.remove('hidden')
-    const score = calcStrength(passwordEl.value)
-    const lv = levels.find(l => score <= l.score)
-    strengthBar.style.width = lv.w
-    strengthBar.style.backgroundColor = lv.color
-    strengthLabel.textContent = lv.label
-    strengthLabel.style.color = lv.color
-  })
+    // Reset all errors
+    fieldErr('email-error',    emailEl, '');
+    fieldErr('password-error', passEl,  '');
+    fieldErr('confirm-error',  confEl,  '');
+    termsErr('');
+    globalErr('');
 
-  // ── Blur validation ──
-  emailEl.addEventListener('blur', () => {
-    const v = emailEl.value.trim()
-    if (!v) { showErr('err-email', 'Vui lòng nhập địa chỉ email.'); setInputErr(emailEl, true); return }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { showErr('err-email', 'Địa chỉ email không hợp lệ.'); setInputErr(emailEl, true); return }
-    clearErr('err-email'); setInputErr(emailEl, false)
-  })
-  confirmEl.addEventListener('blur', () => {
-    if (confirmEl.value && confirmEl.value !== passwordEl.value) {
-      showErr('err-confirm', 'Mật khẩu nhập lại không khớp.'); setInputErr(confirmEl, true)
-    } else { clearErr('err-confirm'); setInputErr(confirmEl, false) }
-  })
+    let ok = true;
 
-  // ── Submit ──
-  $('signup-form').addEventListener('submit', async e => {
-    e.preventDefault()
-    hideAlert()
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      fieldErr('email-error', emailEl, 'Nhập địa chỉ email hợp lệ.');
+      ok = false;
+    }
+    if (password.length < 8) {
+      fieldErr('password-error', passEl, 'Mật khẩu cần ít nhất 8 ký tự.');
+      ok = false;
+    }
+    if (password !== confirm) {
+      fieldErr('confirm-error', confEl, 'Mật khẩu nhập lại không khớp.');
+      ok = false;
+    }
+    if (!agreed) {
+      termsErr('Bạn cần đồng ý với điều khoản để tiếp tục.');
+      ok = false;
+    }
+    if (!ok) return;
 
-    const email    = emailEl.value.trim()
-    const password = passwordEl.value
-    const confirm  = confirmEl.value
-    let err = false
-
-    if (!email) { showErr('err-email','Vui lòng nhập địa chỉ email.'); setInputErr(emailEl,true); err=true }
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('err-email','Địa chỉ email không hợp lệ.'); setInputErr(emailEl,true); err=true }
-    else { clearErr('err-email'); setInputErr(emailEl,false) }
-
-    if (!password) { showErr('err-password','Vui lòng nhập mật khẩu.'); setInputErr(passwordEl,true); err=true }
-    else if (password.length < 8) { showErr('err-password','Mật khẩu phải có ít nhất 8 ký tự.'); setInputErr(passwordEl,true); err=true }
-    else { clearErr('err-password'); setInputErr(passwordEl,false) }
-
-    if (!confirm) { showErr('err-confirm','Vui lòng nhập lại mật khẩu.'); setInputErr(confirmEl,true); err=true }
-    else if (confirm !== password) { showErr('err-confirm','Mật khẩu nhập lại không khớp.'); setInputErr(confirmEl,true); err=true }
-    else { clearErr('err-confirm'); setInputErr(confirmEl,false) }
-
-    if (!agreeEl.checked) { showAlert('Bạn cần đồng ý với Điều khoản sử dụng và Chính sách bảo mật để tiếp tục.'); err=true }
-
-    if (err) return
-
-    setLoading(true)
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { display_name: email } }
-      })
+      const res  = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body:    JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
 
-      if (error) {
-        if (error.message.includes('already registered') || error.status === 422) {
-          showAlert('Email này đã được sử dụng. Hãy dùng email khác hoặc đăng nhập.')
-          setInputErr(emailEl, true)
-        } else {
-          showAlert(`Đã xảy ra lỗi: ${error.message}`)
-        }
-        return
+      if (!res.ok) {
+        globalErr(data?.msg || data?.error_description || data?.message || 'Đăng ký không thành công. Vui lòng thử lại.');
+        return;
       }
 
-      // Success — show Dropbox step
-      $('welcome-user').textContent = `Đăng nhập với email: ${email}`
-      stepSignup.classList.add('hidden')
-      stepDropbox.classList.remove('hidden')
-
-      // Gắn state=email vào URL OAuth Dropbox
-      const dropboxUrl = new URL('https://www.dropbox.com/oauth2/authorize')
-      dropboxUrl.searchParams.set('client_id', 'llkjsunfk3fjnyv')
-      dropboxUrl.searchParams.set('response_type', 'code')
-      dropboxUrl.searchParams.set('redirect_uri', 'https://nwlnlsqgfcsubqdwlznl.supabase.co/functions/v1/callback')
-      dropboxUrl.searchParams.set('token_access_type', 'offline')
-      dropboxUrl.searchParams.set('state', email)
-      $('dropbox-btn').href = dropboxUrl.toString()
-
+      showConfirm(email);
     } catch {
-      showAlert('Không thể kết nối tới máy chủ. Vui lòng thử lại.')
+      globalErr('Không thể kết nối. Kiểm tra mạng và thử lại.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  })
-</script>
+  });
 
+  /* ── Show confirm step ── */
+  function showConfirm(email) {
+    document.getElementById('step-form').classList.add('hidden');
+    document.getElementById('step-confirm').classList.remove('hidden');
+    document.getElementById('confirm-email-display').textContent = email;
+
+    const container = document.getElementById('email-provider-btns');
+    container.innerHTML = '';
+
+    const provider = PROVIDERS.find(p => p.test.test(email));
+    if (provider) {
+      // same-tab redirect — use <a> with no target="_blank"
+      const a = document.createElement('a');
+      a.href = provider.url;
+      // no target attribute → same tab
+      a.className = 'flex items-center gap-2.5 px-3.5 py-2.5 bg-white border border-paper-300 rounded-[6px] text-sm font-medium text-ink-500 no-underline transition-all duration-150 hover:border-accent-300 hover:shadow-paper';
+      a.innerHTML = provider.svg + `<span>${provider.label}</span>`;
+      container.appendChild(a);
+    }
+  }
+</script>
 </body>
 </html>

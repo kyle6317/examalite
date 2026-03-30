@@ -6,7 +6,7 @@
   <title>Dashboard — Exama Lite</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -14,75 +14,257 @@
         extend: {
           colors: {
             paper: { 50:'#faf9f6', 100:'#f4f2ec', 200:'#e8e4d9', 300:'#d6d0c4' },
-            ink:   { 200:'#b8b3a8', 300:'#8c8679', 400:'#5e5a52', 500:'#3a3731', 600:'#27251f', 700:'#1a1814' },
-            accent:{ 100:'#d9e5f0', 500:'#2d6899', 600:'#1f5280' },
-            danger:{ 50:'#fdf0f0', 200:'#e8a0a0', 400:'#b03838' },
+            ink:   { 100:'#e0ddd7', 200:'#b8b3a8', 300:'#8c8679', 400:'#5e5a52', 500:'#3a3731', 600:'#27251f', 700:'#1a1814' },
+            accent:{ 50:'#f0f4f8', 100:'#d9e5f0', 200:'#adc5df', 300:'#7aa3c8', 400:'#4e84b4', 500:'#2d6899', 600:'#1f5280', 700:'#153d60' },
+            success:{ 50:'#f0f7f0', 200:'#a0cfa0', 300:'#5fa85f', 500:'#256825' },
+            warning:{ 50:'#fdf8ed', 200:'#eecf88', 300:'#d9a93a', 500:'#8f6a14' },
+            danger: { 50:'#fdf0f0', 200:'#e8a0a0', 300:'#d05f5f', 400:'#b03838', 500:'#8a2020' },
           },
           fontFamily: {
             serif: ['"Noto Serif"', 'Georgia', 'serif'],
             sans:  ['"DM Sans"', 'system-ui', 'sans-serif'],
           },
+          boxShadow: {
+            'paper':    '0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06)',
+            'paper-md': '0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08)',
+            'paper-lg': '0 8px 20px 0 rgba(58,55,49,0.12), 0 2px 6px -1px rgba(58,55,49,0.08)',
+            'focus':    '0 0 0 3px rgba(77,132,180,0.14)',
+          }
         }
       }
     }
   </script>
-  <style>body { font-family: 'DM Sans', system-ui, sans-serif; }</style>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+
+    /* Paper texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    * { position: relative; z-index: 1; }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    /* Fade-in for exam cards */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .exam-card {
+      animation: fadeUp 0.25s ease both;
+    }
+    .exam-card:nth-child(1) { animation-delay: 0ms; }
+    .exam-card:nth-child(2) { animation-delay: 40ms; }
+    .exam-card:nth-child(3) { animation-delay: 80ms; }
+    .exam-card:nth-child(4) { animation-delay: 120ms; }
+    .exam-card:nth-child(5) { animation-delay: 160ms; }
+    .exam-card:nth-child(n+6) { animation-delay: 200ms; }
+
+    /* Hoverable card */
+    .card-hover {
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+    .card-hover:hover {
+      border-color: #7aa3c8 !important;
+      box-shadow: 0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08);
+    }
+
+    /* Toast */
+    #toast {
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+    #toast.hide {
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+    }
+
+    /* Modal overlay */
+    #modal-overlay {
+      transition: opacity 150ms ease;
+    }
+    #modal-overlay.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body class="bg-paper-50 text-ink-500 min-h-screen font-sans">
 
-<!-- Màn chờ trong khi kiểm tra session -->
-<div id="loading" class="min-h-screen flex items-center justify-center">
-  <p class="text-sm text-ink-300">Đang tải...</p>
+<!-- Loading screen -->
+<div id="loading" class="fixed inset-0 flex items-center justify-center bg-paper-50 z-50">
+  <div class="flex flex-col items-center gap-3">
+    <span class="spinner text-ink-300" style="width:24px;height:24px;border-width:2.5px;"></span>
+    <p class="text-sm text-ink-300">Đang tải...</p>
+  </div>
 </div>
 
-<!-- Nội dung chính (ẩn cho đến khi xác nhận session) -->
+<!-- Main app (hidden until session verified) -->
 <div id="app" class="hidden min-h-screen flex flex-col">
 
   <!-- Topbar -->
-  <header class="h-14 flex items-center justify-between px-6 bg-white border-b border-paper-200">
-    <span class="font-serif text-[18px] font-bold text-ink-700">Exama Lite</span>
-    <button
-      id="btn-logout"
-      class="flex items-center gap-2 px-3.5 py-2 text-sm font-medium text-ink-400 bg-paper-100 border border-paper-200 rounded-[6px] cursor-pointer
-             hover:bg-paper-200 hover:text-ink-600 transition-colors duration-150"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"/>
-      </svg>
-      Đăng xuất
-    </button>
-  </header>
+  <header class="h-14 flex items-center justify-between px-5 bg-white border-b border-paper-200 shadow-paper sticky top-0 z-30">
+    <a href="/" class="font-serif text-[18px] font-bold text-ink-700 hover:text-accent-600 transition-colors duration-150 no-underline">
+      Exama Lite
+    </a>
 
-  <!-- Body -->
-  <main class="flex-1 flex items-center justify-center px-6 py-16">
-    <div class="w-full max-w-sm bg-white border border-paper-200 rounded-lg p-6" style="box-shadow:0 1px 3px 0 rgba(58,55,49,0.08)">
-
-      <!-- Status: logged in -->
-      <div class="flex items-center gap-2 mb-5">
-        <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
-        <span class="text-xs font-semibold uppercase tracking-wide text-ink-300" style="letter-spacing:0.07em">Đã đăng nhập</span>
+    <!-- Right: user info + logout -->
+    <div class="flex items-center gap-3">
+      <!-- User avatar + email -->
+      <div class="hidden sm:flex items-center gap-2.5">
+        <div id="user-avatar" class="w-7 h-7 rounded-full bg-accent-100 border border-accent-200 flex items-center justify-center flex-shrink-0">
+          <span id="user-initial" class="text-xs font-semibold text-accent-600">?</span>
+        </div>
+        <span id="user-email-top" class="text-sm text-ink-400 truncate max-w-[200px]">—</span>
       </div>
 
-      <p class="text-sm text-ink-400 mb-1">Email</p>
-      <p id="user-email" class="text-sm font-medium text-ink-600 mb-4 break-all">—</p>
+      <div class="w-px h-4 bg-paper-200 hidden sm:block"></div>
 
-      <p class="text-sm text-ink-400 mb-1">User ID</p>
-      <p id="user-id" class="text-xs text-ink-300 font-mono break-all">—</p>
+      <button
+        id="btn-logout"
+        class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-ink-400 bg-paper-100 border border-paper-200 rounded-[6px] cursor-pointer hover:bg-paper-200 hover:text-ink-600 transition-colors duration-150"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"/>
+        </svg>
+        <span class="hidden sm:inline">Đăng xuất</span>
+      </button>
+    </div>
+  </header>
 
-      <hr class="border-paper-200 my-5" />
+  <!-- Main content -->
+  <main class="flex-1 px-5 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto w-full">
 
-      <p class="text-sm text-ink-300 leading-relaxed">
-        Trang dashboard đang được xây dựng. Đây là trang tạm thời để xác nhận trạng thái đăng nhập.
-      </p>
+    <!-- Page header -->
+    <div class="flex items-start justify-between gap-4 mb-8">
+      <div>
+        <h1 class="font-serif text-[26px] sm:text-[30px] font-bold text-ink-700 leading-tight">Đề ôn của tôi</h1>
+        <p id="subtitle" class="text-sm text-ink-300 mt-1">Đang tải danh sách...</p>
+      </div>
+      <a
+        href="/editor"
+        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-accent-500 rounded-[6px] hover:bg-accent-600 active:bg-accent-700 transition-colors duration-150 flex-shrink-0 shadow-paper no-underline"
+        style="margin-top:2px;"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        <span>Tạo đề mới</span>
+      </a>
+    </div>
+
+    <!-- Exam list -->
+    <div id="exam-list-wrapper">
+
+      <!-- Loading skeleton -->
+      <div id="list-loading" class="flex flex-col gap-3">
+        <div class="h-[72px] bg-white border border-paper-200 rounded-[8px] shadow-paper animate-pulse"></div>
+        <div class="h-[72px] bg-white border border-paper-200 rounded-[8px] shadow-paper animate-pulse" style="opacity:0.7"></div>
+        <div class="h-[72px] bg-white border border-paper-200 rounded-[8px] shadow-paper animate-pulse" style="opacity:0.4"></div>
+      </div>
+
+      <!-- Error state (hidden by default) -->
+      <div id="list-error" class="hidden flex flex-col items-center justify-center py-16 px-6 text-center">
+        <div class="w-12 h-12 rounded-[8px] bg-danger-50 flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-danger-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+          </svg>
+        </div>
+        <h3 class="font-serif text-[18px] font-bold text-ink-600 mb-2">Không thể tải danh sách</h3>
+        <p id="error-msg" class="text-sm text-ink-300 max-w-[280px] mb-5">Đã xảy ra lỗi khi tải đề ôn. Vui lòng thử lại.</p>
+        <button id="btn-retry" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-accent-500 rounded-[6px] hover:bg-accent-600 transition-colors duration-150">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+          </svg>
+          Thử lại
+        </button>
+      </div>
+
+      <!-- Empty state (hidden by default) -->
+      <div id="list-empty" class="hidden flex flex-col items-center justify-center py-20 px-6 text-center">
+        <div class="w-12 h-12 rounded-[8px] bg-paper-100 flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-ink-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+          </svg>
+        </div>
+        <h3 class="font-serif text-[18px] font-bold text-ink-600 mb-2">Chưa có đề ôn nào</h3>
+        <p class="text-sm text-ink-300 max-w-[260px] mb-5 leading-relaxed">Tạo đề ôn đầu tiên của bạn để bắt đầu.</p>
+        <a href="/editor" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-accent-500 rounded-[6px] hover:bg-accent-600 transition-colors duration-150 no-underline">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          Tạo đề mới
+        </a>
+      </div>
+
+      <!-- Exam list (hidden by default, filled by JS) -->
+      <div id="exam-list" class="hidden flex flex-col gap-2.5"></div>
+
     </div>
   </main>
+</div>
+
+<!-- Delete confirm modal -->
+<div id="modal-overlay" class="hide fixed inset-0 z-40 flex items-center justify-center px-4" style="background:rgba(26,24,20,0.35);">
+  <div id="modal-dialog" class="bg-white rounded-[8px] shadow-paper-lg border border-paper-200 w-full max-w-[440px] p-6">
+    <div class="flex items-start justify-between gap-3 mb-4">
+      <h2 class="font-serif text-[20px] font-bold text-ink-700 leading-snug">Xóa đề ôn</h2>
+      <button id="modal-close" class="w-8 h-8 flex items-center justify-center rounded-[6px] text-ink-300 hover:bg-paper-100 hover:text-ink-500 transition-colors duration-150 flex-shrink-0 -mt-0.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <p class="text-sm text-ink-500 leading-relaxed mb-1">Bạn có chắc muốn xóa đề ôn</p>
+    <p id="modal-exam-name" class="text-sm font-semibold text-ink-700 mb-4 break-words">"—"</p>
+    <p class="text-sm text-ink-300 leading-relaxed mb-6">Hành động này không thể hoàn tác. File zip và dữ liệu liên quan sẽ bị xóa vĩnh viễn.</p>
+    <div class="flex items-center justify-end gap-3">
+      <button id="modal-cancel" class="px-4 py-2 text-sm font-medium text-ink-500 bg-paper-100 border border-paper-300 rounded-[6px] hover:bg-paper-200 transition-colors duration-150 cursor-pointer">
+        Hủy
+      </button>
+      <button id="modal-confirm-delete" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-danger-400 bg-danger-50 border border-danger-200 rounded-[6px] hover:bg-danger-200 transition-colors duration-150 cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+        </svg>
+        Xóa đề ôn
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="hide fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-3 bg-ink-600 text-white text-sm font-medium rounded-[6px] shadow-paper-lg whitespace-nowrap">
+  <span id="toast-icon" class="flex-shrink-0"></span>
+  <span id="toast-msg">—</span>
 </div>
 
 <script>
   const SUPABASE_URL      = 'https://hmzowbcufyobdfwdfcaw.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtem93YmN1ZnlvYmRmd2RmY2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Nzk1OTQsImV4cCI6MjA5MDM1NTU5NH0.EXsVJ1vQjkPB8YgcHJjTpRvDWBzlKqI8tkD56I3eKlk';
 
-  /* ── Đọc session từ localStorage ── */
+  // ── Trạng thái toàn cục ──────────────────────────────────────────
+  let currentDeleteUuid = null;
+  let currentDeleteName = null;
+  let currentAccessToken = null;
+  let toastTimer = null;
+
+  // ── Session helpers ──────────────────────────────────────────────
   function getSession() {
     try {
       return {
@@ -94,17 +276,14 @@
   }
 
   function clearSession() {
-    localStorage.removeItem('sb_access_token');
-    localStorage.removeItem('sb_refresh_token');
-    localStorage.removeItem('sb_user');
+    ['sb_access_token','sb_refresh_token','sb_user'].forEach(k => localStorage.removeItem(k));
   }
 
-  /* ── Thử refresh token khi access token hết hạn ── */
   async function refreshSession(refreshToken) {
-    const res  = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-      method:  'POST',
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
-      body:    JSON.stringify({ refresh_token: refreshToken }),
+      body: JSON.stringify({ refresh_token: refreshToken }),
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -114,7 +293,6 @@
     return data;
   }
 
-  /* ── Kiểm tra session có hợp lệ không ── */
   async function verifySession(accessToken) {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${accessToken}` },
@@ -122,43 +300,287 @@
     return res.ok ? await res.json() : null;
   }
 
-  /* ── Khởi động ── */
-  async function init() {
-    const session = getSession();
+  // ── Toast ────────────────────────────────────────────────────────
+  function showToast(msg, type = 'info') {
+    const el   = document.getElementById('toast');
+    const icon = document.getElementById('toast-icon');
+    const msgEl = document.getElementById('toast-msg');
 
-    if (!session?.accessToken) {
-      window.location.href = '/login';
-      return;
-    }
+    const icons = {
+      success: `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-success-300" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>`,
+      error:   `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-danger-300" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg>`,
+      info:    `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-accent-300" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/></svg>`,
+    };
 
-    // Xác minh access token với Supabase
-    let user = await verifySession(session.accessToken);
+    icon.innerHTML = icons[type] || icons.info;
+    msgEl.textContent = msg;
+    el.classList.remove('hide');
 
-    // Nếu hết hạn, thử refresh
-    if (!user && session.refreshToken) {
-      const refreshed = await refreshSession(session.refreshToken);
-      if (refreshed) {
-        user = refreshed.user;
-      }
-    }
-
-    if (!user) {
-      clearSession();
-      window.location.href = '/login';
-      return;
-    }
-
-    // Hiển thị app
-    document.getElementById('user-email').textContent = user.email || '—';
-    document.getElementById('user-id').textContent    = user.id    || '—';
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.add('hide'), 3000);
   }
 
-  /* ── Logout ── */
+  // ── Modal ────────────────────────────────────────────────────────
+  function openDeleteModal(uuid, name) {
+    currentDeleteUuid = uuid;
+    currentDeleteName = name;
+    document.getElementById('modal-exam-name').textContent = `"${name}"`;
+    const overlay = document.getElementById('modal-overlay');
+    overlay.classList.remove('hide');
+    document.getElementById('modal-cancel').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.add('hide');
+    currentDeleteUuid = null;
+    currentDeleteName = null;
+  }
+
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-cancel').addEventListener('click', closeModal);
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // ── Tải danh sách exam ──────────────────────────────────────────
+  async function loadExams(token) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/exams?select=id,title,description,is_public,available_from,expires_at,duration_minutes&order=id.desc`,
+      {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        }
+      }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  // ── Xóa exam ────────────────────────────────────────────────────
+  async function deleteExam(uuid) {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/exams?id=eq.${uuid}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${currentAccessToken}`,
+        }
+      }
+    );
+    return res.ok;
+  }
+
+  document.getElementById('modal-confirm-delete').addEventListener('click', async () => {
+    if (!currentDeleteUuid) return;
+
+    const btn = document.getElementById('modal-confirm-delete');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Đang xóa...`;
+
+    const ok = await deleteExam(currentDeleteUuid);
+    btn.disabled = false;
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg> Xóa đề ôn`;
+    closeModal();
+
+    if (ok) {
+      showToast('Đã xóa đề ôn thành công.', 'success');
+      // Xóa card khỏi DOM
+      const card = document.querySelector(`[data-uuid="${currentDeleteUuid ?? ''}"]`);
+      if (card) card.remove();
+      // Cập nhật subtitle và kiểm tra empty
+      const remaining = document.querySelectorAll('#exam-list [data-uuid]').length;
+      updateSubtitle(remaining);
+      if (remaining === 0) {
+        document.getElementById('exam-list').classList.add('hidden');
+        document.getElementById('list-empty').classList.remove('hidden');
+      }
+    } else {
+      showToast('Không thể xóa đề ôn. Vui lòng thử lại.', 'error');
+    }
+  });
+
+  // ── Format trạng thái exam ──────────────────────────────────────
+  function getExamStatus(exam) {
+    const now = Date.now();
+    const from = exam.available_from ? new Date(exam.available_from).getTime() : null;
+    const to   = exam.expires_at     ? new Date(exam.expires_at).getTime()     : null;
+
+    if (!exam.is_public) return { label: 'Nháp', cls: 'bg-paper-100 text-ink-400 border-paper-300' };
+    if (from && now < from)  return { label: 'Sắp mở', cls: 'bg-warning-50 text-warning-500 border-warning-200' };
+    if (to && now > to)      return { label: 'Đã đóng', cls: 'bg-danger-50 text-danger-400 border-danger-200' };
+    return { label: '● Đang mở', cls: 'bg-success-50 text-success-500 border-success-200' };
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function updateSubtitle(count) {
+    const el = document.getElementById('subtitle');
+    if (count === 0) {
+      el.textContent = 'Chưa có đề ôn nào';
+    } else {
+      el.textContent = `${count} đề ôn`;
+    }
+  }
+
+  // ── Render card ─────────────────────────────────────────────────
+  function renderExamCard(exam) {
+    const status = getExamStatus(exam);
+    const durationText = exam.duration_minutes ? `${exam.duration_minutes} phút` : 'Không giới hạn';
+
+    const card = document.createElement('div');
+    card.className = 'exam-card bg-white border border-paper-200 rounded-[8px] shadow-paper card-hover';
+    card.setAttribute('data-uuid', exam.id);
+
+    card.innerHTML = `
+      <a
+        href="/editor?uuid=${exam.id}"
+        class="flex items-center gap-4 px-5 py-4 no-underline block"
+        aria-label="Mở đề ôn: ${exam.title}"
+      >
+        <!-- Icon -->
+        <div class="w-9 h-9 rounded-[6px] bg-accent-50 border border-accent-100 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px] text-accent-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+          </svg>
+        </div>
+
+        <!-- Info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <span class="text-sm font-semibold text-ink-700 truncate">${exam.title}</span>
+            <span class="inline-flex text-[11px] font-semibold uppercase tracking-[0.06em] px-2 py-0.5 rounded-[4px] border flex-shrink-0 ${status.cls}">${status.label}</span>
+          </div>
+          <div class="flex items-center gap-3 mt-1 flex-wrap">
+            ${exam.description
+              ? `<span class="text-xs text-ink-300 truncate max-w-[240px]">${exam.description}</span><span class="text-ink-200 text-xs hidden sm:inline">·</span>`
+              : ''
+            }
+            <span class="text-xs text-ink-300 flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+              ${durationText}
+            </span>
+            <span class="text-ink-200 text-xs hidden sm:inline">·</span>
+            <span class="text-xs text-ink-300 hidden sm:flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 9v7.5"/></svg>
+              ${formatDate(exam.expires_at)}
+            </span>
+          </div>
+        </div>
+
+        <!-- Chevron -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-ink-200 flex-shrink-0 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+        </svg>
+      </a>
+
+      <!-- Footer actions -->
+      <div class="border-t border-paper-100 px-5 py-2 flex items-center justify-end gap-1">
+        <!-- Copy share link -->
+        ${exam.is_public ? `
+        <button
+          data-action="copy"
+          data-uuid="${exam.id}"
+          title="Sao chép link làm bài"
+          class="w-8 h-8 flex items-center justify-center rounded-[6px] text-ink-300 hover:bg-paper-100 hover:text-accent-500 transition-colors duration-150"
+          aria-label="Sao chép link làm bài"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"/>
+          </svg>
+        </button>` : ''}
+        <!-- Delete -->
+        <button
+          data-action="delete"
+          data-uuid="${exam.id}"
+          data-name="${exam.title.replace(/"/g, '&quot;')}"
+          title="Xóa đề ôn"
+          class="w-8 h-8 flex items-center justify-center rounded-[6px] text-ink-300 hover:bg-danger-50 hover:text-danger-300 transition-colors duration-150"
+          aria-label="Xóa đề ôn"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+          </svg>
+        </button>
+      </div>
+    `;
+
+    return card;
+  }
+
+  // ── Event delegation cho các action buttons ──────────────────────
+  document.getElementById('exam-list').addEventListener('click', async e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    const uuid   = btn.dataset.uuid;
+
+    if (action === 'delete') {
+      openDeleteModal(uuid, btn.dataset.name);
+    }
+
+    if (action === 'copy') {
+      const link = `https://examalite.pages.dev/study?uuid=${uuid}`;
+      try {
+        await navigator.clipboard.writeText(link);
+        showToast('Đã sao chép link làm bài.', 'success');
+      } catch {
+        showToast('Không thể sao chép. Vui lòng thử lại.', 'error');
+      }
+    }
+  });
+
+  // ── Hiển thị danh sách ───────────────────────────────────────────
+  function renderExamList(exams) {
+    const listEl  = document.getElementById('exam-list');
+    const emptyEl = document.getElementById('list-empty');
+
+    document.getElementById('list-loading').classList.add('hidden');
+
+    updateSubtitle(exams.length);
+
+    if (exams.length === 0) {
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+
+    listEl.innerHTML = '';
+    exams.forEach(exam => listEl.appendChild(renderExamCard(exam)));
+    listEl.classList.remove('hidden');
+  }
+
+  function showListError(msg) {
+    document.getElementById('list-loading').classList.add('hidden');
+    const errEl = document.getElementById('list-error');
+    document.getElementById('error-msg').textContent = msg || 'Đã xảy ra lỗi khi tải đề ôn.';
+    errEl.classList.remove('hidden');
+    document.getElementById('subtitle').textContent = 'Không thể tải';
+  }
+
+  // Retry button
+  document.getElementById('btn-retry').addEventListener('click', async () => {
+    document.getElementById('list-error').classList.add('hidden');
+    document.getElementById('list-loading').classList.remove('hidden');
+    try {
+      const exams = await loadExams(currentAccessToken);
+      renderExamList(exams);
+    } catch (err) {
+      showListError(`Lỗi: ${err.message}`);
+    }
+  });
+
+  // ── Logout ───────────────────────────────────────────────────────
   document.getElementById('btn-logout').addEventListener('click', async () => {
     const session = getSession();
-    // Gọi Supabase logout để vô hiệu hóa token phía server
     if (session?.accessToken) {
       await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
         method:  'POST',
@@ -168,6 +590,52 @@
     clearSession();
     window.location.href = '/login';
   });
+
+  // ── Init ─────────────────────────────────────────────────────────
+  async function init() {
+    const session = getSession();
+
+    if (!session?.accessToken) {
+      window.location.href = '/login';
+      return;
+    }
+
+    let user = await verifySession(session.accessToken);
+
+    if (!user && session.refreshToken) {
+      const refreshed = await refreshSession(session.refreshToken);
+      if (refreshed) {
+        user = refreshed.user;
+        currentAccessToken = refreshed.access_token;
+      }
+    } else {
+      currentAccessToken = session.accessToken;
+    }
+
+    if (!user) {
+      clearSession();
+      window.location.href = '/login';
+      return;
+    }
+
+    // Cập nhật UI user
+    const email   = user.email || '—';
+    const initial = email.charAt(0).toUpperCase();
+    document.getElementById('user-email-top').textContent = email;
+    document.getElementById('user-initial').textContent   = initial;
+
+    // Hiển thị app
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+
+    // Tải danh sách exam
+    try {
+      const exams = await loadExams(currentAccessToken);
+      renderExamList(exams);
+    } catch (err) {
+      showListError(`Không thể kết nối đến máy chủ. (${err.message})`);
+    }
+  }
 
   init();
 </script>

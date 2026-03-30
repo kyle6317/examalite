@@ -120,6 +120,40 @@
   const SUPABASE_URL      = 'https://hmzowbcufyobdfwdfcaw.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtem93YmN1ZnlvYmRmd2RmY2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Nzk1OTQsImV4cCI6MjA5MDM1NTU5NH0.EXsVJ1vQjkPB8YgcHJjTpRvDWBzlKqI8tkD56I3eKlk';
 
+  /* ── Nếu đã đăng nhập và token còn hiệu lực, chuyển sang app ── */
+  (async function checkExistingSession() {
+    const accessToken  = localStorage.getItem('sb_access_token');
+    const refreshToken = localStorage.getItem('sb_refresh_token');
+    if (!accessToken) return;
+
+    // Kiểm tra access token với Supabase
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${accessToken}` },
+    }).catch(() => null);
+
+    if (res?.ok) {
+      window.location.replace('/app');
+      return;
+    }
+
+    // Access token hết hạn — thử refresh
+    if (refreshToken) {
+      const rRes = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body:    JSON.stringify({ refresh_token: refreshToken }),
+      }).catch(() => null);
+
+      if (rRes?.ok) {
+        const data = await rRes.json();
+        localStorage.setItem('sb_access_token',  data.access_token);
+        localStorage.setItem('sb_refresh_token', data.refresh_token);
+        localStorage.setItem('sb_user',          JSON.stringify(data.user));
+        window.location.replace('/app');
+      }
+    }
+  })();
+
   /* ── Xử lý fragment từ Supabase magic link ── */
   (function handleFragment() {
     const hash = window.location.hash;

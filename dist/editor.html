@@ -653,19 +653,38 @@ async function loadExam(uuid) {
     if (signedRes.ok) {
       const signedData = await signedRes.json();
       // Supabase trả về "signedUrl" (chữ thường) ở phiên bản mới, "signedURL" ở cũ
-      // signedPath có dạng: /storage/v1/object/sign/exams/...?token=...
-      const signedPath = signedData.signedUrl ?? signedData.signedURL;
+      let signedPath = signedData.signedUrl ?? signedData.signedURL;
+
       if (signedPath) {
-        // Dùng URL constructor để tránh double-slash hay path sai:
-        // signedPath đã có /storage/v1/... nên chỉ ghép origin (scheme + host)
-        const origin = new URL(SUPABASE_URL).origin; // "https://xxx.supabase.co"
-        const fullUrl = origin + signedPath;         // "https://xxx.supabase.co/storage/v1/object/sign/...?token=..."
+        let fullUrl;
+        
+        // 1. Kiểm tra nếu signedPath đã là một URL tuyệt đối (có http...), dùng luôn
+        if (signedPath.startsWith('http')) {
+          fullUrl = signedPath;
+        } else {
+          // 2. Nếu là path tương đối, đảm bảo đường dẫn bắt đầu bằng /storage/v1
+          if (!signedPath.startsWith('/storage/v1')) {
+            // Đảm bảo có dấu / ở đầu trước khi nối chuỗi
+            const cleanPath = signedPath.startsWith('/') ? signedPath : '/' + signedPath;
+            signedPath = '/storage/v1' + cleanPath;
+          }
+          
+          const origin = new URL(SUPABASE_URL).origin;
+          fullUrl = origin + signedPath;
+        }
+
+        console.log("Fetching ZIP from:", fullUrl); // Debug đường dẫn thực tế
+
         const zipRes = await fetch(fullUrl, {
-          headers: { 'apikey': SUPABASE_KEY }        // token đã trong query string, chỉ cần apikey
+          headers: { 'apikey': SUPABASE_KEY }
         });
+
         if (zipRes.ok) {
           const zipBlob = await zipRes.arrayBuffer();
           await parseZip(zipBlob);
+        } else {
+          console.error("Zip fetch failed:", zipRes.status);
+          throw new Error('Không thể tải file dữ liệu (ZIP)');
         }
       }
     }

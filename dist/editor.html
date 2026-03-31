@@ -653,12 +653,15 @@ async function loadExam(uuid) {
     if (signedRes.ok) {
       const signedData = await signedRes.json();
       // Supabase trả về "signedUrl" (chữ thường) ở phiên bản mới, "signedURL" ở cũ
+      // signedPath có dạng: /storage/v1/object/sign/exams/...?token=...
       const signedPath = signedData.signedUrl ?? signedData.signedURL;
       if (signedPath) {
-        // signedPath là đường dẫn tương đối, ghép với SUPABASE_URL để có URL đầy đủ
-        // Token đã nằm trong query string nên chỉ cần apikey header, không cần Authorization
-        const zipRes = await fetch(SUPABASE_URL + signedPath, {
-          headers: { 'apikey': SUPABASE_KEY }
+        // Dùng URL constructor để tránh double-slash hay path sai:
+        // signedPath đã có /storage/v1/... nên chỉ ghép origin (scheme + host)
+        const origin = new URL(SUPABASE_URL).origin; // "https://xxx.supabase.co"
+        const fullUrl = origin + signedPath;         // "https://xxx.supabase.co/storage/v1/object/sign/...?token=..."
+        const zipRes = await fetch(fullUrl, {
+          headers: { 'apikey': SUPABASE_KEY }        // token đã trong query string, chỉ cần apikey
         });
         if (zipRes.ok) {
           const zipBlob = await zipRes.arrayBuffer();

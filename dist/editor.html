@@ -651,11 +651,19 @@ async function loadExam(uuid) {
       body: JSON.stringify({ expiresIn: 300 })
     });
     if (signedRes.ok) {
-      const { signedURL } = await signedRes.json();
-      const zipRes = await fetch(SUPABASE_URL + signedURL);
-      if (zipRes.ok) {
-        const zipBlob = await zipRes.arrayBuffer();
-        await parseZip(zipBlob);
+      const signedData = await signedRes.json();
+      // Supabase trả về "signedUrl" (chữ thường) ở phiên bản mới, "signedURL" ở cũ
+      const signedPath = signedData.signedUrl ?? signedData.signedURL;
+      if (signedPath) {
+        // signedPath là đường dẫn tương đối, ghép với SUPABASE_URL để có URL đầy đủ
+        // Token đã nằm trong query string nên chỉ cần apikey header, không cần Authorization
+        const zipRes = await fetch(SUPABASE_URL + signedPath, {
+          headers: { 'apikey': SUPABASE_KEY }
+        });
+        if (zipRes.ok) {
+          const zipBlob = await zipRes.arrayBuffer();
+          await parseZip(zipBlob);
+        }
       }
     }
 

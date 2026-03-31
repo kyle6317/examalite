@@ -211,7 +211,7 @@
       <button id="btn-save" onclick="saveExam()"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-accent-500 hover:bg-accent-600 text-white transition-base text-sm font-medium">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/>
         </svg>
         <span class="topbar-label" id="save-label">Lưu</span>
       </button>
@@ -226,6 +226,28 @@
 
     <!-- Right -->
     <div class="flex items-center gap-2 flex-shrink-0">
+      <!-- Upload button -->
+      <button id="btn-upload" onclick="document.getElementById('file-input').click()"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-paper-300 bg-paper-50 hover:bg-paper-100 transition-base text-sm font-medium text-ink-500"
+              title="Upload file">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+        </svg>
+        <span class="topbar-label">Upload</span>
+      </button>
+      <input type="file" id="file-input" accept=".docx,.json,.zip" class="hidden" onchange="handleFileUpload(this.files[0])">
+      
+      <!-- Download button -->
+      <button id="btn-download" onclick="downloadExamZip()"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-paper-300 bg-paper-50 hover:bg-paper-100 transition-base text-sm font-medium text-ink-500"
+              title="Tải xuống ZIP">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+        </svg>
+        <span class="topbar-label">Download</span>
+      </button>
+      
+      <!-- Share button -->
       <button id="btn-share" onclick="openShareModal()"
               class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-paper-300 bg-paper-50 hover:bg-paper-100 transition-base text-sm font-medium text-ink-500"
               title="Chia sẻ">
@@ -314,33 +336,6 @@
       </div>
     </section>
 
-    <!-- ─── SECTION: IMPORT DOCX ─── -->
-    <section class="mb-8">
-      <div class="flex items-center gap-2 mb-4">
-        <span class="section-label">Nhập nhanh</span>
-        <div class="flex-1 h-px bg-paper-200"></div>
-      </div>
-
-      <div class="upload-zone" id="docx-dropzone"
-           ondragover="handleDocxDragOver(event)" ondragleave="handleDocxDragLeave(event)"
-           ondrop="handleDocxDrop(event)" onclick="document.getElementById('docx-file-input').click()">
-        <input type="file" id="docx-file-input" accept=".docx" class="hidden" onchange="handleDocxFile(this.files[0])">
-        <div class="flex flex-col items-center gap-2 pointer-events-none">
-          <svg class="w-8 h-8 text-ink-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
-          </svg>
-          <div>
-            <p class="text-sm font-medium text-ink-500">Kéo thả file DOCX vào đây</p>
-            <p class="text-xs text-ink-300 mt-1">hoặc click để chọn file · Hỗ trợ parse trắc nghiệm 1 đáp án & Đúng/Sai</p>
-          </div>
-        </div>
-      </div>
-      <div id="docx-status" class="hidden mt-3 text-sm text-ink-400 flex items-center gap-2">
-        <div class="spinner"></div>
-        <span>Đang phân tích file...</span>
-      </div>
-    </section>
-
     <!-- ─── SECTION: NỘI DUNG BÀI ÔN ─── -->
     <section>
       <div class="flex items-center gap-2 mb-4">
@@ -360,7 +355,7 @@
           </svg>
         </div>
         <h3 class="font-serif text-lg font-bold text-ink-600 mb-1">Chưa có câu hỏi nào</h3>
-        <p class="text-sm text-ink-300 max-w-xs">Thêm nhóm câu hỏi để bắt đầu soạn đề, hoặc import từ file DOCX ở trên.</p>
+        <p class="text-sm text-ink-300 max-w-xs">Thêm nhóm câu hỏi để bắt đầu soạn đề, hoặc import từ file bằng nút Upload ở trên.</p>
       </div>
 
       <!-- Add group button -->
@@ -1570,32 +1565,36 @@ function refreshMediaPreviews(fieldKey, gi, qi, ci) {
 }
 
 // ═══════════════════════════════════════════
-// DOCX IMPORT  (dùng docx-parser.js)
+// FILE UPLOAD & DOWNLOAD
 // ═══════════════════════════════════════════
-// window._parseDocx được gán bởi <script type="module"> bên dưới
-// sau khi import { parseDocx } from './docx-parser.js'
 
-function handleDocxDragOver(e) {
-  e.preventDefault();
-  document.getElementById('docx-dropzone').classList.add('drag-active');
-}
-function handleDocxDragLeave(e) {
-  document.getElementById('docx-dropzone').classList.remove('drag-active');
-}
-function handleDocxDrop(e) {
-  e.preventDefault();
-  document.getElementById('docx-dropzone').classList.remove('drag-active');
-  const file = e.dataTransfer.files[0];
-  if (file && file.name.endsWith('.docx')) handleDocxFile(file);
-  else showToast('error', 'Vui lòng chọn file .docx');
+async function handleFileUpload(file) {
+  if (!file) return;
+  
+  const ext = file.name.split('.').pop().toLowerCase();
+  
+  if (ext === 'docx') {
+    await handleDocxFile(file);
+  } else if (ext === 'json') {
+    await handleJsonFile(file);
+  } else if (ext === 'zip') {
+    await handleZipFile(file);
+  } else {
+    showToast('error', 'Định dạng file không được hỗ trợ. Chỉ chấp nhận .docx, .json, .zip');
+  }
 }
 
 async function handleDocxFile(file) {
   if (!file) return;
 
-  const status = document.getElementById('docx-status');
-  status.classList.remove('hidden');
-  status.querySelector('span').textContent = 'Đang phân tích file...';
+  // Đổi nút Upload thành loading state
+  const uploadBtn = document.getElementById('btn-upload');
+  const originalHTML = uploadBtn.innerHTML;
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = `
+    <div class="spinner"></div>
+    <span class="topbar-label">Đang xử lý...</span>
+  `;
 
   try {
     // Chờ module load xong (tối đa 5 giây)
@@ -1650,9 +1649,129 @@ async function handleDocxFile(file) {
     showToast('success', `Đã import ${totalQ} câu hỏi từ ${file.name}`);
 
   } catch (err) {
+    console.error('DOCX parse error:', err);
     showToast('error', 'Lỗi parse file: ' + err.message);
   } finally {
-    status.classList.add('hidden');
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = originalHTML;
+    // Reset input để có thể upload lại cùng file
+    document.getElementById('file-input').value = '';
+  }
+}
+
+async function handleJsonFile(file) {
+  const uploadBtn = document.getElementById('btn-upload');
+  const originalHTML = uploadBtn.innerHTML;
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = `
+    <div class="spinner"></div>
+    <span class="topbar-label">Đang xử lý...</span>
+  `;
+
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    
+    if (!data.groups || !Array.isArray(data.groups)) {
+      throw new Error('File JSON không đúng định dạng exam.json');
+    }
+
+    // Remap IDs
+    let totalQ = 0;
+    data.groups.forEach(g => {
+      g.id = newGid();
+      (g.questions || []).forEach(q => {
+        q.id = newQid();
+        (q.choices || []).forEach(c => {
+          if (c.id !== 'true' && c.id !== 'false') {
+            const oldId = c.id;
+            c.id = newCid();
+            if (q.answer === oldId) q.answer = c.id;
+            if (Array.isArray(q.answer)) {
+              q.answer = q.answer.map(a => a === oldId ? c.id : a);
+            }
+          }
+        });
+        totalQ++;
+      });
+    });
+
+    state.groups.push(...data.groups);
+    markContentDirty();
+    renderGroups();
+    showToast('success', `Đã import ${totalQ} câu hỏi từ ${file.name}`);
+
+  } catch (err) {
+    console.error('JSON parse error:', err);
+    showToast('error', 'Lỗi đọc file JSON: ' + err.message);
+  } finally {
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = originalHTML;
+    document.getElementById('file-input').value = '';
+  }
+}
+
+async function handleZipFile(file) {
+  showToast('info', 'Chức năng import ZIP đang được phát triển.');
+  document.getElementById('file-input').value = '';
+}
+
+async function downloadExamZip() {
+  try {
+    // Import JSZip dynamically
+    if (!window.JSZip) {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      document.head.appendChild(script);
+      await new Promise((resolve, reject) => {
+        script.onload = resolve;
+        script.onerror = reject;
+      });
+    }
+
+    const zip = new JSZip();
+    
+    // Add exam.json
+    const examData = {
+      groups: state.groups,
+    };
+    zip.file('exam.json', JSON.stringify(examData, null, 2));
+    
+    // Add media files from mediaMap
+    if (state.mediaMap && state.mediaMap.size > 0) {
+      const mediaFolder = zip.folder('media');
+      for (const [filename, mediaData] of state.mediaMap.entries()) {
+        mediaFolder.file(filename, mediaData.blob);
+      }
+    }
+    
+    // Add README
+    const readme = `# Exam Data Export
+    
+Exported: ${new Date().toLocaleString('vi-VN')}
+Title: ${state.config.title || 'Untitled'}
+
+Files:
+- exam.json: Exam structure and questions
+- media/: Images and media files referenced in the exam
+
+To import: Use the Upload button and select this ZIP file.
+`;
+    zip.file('README.txt', readme);
+    
+    // Generate and download
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `exam_${state.config.title || 'export'}_${Date.now()}.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('success', 'Đã tải xuống file ZIP');
+  } catch (err) {
+    console.error('ZIP download error:', err);
+    showToast('error', 'Lỗi tạo file ZIP: ' + err.message);
   }
 }
 

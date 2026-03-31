@@ -363,6 +363,38 @@
 
   // ── Xóa exam ────────────────────────────────────────────────────
   async function deleteExam(uuid) {
+    // Lấy thông tin user để tạo đường dẫn file
+    const session = getSession();
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      console.error('Không tìm thấy user ID');
+      return false;
+    }
+
+    // Bước 1: Xóa file zip trong Storage
+    const filePath = `${userId}/${uuid}.zip`;
+    try {
+      const storageRes = await fetch(
+        `${SUPABASE_URL}/storage/v1/object/exams/${filePath}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${currentAccessToken}`,
+          }
+        }
+      );
+      
+      // Chỉ log lỗi storage, không return false vì có thể file không tồn tại
+      if (!storageRes.ok) {
+        console.warn('Không thể xóa file zip (có thể file không tồn tại):', await storageRes.text());
+      }
+    } catch (err) {
+      console.warn('Lỗi khi xóa file zip:', err);
+    }
+
+    // Bước 2: Xóa record trong database
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/exams?id=eq.${uuid}`,
       {
@@ -373,6 +405,7 @@
         }
       }
     );
+    
     return res.ok;
   }
 

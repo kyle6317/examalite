@@ -534,6 +534,8 @@ let state = {
   // Snapshot for dirty comparison
   savedConfig: null,
   savedGroupsJson: null,
+  // DOCX import media map: Map<filename, {url, blob, mime}>
+  mediaMap: new Map(),
 };
 
 let groupIdCounter = 0;
@@ -1286,8 +1288,14 @@ function renderFillBlank(gi, qi, q) {
 function renderMediaZone(fieldKey, mediaArr) {
   const existingItems = (mediaArr || []).map((m, mi) => {
     if (m.type === 'image') {
+      // Nếu src là tên file (từ DOCX import), lấy object URL từ mediaMap
+      let imgSrc = m.src;
+      if (state.mediaMap && state.mediaMap.has(m.src)) {
+        const mediaData = state.mediaMap.get(m.src);
+        imgSrc = mediaData.url;
+      }
       return `<div class="media-item">
-        <img src="${escHtml(m.src)}" alt="${escHtml(m.alt||'')}">
+        <img src="${escHtml(imgSrc)}" alt="${escHtml(m.alt||'')}">
         <button class="remove-btn" onclick="removeMedia('${fieldKey}', ${mi})" title="Xóa">×</button>
       </div>`;
     }
@@ -1599,12 +1607,18 @@ async function handleDocxFile(file) {
     if (!window._parseDocx) throw new Error('Không thể tải docx-parser.js. Kiểm tra file có tồn tại cùng thư mục không.');
 
     const result = await window._parseDocx(file);
-    // result = { exam: { groups: [...] }, mediaMap: Map<filename, { url }> }
+    // result = { exam: { groups: [...] }, mediaMap: Map<filename, { url, blob, mime }> }
 
     const importedGroups = result.exam?.groups || [];
     if (!importedGroups.length || importedGroups.every(g => !g.questions?.length)) {
       showToast('info', 'Không tìm thấy câu hỏi nào trong file. Kiểm tra định dạng.');
       return;
+    }
+
+    // Lưu mediaMap vào state để sử dụng khi render
+    if (result.mediaMap) {
+      state.mediaMap = result.mediaMap;
+      console.log('Loaded media:', state.mediaMap.size, 'images');
     }
 
     // Remap id để tránh xung đột với các câu hỏi đang có

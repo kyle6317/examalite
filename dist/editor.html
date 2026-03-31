@@ -461,33 +461,52 @@
 const SUPABASE_URL = 'https://hmzowbcufyobdfwdfcaw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtem93YmN1ZnlvYmRmd2RmY2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Nzk1OTQsImV4cCI6MjA5MDM1NTU5NH0.EXsVJ1vQjkPB8YgcHJjTpRvDWBzlKqI8tkD56I3eKlk';
 
-const sb = {
-  headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-  async getSession() {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: this.headers });
-    return r.ok ? r.json() : null;
-  },
-  async getAccessToken() {
-    // Read from localStorage (Supabase stores auth here)
-    for (const key of Object.keys(localStorage)) {
-      if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
-        try {
-          const data = JSON.parse(localStorage.getItem(key));
-          return data?.access_token || null;
-        } catch {}
-      }
-    }
-    return null;
-  },
-  async authHeaders() {
-    const token = await this.getAccessToken();
+// ── Session helpers (cùng pattern với app.html) ──────────────────
+function getSession() {
+  try {
     return {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${token || SUPABASE_KEY}`,
-      'Content-Type': 'application/json'
+      accessToken:  localStorage.getItem('sb_access_token'),
+      refreshToken: localStorage.getItem('sb_refresh_token'),
+      user:         JSON.parse(localStorage.getItem('sb_user') || 'null'),
     };
-  }
-};
+  } catch { return null; }
+}
+
+function clearSession() {
+  ['sb_access_token','sb_refresh_token','sb_user'].forEach(k => localStorage.removeItem(k));
+}
+
+async function refreshSession(refreshToken) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  localStorage.setItem('sb_access_token',  data.access_token);
+  localStorage.setItem('sb_refresh_token', data.refresh_token);
+  localStorage.setItem('sb_user',          JSON.stringify(data.user));
+  return data;
+}
+
+async function verifySession(accessToken) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${accessToken}` },
+  });
+  return res.ok ? await res.json() : null;
+}
+
+// Token hiện tại (được gán sau khi init xác thực xong)
+let currentAccessToken = null;
+
+function authHeaders(token) {
+  return {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${token || currentAccessToken}`,
+    'Content-Type': 'application/json',
+  };
+}
 
 // ═══════════════════════════════════════════
 // STATE
@@ -529,6 +548,36 @@ function newCid() { return 'c' + (++choiceIdCounter); }
 // INIT
 // ═══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  // ── Xác thực session (cùng flow với app.html) ──
+  const session = getSession();
+
+  if (!session?.accessToken) {
+    window.location.href = '/login';
+    return;
+  }
+
+  let user = await verifySession(session.accessToken);
+
+  if (!user && session.refreshToken) {
+    const refreshed = await refreshSession(session.refreshToken);
+    if (refreshed) {
+      user = refreshed.user;
+      currentAccessToken = refreshed.access_token;
+    }
+  } else if (user) {
+    currentAccessToken = session.accessToken;
+  }
+
+  if (!user) {
+    clearSession();
+    window.location.href = '/login';
+    return;
+  }
+
+  // Lưu userId vào state ngay từ đầu
+  state.userId = user.id;
+
+  // ── Load exam hoặc tạo mới ──
   const params = new URLSearchParams(location.search);
   const uuid = params.get('uuid');
 
@@ -536,6 +585,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     state.examUuid = uuid;
     await loadExam(uuid);
   } else {
+    document.getElementById('loading-state').classList.add('hidden');
+    document.getElementById('editor-content').classList.remove('hidden');
     // New exam — set defaults
     const now = new Date();
     const later = new Date(now.getTime() + 7 * 24 * 3600 * 1000);
@@ -566,7 +617,7 @@ async function loadExam(uuid) {
   document.getElementById('editor-content').classList.add('hidden');
 
   try {
-    const headers = await sb.authHeaders();
+    const headers = authHeaders();
 
     // Load metadata from DB
     const metaRes = await fetch(`${SUPABASE_URL}/rest/v1/exams?id=eq.${uuid}&select=*`, { headers });
@@ -711,18 +762,9 @@ async function saveExam() {
   label.innerHTML = '<span class="spinner inline-block w-3 h-3"></span>';
 
   try {
-    const headers = await sb.authHeaders();
-    const token = await sb.getAccessToken();
-    if (!token) { showToast('error', 'Bạn chưa đăng nhập.'); return; }
-
-    // Get user id
-    if (!state.userId) {
-      const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
-      });
-      const userData = await userRes.json();
-      state.userId = userData.id;
-    }
+    const token = currentAccessToken;
+    if (!token) { showToast('error', 'Bạn chưa đăng nhập.'); btn.disabled = false; label.textContent = origLabel; return; }
+    const headers = authHeaders(token);
 
     const configPayload = {
       title,
@@ -1619,7 +1661,7 @@ async function togglePublic(val) {
   // Auto-save public state if exam exists
   if (state.examUuid) {
     try {
-      const headers = await sb.authHeaders();
+      const headers = authHeaders();
       await fetch(`${SUPABASE_URL}/rest/v1/exams?id=eq.${state.examUuid}`, {
         method: 'PATCH', headers,
         body: JSON.stringify({ is_public: val })

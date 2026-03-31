@@ -57,6 +57,15 @@
     }
     input.error, textarea.error { border-color: #d05f5f; box-shadow: 0 0 0 3px rgba(208,95,95,0.12); }
 
+    /* Textarea auto-resize */
+    textarea.auto-resize-textarea {
+      min-height: 60px;
+      line-height: 1.5;
+    }
+    textarea.auto-resize-textarea:focus {
+      min-height: 80px;
+    }
+
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #f4f2ec; }
@@ -1002,6 +1011,13 @@ function renderGroups() {
   state.groups.forEach((group, gi) => {
     container.appendChild(createGroupCard(group, gi));
   });
+
+  // Auto-resize all textareas after render
+  setTimeout(() => {
+    document.querySelectorAll('.auto-resize-textarea').forEach(textarea => {
+      autoResize(textarea);
+    });
+  }, 0);
 }
 
 function createGroupCard(group, gi) {
@@ -1043,9 +1059,9 @@ function createGroupCard(group, gi) {
       <!-- Context -->
       <div class="px-4 pt-4 pb-2">
         <label class="section-label block mb-2">Dữ kiện chung <span class="text-ink-200 font-normal normal-case tracking-normal">(tùy chọn)</span></label>
-        <textarea rows="2" placeholder="Đoạn văn, bảng số liệu dùng chung cho cả nhóm... (Markdown hỗ trợ)"
-                  oninput="updateGroupField(${gi}, 'context', this.value)"
-                  class="w-full border border-paper-300 rounded px-3 py-2 text-sm text-ink-500 bg-white resize-vertical transition-base"
+        <textarea rows="3" placeholder="Đoạn văn, bảng số liệu dùng chung cho cả nhóm... (Markdown hỗ trợ)"
+                  oninput="updateGroupField(${gi}, 'context', this.value); autoResize(this)"
+                  class="w-full border border-paper-300 rounded px-3 py-2 text-sm text-ink-500 bg-white resize-vertical transition-base auto-resize-textarea"
         >${escHtml(group.context || '')}</textarea>
         ${renderMediaZone(`g${gi}_context`, group.context_media || [])}
       </div>
@@ -1143,9 +1159,9 @@ function createQuestionCardHTML(gi, qi, q) {
         <!-- Prompt -->
         <div>
           <label class="section-label block mb-1.5">Câu hỏi</label>
-          <textarea rows="2" placeholder="Nhập nội dung câu hỏi... (Markdown hỗ trợ)"
-                    oninput="updateQuestionField(${gi}, ${qi}, 'prompt', this.value)"
-                    class="w-full border border-paper-300 rounded px-3 py-2 text-sm text-ink-500 bg-white resize-vertical transition-base"
+          <textarea rows="3" placeholder="Nhập nội dung câu hỏi... (Markdown hỗ trợ)"
+                    oninput="updateQuestionField(${gi}, ${qi}, 'prompt', this.value); autoResize(this)"
+                    class="w-full border border-paper-300 rounded px-3 py-2 text-sm text-ink-500 bg-white resize-vertical transition-base auto-resize-textarea"
           >${escHtml(q.prompt || '')}</textarea>
           ${renderMediaZone(`g${gi}_q${qi}_prompt`, q.prompt_media || [])}
         </div>
@@ -1189,9 +1205,10 @@ function renderChoices(gi, qi, q, multi) {
                 ${isCorrect ? `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>` : letter}
               </button>
               <div class="flex-1 min-w-0">
-                <textarea rows="1" placeholder="Nội dung phương án..."
+                <textarea rows="2" placeholder="Nội dung phương án..."
                           oninput="updateChoiceText(${gi}, ${qi}, ${ci}, this.value); autoResize(this)"
-                          class="w-full border border-paper-200 rounded px-2 py-1.5 text-sm text-ink-500 bg-white resize-none overflow-hidden transition-base"
+                          class="w-full border border-paper-200 rounded px-2 py-1.5 text-sm text-ink-500 bg-white resize-none overflow-hidden transition-base auto-resize-textarea"
+                          style="min-height: 38px;"
                 >${escHtml(c.text || '')}</textarea>
                 ${renderMediaZone(`g${gi}_q${qi}_c${ci}`, c.media || [])}
               </div>
@@ -1250,9 +1267,10 @@ function renderFillText(gi, qi, q) {
   return `
     <div>
       <label class="section-label block mb-1.5">Đáp án (từ/cụm từ)</label>
-      <input type="text" value="${escHtml(q.answer || '')}" placeholder="Nhập đáp án..."
-             oninput="updateQuestionField(${gi}, ${qi}, 'answer', this.value); markContentDirty()"
-             class="w-full border border-paper-300 rounded px-3 py-2 text-sm text-ink-500 bg-white transition-base">
+      <textarea rows="1" placeholder="Nhập đáp án..."
+             oninput="updateQuestionField(${gi}, ${qi}, 'answer', this.value); markContentDirty(); autoResize(this)"
+             class="w-full border border-paper-300 rounded px-3 py-2 text-sm text-ink-500 bg-white transition-base resize-none overflow-hidden"
+             style="min-height: 42px;">${escHtml(q.answer || '')}</textarea>
       <p class="text-xs text-ink-300 mt-1">So sánh không phân biệt hoa thường, trim khoảng trắng</p>
     </div>
   `;
@@ -1266,12 +1284,12 @@ function renderFillBlank(gi, qi, q) {
       <label class="section-label block mb-1.5">Đáp án cho từng chỗ trống <span class="text-ink-200 font-normal normal-case tracking-normal">(dùng <code class="blank-preview">___</code> trong câu hỏi)</span></label>
       <div class="space-y-1.5" id="blank-answers-${gi}-${qi}">
         ${Array.from({length: Math.max(blankCount, answers.length, 1)}, (_, i) => `
-          <div class="flex items-center gap-2">
-            <span class="text-xs text-ink-300 font-mono w-5 flex-shrink-0">[${i+1}]</span>
-            <input type="text" value="${escHtml(answers[i] || '')}"
-                   placeholder="Đáp án chỗ trống ${i+1}..."
-                   oninput="updateBlankAnswer(${gi}, ${qi}, ${i}, this.value)"
-                   class="flex-1 border border-paper-300 rounded px-3 py-1.5 text-sm text-ink-500 bg-white transition-base">
+          <div class="flex items-start gap-2">
+            <span class="text-xs text-ink-300 font-mono w-5 flex-shrink-0 pt-2">[${i+1}]</span>
+            <textarea rows="1" placeholder="Đáp án chỗ trống ${i+1}..."
+                   oninput="updateBlankAnswer(${gi}, ${qi}, ${i}, this.value); autoResize(this)"
+                   class="flex-1 border border-paper-300 rounded px-3 py-1.5 text-sm text-ink-500 bg-white transition-base resize-none overflow-hidden"
+                   style="min-height: 38px;">${escHtml(answers[i] || '')}</textarea>
           </div>
         `).join('')}
       </div>

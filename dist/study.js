@@ -59,7 +59,7 @@ async function fetchExamMetadata(uuid) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
             },
-            body: JSON.stringify({ exam_uuid: uuid })
+            body: JSON.stringify({ exam_id: uuid })
         });
         
         if (!response.ok) {

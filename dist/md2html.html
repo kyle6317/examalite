@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exama — Markdown Converter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Design Tokens ─────────────────────────────────────────────── */
+    :root {
+      --color-paper-50:  #faf9f6;
+      --color-paper-100: #f4f2ec;
+      --color-paper-200: #e8e4d9;
+      --color-paper-300: #d6d0c4;
+
+      --color-ink-100: #e0ddd7;
+      --color-ink-200: #b8b3a8;
+      --color-ink-300: #8c8679;
+      --color-ink-400: #5e5a52;
+      --color-ink-500: #3a3731;
+      --color-ink-600: #27251f;
+      --color-ink-700: #1a1814;
+
+      --color-accent-50:  #f0f4f8;
+      --color-accent-100: #d9e5f0;
+      --color-accent-200: #adc5df;
+      --color-accent-300: #7aa3c8;
+      --color-accent-400: #4e84b4;
+      --color-accent-500: #2d6899;
+      --color-accent-600: #1f5280;
+      --color-accent-700: #153d60;
+
+      --color-success-50:  #f0f7f0;
+      --color-success-200: #a0cfa0;
+      --color-success-300: #5fa85f;
+      --color-success-500: #256825;
+
+      --color-warning-50:  #fdf8ed;
+      --color-warning-200: #eecf88;
+      --color-warning-300: #d9a93a;
+      --color-warning-500: #8f6a14;
+
+      --color-danger-50:  #fdf0f0;
+      --color-danger-200: #e8a0a0;
+      --color-danger-300: #d05f5f;
+      --color-danger-500: #8a2020;
+
+      --font-serif: 'Noto Serif', Georgia, serif;
+      --font-sans:  'DM Sans', system-ui, sans-serif;
+      --font-mono:  ui-monospace, 'Cascadia Code', 'Courier New', monospace;
+
+      --shadow-paper:    0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06);
+      --shadow-paper-md: 0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08);
+      --shadow-paper-lg: 0 8px 20px 0 rgba(58,55,49,0.12), 0 2px 6px -1px rgba(58,55,49,0.08);
+      --shadow-focus:    0 0 0 3px rgba(77,132,180,0.14);
+
+      --radius-sm:   4px;
+      --radius-base: 6px;
+      --radius-md:   8px;
+      --radius-lg:   12px;
+    }
+
+    /* ── Reset & Base ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--color-ink-500);
+      background-color: var(--color-paper-50);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+      min-height: 100vh;
+    }
+
+    /* ── App Shell ──────────────────────────────────────────────────── */
+    .app-header {
+      background: #fff;
+      border-bottom: 1px solid var(--color-paper-200);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--shadow-paper);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-header .logo {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-ink-700);
+      letter-spacing: -0.02em;
+    }
+
+    .app-header .logo span {
+      color: var(--color-accent-500);
+    }
+
+    .app-header .divider {
+      width: 1px;
+      height: 20px;
+      background: var(--color-paper-300);
+    }
+
+    .app-header .subtitle {
+      font-size: 13px;
+      color: var(--color-ink-300);
+      font-weight: 400;
+    }
+
+    .page-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+
+    /* ── Card ───────────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border: 1px solid var(--color-paper-200);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-paper);
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--color-paper-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-ink-600);
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    /* ── Section Label ──────────────────────────────────────────────── */
+    .section-label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--color-ink-300);
+      margin-bottom: 8px;
+    }
+
+    /* ── Upload Zone ────────────────────────────────────────────────── */
+    .upload-zone {
+      border: 2px dashed var(--color-paper-300);
+      border-radius: var(--radius-lg);
+      background: var(--color-paper-50);
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: var(--color-accent-300);
+      background: var(--color-accent-50);
+    }
+
+    .upload-zone.dragover {
+      border-color: var(--color-accent-400);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 16px;
+      color: var(--color-ink-200);
+    }
+
+    .upload-zone h3 {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-ink-600);
+      margin-bottom: 6px;
+    }
+
+    .upload-zone p {
+      font-size: 13px;
+      color: var(--color-ink-300);
+    }
+
+    .upload-zone .accent-link {
+      color: var(--color-accent-500);
+      font-weight: 500;
+    }
+
+    /* ── File Info ──────────────────────────────────────────────────── */
+    .file-info {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--color-accent-50);
+      border: 1px solid var(--color-accent-200);
+      border-radius: var(--radius-base);
+      margin-top: 16px;
+    }
+
+    .file-info.visible { display: flex; }
+
+    .file-info-icon {
+      color: var(--color-accent-500);
+      flex-shrink: 0;
+    }
+
+    .file-info-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-ink-600);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-info-size {
+      font-size: 12px;
+      color: var(--color-ink-300);
+      flex-shrink: 0;
+    }
+
+    /* ── Buttons ────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      border-radius: var(--radius-base);
+      transition: background 0.12s ease, box-shadow 0.12s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+    .btn-primary {
+      background: var(--color-accent-500);
+      color: #fff;
+      padding: 9px 20px;
+      font-size: 14px;
+    }
+    .btn-primary:hover { background: var(--color-accent-600); }
+    .btn-primary:active { background: var(--color-accent-700); }
+
+    .btn-secondary {
+      background: var(--color-paper-100);
+      color: var(--color-ink-500);
+      border: 1px solid var(--color-paper-300);
+      padding: 9px 16px;
+      font-size: 14px;
+    }
+    .btn-secondary:hover { background: var(--color-paper-200); }
+
+    .btn-success {
+      background: var(--color-success-50);
+      color: var(--color-success-500);
+      border: 1px solid var(--color-success-200);
+      padding: 9px 20px;
+      font-size: 14px;
+    }
+    .btn-success:hover { background: var(--color-success-200); }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-base);
+      background: transparent;
+      border: 1px solid var(--color-paper-300);
+      color: var(--color-ink-400);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .btn-icon:hover { background: var(--color-paper-100); color: var(--color-ink-600); }
+
+    /* ── Action Bar ─────────────────────────────────────────────────── */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Alert ──────────────────────────────────────────────────────── */
+    .alert {
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-base);
+      font-size: 14px;
+      margin-top: 16px;
+    }
+    .alert.visible { display: flex; }
+    .alert-icon { flex-shrink: 0; margin-top: 1px; }
+
+    .alert-success {
+      background: var(--color-success-50);
+      border: 1px solid var(--color-success-200);
+      color: var(--color-success-500);
+    }
+    .alert-danger {
+      background: var(--color-danger-50);
+      border: 1px solid var(--color-danger-200);
+      color: var(--color-danger-500);
+    }
+    .alert-info {
+      background: var(--color-accent-50);
+      border: 1px solid var(--color-accent-200);
+      color: var(--color-accent-700);
+    }
+
+    /* ── Progress ───────────────────────────────────────────────────── */
+    .progress-bar-wrap {
+      display: none;
+      margin-top: 16px;
+    }
+    .progress-bar-wrap.visible { display: block; }
+    .progress-track {
+      height: 4px;
+      background: var(--color-paper-200);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--color-accent-500);
+      border-radius: var(--radius-full);
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+    .progress-label {
+      font-size: 12px;
+      color: var(--color-ink-300);
+      margin-top: 6px;
+    }
+
+    /* ── Preview Card ───────────────────────────────────────────────── */
+    #preview-section {
+      display: none;
+      margin-top: 32px;
+    }
+    #preview-section.visible { display: block; }
+
+    .preview-iframe {
+      width: 100%;
+      border: 1px solid var(--color-paper-200);
+      border-radius: var(--radius-md);
+      background: #fff;
+      min-height: 400px;
+      box-shadow: var(--shadow-paper);
+    }
+
+    /* ── Badge ──────────────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+    }
+    .badge-success {
+      background: var(--color-success-50);
+      color: var(--color-success-500);
+      border: 1px solid var(--color-success-200);
+    }
+
+    /* ── Step Indicator ─────────────────────────────────────────────── */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 32px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--color-ink-300);
+      font-weight: 500;
+    }
+
+    .step.active { color: var(--color-accent-500); }
+    .step.done { color: var(--color-success-300); }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step.done .step-num {
+      background: var(--color-success-300);
+      border-color: var(--color-success-300);
+      color: #fff;
+    }
+
+    .step.active .step-num {
+      background: var(--color-accent-500);
+      border-color: var(--color-accent-500);
+      color: #fff;
+    }
+
+    .step-connector {
+      flex: 1;
+      height: 1px;
+      background: var(--color-paper-300);
+      margin: 0 12px;
+      max-width: 60px;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .app-header { padding: 0 16px; }
+      .page-container { padding: 24px 16px 48px; }
+      .card-body { padding: 16px; }
+      .step-connector { max-width: 24px; }
+    }
+  </style>
+  <!-- Thêm thư viện marked để xử lý Markdown chính xác -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+  <!-- ── App Header ────────────────────────────────────────────── -->
+  <header class="app-header">
+    <span class="logo">Exam<span>a</span></span>
+    <div class="divider"></div>
+    <span class="subtitle">Markdown → HTML Converter</span>
+  </header>
+
+  <!-- ── Page ─────────────────────────────────────────────────── -->
+  <div class="page-container">
+
+    <!-- Steps -->
+    <div class="steps">
+      <div class="step active" id="step-1">
+        <div class="step-num">1</div>
+        <span>Upload File</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" id="step-2">
+        <div class="step-num">2</div>
+        <span>Convert</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" id="step-3">
+        <div class="step-num">3</div>
+        <span>Download</span>
+      </div>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Upload Markdown File</h2>
+      </div>
+      <div class="card-body">
+
+        <p class="section-label">File nguồn</p>
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" accept=".md,.markdown,.txt" id="file-input" />
+          <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12-3-3m0 0-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+          <h3>Kéo thả file vào đây</h3>
+          <p>hoặc <span class="accent-link">chọn file</span> từ máy tính của bạn</p>
+          <p style="margin-top:8px; font-size:12px;">Hỗ trợ: <code>.md</code> · <code>.markdown</code> · <code>.txt</code></p>
+        </div>
+
+        <div class="file-info" id="file-info">
+          <svg class="file-info-icon" width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+          <span class="file-info-name" id="file-name"></span>
+          <span class="file-info-size" id="file-size"></span>
+          <button class="btn-icon" id="clear-btn" title="Xóa file" aria-label="Xóa file">
+            <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="progress-bar-wrap" id="progress-wrap">
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <p class="progress-label" id="progress-label">Đang xử lý...</p>
+        </div>
+
+        <div class="alert alert-danger" id="alert-error">
+          <svg class="alert-icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <span id="alert-error-text">Đã xảy ra lỗi.</span>
+        </div>
+
+        <div class="alert alert-success" id="alert-success">
+          <svg class="alert-icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span id="alert-success-text">Chuyển đổi thành công.</span>
+        </div>
+
+        <div class="action-bar">
+          <div class="action-bar-left">
+            <button class="btn btn-primary" id="convert-btn" disabled>
+              <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+              </svg>
+              Chuyển đổi
+            </button>
+          </div>
+          <button class="btn btn-success" id="download-btn" style="display:none">
+            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Tải xuống HTML
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div id="preview-section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Xem trước</h2>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="badge badge-success">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
+              Sẵn sàng
+            </span>
+          </div>
+        </div>
+        <div style="padding:0">
+          <iframe id="preview-frame" class="preview-iframe" style="border-radius:0 0 8px 8px;" frameborder="0" title="Xem trước tài liệu đã chuyển đổi"></iframe>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Scripts ──────────────────────────────────────────────── -->
+  <script>
+  (() => {
+    // ── State ─────────────────────────────────────────────────
+    let currentFile = null;
+    let generatedHTML = '';
+    let outputFilename = 'document.html';
+
+    // ── DOM refs ──────────────────────────────────────────────
+    const uploadZone   = document.getElementById('upload-zone');
+    const fileInput    = document.getElementById('file-input');
+    const fileInfo     = document.getElementById('file-info');
+    const fileName     = document.getElementById('file-name');
+    const fileSize     = document.getElementById('file-size');
+    const clearBtn     = document.getElementById('clear-btn');
+    const convertBtn   = document.getElementById('convert-btn');
+    const downloadBtn  = document.getElementById('download-btn');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressFill = document.getElementById('progress-fill');
+    const progressLbl  = document.getElementById('progress-label');
+    const alertErr     = document.getElementById('alert-error');
+    const alertErrTxt  = document.getElementById('alert-error-text');
+    const alertSuc     = document.getElementById('alert-success');
+    const alertSucTxt  = document.getElementById('alert-success-text');
+    const previewSec   = document.getElementById('preview-section');
+    const previewFrame = document.getElementById('preview-frame');
+    const step1        = document.getElementById('step-1');
+    const step2        = document.getElementById('step-2');
+    const step3        = document.getElementById('step-3');
+
+    // ── Upload Zone ───────────────────────────────────────────
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const f = e.dataTransfer.files[0];
+      if (f) handleFile(f);
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+    clearBtn.addEventListener('click', resetState);
+
+    function handleFile(f) {
+      if (!f.name.match(/\.(md|markdown|txt)$/i)) {
+        showError('Vui lòng chọn file .md, .markdown hoặc .txt.');
+        return;
+      }
+      currentFile = f;
+      fileName.textContent = f.name;
+      fileSize.textContent = formatSize(f.size);
+      fileInfo.classList.add('visible');
+      convertBtn.disabled = false;
+      hideAlerts();
+      downloadBtn.style.display = 'none';
+      previewSec.classList.remove('visible');
+      outputFilename = f.name.replace(/\.(md|markdown|txt)$/i, '') + '.html';
+      setStep(1, 'active');
+    }
+
+    function formatSize(b) {
+      if (b < 1024) return b + ' B';
+      if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+      return (b / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function resetState() {
+      currentFile = null;
+      generatedHTML = '';
+      fileInput.value = '';
+      fileInfo.classList.remove('visible');
+      convertBtn.disabled = true;
+      downloadBtn.style.display = 'none';
+      previewSec.classList.remove('visible');
+      progressWrap.classList.remove('visible');
+      hideAlerts();
+      setStep(1, 'active');
+    }
+
+    // ── Alerts ────────────────────────────────────────────────
+    function showError(msg) { alertErrTxt.textContent = msg; alertErr.classList.add('visible'); alertSuc.classList.remove('visible'); }
+    function showSuccess(msg) { alertSucTxt.textContent = msg; alertSuc.classList.add('visible'); alertErr.classList.remove('visible'); }
+    function hideAlerts() { alertErr.classList.remove('visible'); alertSuc.classList.remove('visible'); }
+
+    // ── Steps ─────────────────────────────────────────────────
+    function setStep(active, _) {
+      [step1, step2, step3].forEach((s, i) => {
+        s.className = 'step';
+        if (i + 1 < active) s.classList.add('done');
+        else if (i + 1 === active) s.classList.add('active');
+      });
+    }
+
+    // ── Convert ───────────────────────────────────────────────
+    convertBtn.addEventListener('click', async () => {
+      if (!currentFile) return;
+      hideAlerts();
+      setStep(2, 'active');
+      progressWrap.classList.add('visible');
+      convertBtn.disabled = true;
+
+      animateProgress(0, 30, 'Đang đọc file...');
+      const text = await readFile(currentFile);
+      animateProgress(30, 60, 'Đang phân tích Markdown...');
+      await sleep(200);
+      
+      // Sử dụng thư viện marked để chuyển đổi chính xác
+      let html;
+      try {
+        html = await marked.parse(text);
+      } catch (err) {
+        showError('Lỗi khi phân tích Markdown: ' + err.message);
+        progressWrap.classList.remove('visible');
+        convertBtn.disabled = false;
+        return;
+      }
+      
+      animateProgress(60, 90, 'Đang tạo HTML với Exama Design System...');
+      await sleep(200);
+      generatedHTML = wrapInExamaDocument(html, outputFilename.replace('.html',''));
+      animateProgress(90, 100, 'Hoàn tất!');
+      await sleep(300);
+
+      progressWrap.classList.remove('visible');
+      showSuccess(`Đã chuyển đổi thành công. File sẵn sàng để tải xuống: ${outputFilename}`);
+      downloadBtn.style.display = 'inline-flex';
+      previewSec.classList.add('visible');
+
+      // Inject vào iframe
+      const blob = new Blob([generatedHTML], { type: 'text/html' });
+      previewFrame.src = URL.createObjectURL(blob);
+      previewFrame.onload = () => {
+        try {
+          const h = previewFrame.contentDocument.body.scrollHeight;
+          previewFrame.style.height = Math.max(400, h + 32) + 'px';
+        } catch(e) {}
+      };
+
+      convertBtn.disabled = false;
+      setStep(3, 'active');
+    });
+
+    function animateProgress(from, to, label) {
+      progressFill.style.width = to + '%';
+      progressLbl.textContent = label;
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function readFile(file) {
+      return new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result);
+        reader.onerror = () => rej(new Error('Không đọc được file.'));
+        reader.readAsText(file, 'UTF-8');
+      });
+    }
+
+    // ── Download ──────────────────────────────────────────────
+    downloadBtn.addEventListener('click', () => {
+      const blob = new Blob([generatedHTML], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = outputFilename;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // ── Helper: escapeHtml (vẫn cần cho title và meta) ────────
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Wrap in Exama-styled full HTML document ───────────────
+    function wrapInExamaDocument(bodyHTML, title) {
+      return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(title)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Exama Design System — Document Stylesheet */
+    :root {
+      --color-paper-50:  #faf9f6;
+      --color-paper-100: #f4f2ec;
+      --color-paper-200: #e8e4d9;
+      --color-paper-300: #d6d0c4;
+      --color-ink-100: #e0ddd7;
+      --color-ink-200: #b8b3a8;
+      --color-ink-300: #8c8679;
+      --color-ink-400: #5e5a52;
+      --color-ink-500: #3a3731;
+      --color-ink-600: #27251f;
+      --color-ink-700: #1a1814;
+      --color-accent-50:  #f0f4f8;
+      --color-accent-100: #d9e5f0;
+      --color-accent-200: #adc5df;
+      --color-accent-300: #7aa3c8;
+      --color-accent-400: #4e84b4;
+      --color-accent-500: #2d6899;
+      --color-accent-600: #1f5280;
+      --color-accent-700: #153d60;
+      --color-success-50:  #f0f7f0;
+      --color-success-200: #a0cfa0;
+      --color-success-300: #5fa85f;
+      --color-success-500: #256825;
+      --color-warning-50:  #fdf8ed;
+      --color-warning-200: #eecf88;
+      --color-warning-300: #d9a93a;
+      --color-warning-500: #8f6a14;
+      --color-danger-50:  #fdf0f0;
+      --color-danger-200: #e8a0a0;
+      --color-danger-300: #d05f5f;
+      --color-danger-500: #8a2020;
+      --font-serif: 'Noto Serif', Georgia, serif;
+      --font-sans:  'DM Sans', system-ui, sans-serif;
+      --font-mono:  ui-monospace, 'Cascadia Code', monospace;
+      --shadow-paper:    0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06);
+      --shadow-paper-md: 0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--color-ink-500);
+      background-color: var(--color-paper-50);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+      padding: 40px 16px 80px;
+    }
+
+    .doc-wrapper {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* Document header */
+    .doc-header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--color-paper-300);
+    }
+
+    .doc-title {
+      font-family: var(--font-serif);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--color-ink-700);
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .doc-meta {
+      font-size: 13px;
+      color: var(--color-ink-300);
+    }
+
+    /* Main content card */
+    .doc-card {
+      background: #ffffff;
+      border: 1px solid var(--color-paper-200);
+      border-radius: 8px;
+      box-shadow: var(--shadow-paper);
+      padding: 40px 48px;
+    }
+
+    @media (max-width: 600px) {
+      .doc-card { padding: 24px 20px; }
+      .doc-title { font-size: 22px; }
+    }
+
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-serif);
+      color: var(--color-ink-600);
+      line-height: 1.3;
+      margin-top: 2em;
+      margin-bottom: 0.6em;
+    }
+
+    h1 { font-size: 26px; color: var(--color-ink-700); border-bottom: 1px solid var(--color-paper-200); padding-bottom: 12px; margin-top: 0; }
+    h2 { font-size: 22px; color: var(--color-ink-600); }
+    h3 { font-size: 18px; color: var(--color-ink-600); }
+    h4 { font-family: var(--font-sans); font-size: 15px; font-weight: 600; color: var(--color-ink-500); letter-spacing: 0.01em; }
+    h5 { font-family: var(--font-sans); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-ink-300); }
+    h6 { font-family: var(--font-sans); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-ink-300); }
+
+    /* First heading after card start — no top margin */
+    .doc-card > h1:first-child,
+    .doc-card > h2:first-child {
+      margin-top: 0;
+    }
+
+    /* Paragraphs */
+    p { margin-bottom: 1em; line-height: 1.7; }
+    p:last-child { margin-bottom: 0; }
+
+    /* Links */
+    a { color: var(--color-accent-500); text-decoration: underline; text-underline-offset: 2px; }
+    a:hover { color: var(--color-accent-600); }
+
+    /* Strong / Em */
+    strong { font-weight: 600; color: var(--color-ink-600); }
+    em { font-style: italic; color: var(--color-ink-400); }
+    del { text-decoration: line-through; color: var(--color-ink-300); }
+
+    /* Code */
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.875em;
+      background: var(--color-paper-100);
+      border: 1px solid var(--color-paper-200);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--color-ink-600);
+    }
+
+    pre {
+      background: var(--color-ink-700);
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 1.5em 0;
+      box-shadow: var(--shadow-paper-md);
+    }
+
+    pre code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: none;
+      border: none;
+      padding: 0;
+      color: #d4c5a9;
+      line-height: 1.6;
+      border-radius: 0;
+    }
+
+    /* Blockquote */
+    blockquote {
+      border-left: 3px solid var(--color-accent-500);
+      background: var(--color-accent-50);
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin: 1.5em 0;
+      color: var(--color-ink-400);
+      font-style: italic;
+    }
+
+    blockquote p { margin-bottom: 0; color: var(--color-ink-400); }
+
+    /* HR */
+    hr {
+      border: none;
+      border-top: 1px solid var(--color-paper-300);
+      margin: 2.5em 0;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin: 0.75em 0 1em 1.5em;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35em;
+      line-height: 1.6;
+    }
+
+    li::marker { color: var(--color-ink-300); }
+
+    ul li::marker { content: "–  "; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5em 0;
+      font-size: 14px;
+      border: 1px solid var(--color-paper-200);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-paper);
+    }
+
+    thead { background: var(--color-paper-100); }
+
+    th {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--color-ink-300);
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-paper-200);
+    }
+
+    td {
+      padding: 10px 14px;
+      color: var(--color-ink-500);
+      border-bottom: 1px solid var(--color-paper-200);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--color-paper-50); }
+
+    /* Images */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--color-paper-200);
+      box-shadow: var(--shadow-paper);
+      margin: 1em 0;
+      display: block;
+    }
+
+    /* Footer */
+    .doc-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--color-paper-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .doc-footer-brand {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      color: var(--color-ink-300);
+    }
+
+    .doc-footer-brand span { color: var(--color-accent-400); }
+
+    .doc-footer-date {
+      font-size: 12px;
+      color: var(--color-ink-200);
+    }
+  </style>
+</head>
+<body>
+  <div class="doc-wrapper">
+    <header class="doc-header">
+      <h1 class="doc-title">${escapeHtml(title)}</h1>
+      <p class="doc-meta">Chuyển đổi từ Markdown · Exama Design System</p>
+    </header>
+
+    <main class="doc-card">
+      ${bodyHTML}
+    </main>
+
+    <footer class="doc-footer">
+      <span class="doc-footer-brand">Exam<span>a</span> Design System</span>
+      <span class="doc-footer-date">Tạo ngày ${new Date().toLocaleDateString('vi-VN', { year:'numeric', month:'long', day:'numeric' })}</span>
+    </footer>
+  </div>
+</body>
+</html>`;
+    }
+
+  })();
+  </script>
+
+</body>
+</html>

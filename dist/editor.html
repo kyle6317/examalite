@@ -1167,7 +1167,9 @@ function createQuestionCardHTML(gi, qi, q) {
         </div>
 
         <!-- Answer area -->
-        ${renderAnswerArea(gi, qi, q)}
+        <div id="answer-area-${gi}-${qi}">
+          ${renderAnswerArea(gi, qi, q)}
+        </div>
       </div>
     </div>
   `;
@@ -1392,7 +1394,25 @@ function addQuestion(gi, type) {
   state.groups[gi].questions = state.groups[gi].questions || [];
   state.groups[gi].questions.push(q);
   markContentDirty();
+  
+  // Ensure group-body is expanded before rendering
+  const body = document.getElementById(`group-body-${gi}`);
+  const wasCollapsed = body && body.style.display === 'none';
+  
   renderGroups();
+  
+  // If it was collapsed, expand it after render
+  if (wasCollapsed) {
+    setTimeout(() => {
+      const newBody = document.getElementById(`group-body-${gi}`);
+      const icon = newBody?.closest('.group-card')?.querySelector('.collapse-icon');
+      if (newBody) {
+        newBody.style.display = '';
+        if (icon) icon.style.transform = '';
+      }
+    }, 0);
+  }
+  
   // Scroll to new question
   const qi = state.groups[gi].questions.length - 1;
   setTimeout(() => {
@@ -1444,7 +1464,42 @@ function changeQuestionType(gi, qi, newType) {
 
 function updateQuestionField(gi, qi, field, value) {
   const q = state.groups[gi]?.questions[qi];
-  if (q) { q[field] = value; markContentDirty(); }
+  if (!q) return;
+  
+  // Special handling for fill_blank prompt changes
+  if (field === 'prompt' && q.type === 'fill_blank') {
+    const oldBlankCount = (q.prompt || '').split('___').length - 1;
+    const newBlankCount = (value || '').split('___').length - 1;
+    
+    q[field] = value;
+    markContentDirty();
+    
+    // Only re-render if blank count changed
+    if (oldBlankCount !== newBlankCount) {
+      // Adjust answer array to match new blank count
+      if (!Array.isArray(q.answer)) q.answer = [];
+      if (q.answer.length < newBlankCount) {
+        // Pad with empty strings
+        while (q.answer.length < newBlankCount) q.answer.push('');
+      } else if (q.answer.length > newBlankCount) {
+        // Trim excess
+        q.answer = q.answer.slice(0, newBlankCount);
+      }
+      
+      // Re-render only the answer area for this question
+      const answerArea = document.getElementById(`answer-area-${gi}-${qi}`);
+      if (answerArea) {
+        answerArea.innerHTML = renderAnswerArea(gi, qi, q);
+        // Auto-resize new textareas
+        setTimeout(() => {
+          answerArea.querySelectorAll('textarea').forEach(ta => autoResize(ta));
+        }, 0);
+      }
+    }
+  } else {
+    q[field] = value;
+    markContentDirty();
+  }
 }
 
 function moveQuestion(gi, qi, dir) {

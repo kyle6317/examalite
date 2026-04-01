@@ -105,7 +105,8 @@
     .group-card.drag-over > .group-header { background: #d9e5f0; }
 
     /* Collapsible */
-    .group-body { overflow: hidden; transition: max-height 0.25s ease; }
+    .group-body { transition: max-height 0.25s ease; }
+    .group-body.collapsed { overflow: hidden; }
 
     /* Toggle switch */
     .toggle-switch { position: relative; width: 40px; height: 22px; }
@@ -1022,12 +1023,12 @@ function renderGroups() {
 
 function createGroupCard(group, gi) {
   const card = document.createElement('div');
-  card.className = 'group-card bg-white border border-paper-200 rounded-lg shadow-paper overflow-hidden';
+  card.className = 'group-card bg-white border border-paper-200 rounded-lg shadow-paper';
   card.dataset.gi = gi;
 
   card.innerHTML = `
     <!-- Group header -->
-    <div class="group-header flex items-center gap-2 px-4 py-3 bg-paper-50 border-b border-paper-200">
+    <div class="group-header flex items-center gap-2 px-4 py-3 bg-paper-50 border-b border-paper-200 rounded-t-lg">
       <button class="drag-handle flex-shrink-0" title="Kéo để sắp xếp lại">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5"/>
@@ -1055,7 +1056,7 @@ function createGroupCard(group, gi) {
     </div>
 
     <!-- Group body -->
-    <div class="group-body" id="group-body-${gi}">
+    <div class="group-body rounded-b-lg" id="group-body-${gi}">
       <!-- Context -->
       <div class="px-4 pt-4 pb-2">
         <label class="section-label block mb-2">Dữ kiện chung <span class="text-ink-200 font-normal normal-case tracking-normal">(tùy chọn)</span></label>
@@ -1081,7 +1082,7 @@ function createGroupCard(group, gi) {
             </svg>
             Thêm câu hỏi
           </button>
-          <div id="add-q-menu-${gi}" class="hidden absolute left-0 top-full mt-1 z-20 bg-white border border-paper-200 rounded-lg shadow-paper-md py-1 min-w-[220px]">
+          <div id="add-q-menu-${gi}" class="hidden absolute left-0 top-full mt-1 z-50 bg-white border border-paper-200 rounded-lg shadow-paper-lg py-1 min-w-[220px]">
             ${[
               ['single_choice','Trắc nghiệm một đáp án','A/B/C/D'],
               ['multi_choice','Trắc nghiệm nhiều đáp án','Chọn nhiều'],
@@ -1090,7 +1091,7 @@ function createGroupCard(group, gi) {
               ['fill_text','Điền từ ngắn',''],
               ['fill_blank','Điền vào đoạn văn','___'],
             ].map(([type, label, hint]) => `
-              <button onclick="addQuestion(${gi}, '${type}'); toggleAddQuestionMenu(${gi})"
+              <button onclick="addQuestion(${gi}, '${type}')"
                       class="w-full flex items-center justify-between px-4 py-2 text-sm text-ink-500 hover:bg-paper-100 transition-base text-left">
                 <span>${label}</span>
                 ${hint ? `<span class="text-xs text-ink-300 font-mono">${hint}</span>` : ''}
@@ -1394,6 +1395,9 @@ function addQuestion(gi, type) {
   state.groups[gi].questions = state.groups[gi].questions || [];
   state.groups[gi].questions.push(q);
   markContentDirty();
+  
+  // Close the add question menu
+  closeAddQuestionMenu(gi);
   
   // Ensure group-body is expanded before rendering
   const body = document.getElementById(`group-body-${gi}`);
@@ -1927,20 +1931,30 @@ function toggleAddQuestionMenu(gi) {
   const menu = document.getElementById(`add-q-menu-${gi}`);
   if (!menu) return;
   const isHidden = menu.classList.contains('hidden');
-  // Close all menus
+  
+  // Close all menus first
   document.querySelectorAll('[id^="add-q-menu-"]').forEach(m => m.classList.add('hidden'));
+  
   if (isHidden) {
     menu.classList.remove('hidden');
     // Close on outside click
     setTimeout(() => {
-      document.addEventListener('click', function handler(e) {
-        if (!menu.contains(e.target)) {
+      const closeHandler = function(e) {
+        const wrapper = document.getElementById(`add-q-wrapper-${gi}`);
+        if (wrapper && !wrapper.contains(e.target)) {
           menu.classList.add('hidden');
-          document.removeEventListener('click', handler);
+          document.removeEventListener('click', closeHandler);
         }
-      });
+      };
+      document.addEventListener('click', closeHandler);
     }, 0);
   }
+}
+
+// Helper to close add question menu
+function closeAddQuestionMenu(gi) {
+  const menu = document.getElementById(`add-q-menu-${gi}`);
+  if (menu) menu.classList.add('hidden');
 }
 
 // ═══════════════════════════════════════════

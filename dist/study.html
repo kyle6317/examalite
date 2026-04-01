@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exama Lite - Học tập</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@700&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['"Noto Serif"', 'Georgia', 'serif'],
+                        'sans': ['"DM Sans"', 'system-ui', 'sans-serif'],
+                        'mono': ['ui-monospace', '"Cascadia Code"', 'monospace']
+                    },
+                    colors: {
+                        paper: {
+                            50: '#faf9f6',
+                            100: '#f4f2ec',
+                            200: '#e8e4d9',
+                            300: '#d6d0c4'
+                        },
+                        ink: {
+                            100: '#e0ddd7',
+                            200: '#b8b3a8',
+                            300: '#8c8679',
+                            400: '#5e5a52',
+                            500: '#3a3731',
+                            600: '#27251f',
+                            700: '#1a1814'
+                        },
+                        accent: {
+                            50: '#f0f4f8',
+                            100: '#d9e5f0',
+                            200: '#adc5df',
+                            300: '#7aa3c8',
+                            400: '#4e84b4',
+                            500: '#2d6899',
+                            600: '#1f5280',
+                            700: '#153d60'
+                        },
+                        success: {
+                            50: '#f0f7f0',
+                            100: '#d6ecd6',
+                            200: '#a0cfa0',
+                            300: '#5fa85f',
+                            400: '#3d883d',
+                            500: '#256825'
+                        },
+                        warning: {
+                            50: '#fdf8ed',
+                            100: '#f7eccc',
+                            200: '#eecf88',
+                            300: '#d9a93a',
+                            400: '#b88a20',
+                            500: '#8f6a14'
+                        },
+                        danger: {
+                            50: '#fdf0f0',
+                            100: '#f5d5d5',
+                            200: '#e8a0a0',
+                            300: '#d05f5f',
+                            400: '#b03838',
+                            500: '#8a2020'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse-warning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        .timer-warning {
+            animation: pulse-warning 1.5s infinite;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out both;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Radio/checkbox styles */
+        .choice-item:has(input:checked) {
+            border-color: #2d6899;
+            background-color: #d9e5f0;
+        }
+        
+        /* Progress bar */
+        .progress-bar {
+            transition: width 0.4s ease;
+        }
+        
+        /* Hide scrollbar */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Paper texture */
+        body {
+            background-image: 
+                url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.03' /%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+
+<body class="bg-paper-50 font-sans text-ink-500 min-h-screen">
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- LOADING SCREEN -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div id="loadingScreen" class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] p-8 max-w-md w-full text-center">
+        <div class="w-12 h-12 border-4 border-paper-200 border-t-accent-500 rounded-full spinner mx-auto mb-4"></div>
+        <p id="loadingText" class="text-base text-ink-500 mb-4">Đang tải bài kiểm tra...</p>
+        
+        <!-- Progress bar (hidden initially) -->
+        <div id="progressContainer" class="hidden mt-6">
+            <div class="bg-paper-200 rounded-full h-2 overflow-hidden">
+                <div id="progressBar" class="progress-bar bg-accent-500 h-full" style="width:0%"></div>
+            </div>
+            <p id="progressText" class="text-sm text-ink-300 mt-2">0%</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- ERROR SCREEN -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div id="errorScreen" class="hidden items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-xl shadow-[0_8px_20px_0_rgba(58,55,49,0.12),0_2px_6px_-1px_rgba(58,55,49,0.08)] p-12 max-w-md w-full text-center">
+        <div class="w-16 h-16 bg-danger-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-danger-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <h2 class="font-serif text-2xl font-bold text-ink-600 mb-2">Không thể tải bài kiểm tra</h2>
+        <p id="errorMessage" class="text-base text-ink-400 mb-6">Đã xảy ra lỗi khi tải bài kiểm tra. Vui lòng thử lại sau.</p>
+        <button onclick="location.reload()" class="bg-accent-500 hover:bg-accent-600 text-white px-6 py-2.5 rounded-md text-sm font-semibold transition-colors">
+            Thử lại
+        </button>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PREPARATION SCREEN -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div id="prepScreen" class="hidden min-h-screen p-4 md:p-6">
+    <div class="max-w-3xl mx-auto py-8">
+        <!-- Info Card -->
+        <div class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] overflow-hidden mb-6">
+            <div class="p-8">
+                <h1 id="examTitle" class="font-serif text-3xl font-bold text-ink-600 mb-3"></h1>
+                <p id="examDescription" class="text-base text-ink-400 mb-6 leading-relaxed"></p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div class="border border-paper-200 rounded-lg p-4">
+                        <div class="text-xs font-semibold text-ink-300 uppercase tracking-wide mb-1">Thời gian làm bài</div>
+                        <div id="examDuration" class="text-lg font-semibold text-ink-500"></div>
+                    </div>
+                    <div class="border border-paper-200 rounded-lg p-4">
+                        <div class="text-xs font-semibold text-ink-300 uppercase tracking-wide mb-1">Số câu hỏi</div>
+                        <div id="totalQuestions" class="text-lg font-semibold text-ink-500"></div>
+                    </div>
+                </div>
+                
+                <!-- Download Progress (shown after start button clicked) -->
+                <div id="downloadProgress" class="hidden mb-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-5 h-5 border-2 border-accent-500 border-t-transparent rounded-full spinner"></div>
+                        <span class="text-sm font-semibold text-ink-500">Đang tải nội dung bài kiểm tra...</span>
+                    </div>
+                    <div class="bg-paper-200 rounded-full h-2 overflow-hidden">
+                        <div id="downloadBar" class="progress-bar bg-accent-500 h-full" style="width:0%"></div>
+                    </div>
+                    <p id="downloadText" class="text-sm text-ink-300 mt-1">0%</p>
+                </div>
+                
+                <!-- Configuration (shown after download complete) -->
+                <div id="configSection" class="hidden">
+                    <div class="border-t border-paper-200 pt-6 mb-6">
+                        <h3 class="font-sans text-base font-semibold text-ink-500 mb-4">Chế độ làm bài</h3>
+                        
+                        <!-- Mode Toggle -->
+                        <div class="flex items-center gap-4 p-4 bg-paper-50 rounded-lg mb-6">
+                            <div class="flex-1">
+                                <div class="font-semibold text-ink-500 mb-0.5">Chế độ học tập</div>
+                                <div class="text-sm text-ink-300">Flashcard, trả lời ngay lập tức</div>
+                            </div>
+                            <button id="modeToggle" class="relative inline-flex h-7 w-12 items-center rounded-full bg-accent-500 transition-colors focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2" onclick="toggleMode()">
+                                <span id="modeToggleCircle" class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform translate-x-6"></span>
+                            </button>
+                            <div class="flex-1 text-right">
+                                <div class="font-semibold text-ink-400 mb-0.5">Chế độ kiểm tra</div>
+                                <div class="text-sm text-ink-300">Làm bài đầy đủ, nộp bài</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Options -->
+                        <div class="space-y-3">
+                            <label class="flex items-center gap-3 p-3 border border-paper-200 rounded-lg hover:bg-paper-50 cursor-pointer transition-colors">
+                                <input type="checkbox" id="shuffleQuestions" class="w-4 h-4 text-accent-500 border-paper-300 rounded focus:ring-accent-500">
+                                <div class="flex-1">
+                                    <div class="text-sm font-semibold text-ink-500">Xáo trộn câu hỏi</div>
+                                    <div class="text-xs text-ink-300">Xáo trộn vị trí các nhóm và câu hỏi trong nhóm</div>
+                                </div>
+                            </label>
+                            
+                            <label class="flex items-center gap-3 p-3 border border-paper-200 rounded-lg hover:bg-paper-50 cursor-pointer transition-colors">
+                                <input type="checkbox" id="shuffleChoices" class="w-4 h-4 text-accent-500 border-paper-300 rounded focus:ring-accent-500">
+                                <div class="flex-1">
+                                    <div class="text-sm font-semibold text-ink-500">Xáo trộn đáp án</div>
+                                    <div class="text-xs text-ink-300">Xáo trộn thứ tự các lựa chọn</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Start Button -->
+                    <button id="startButton" onclick="startExam()" class="w-full bg-accent-500 hover:bg-accent-600 text-white py-3.5 rounded-lg text-base font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2">
+                        Bắt đầu làm bài
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- LEARNING MODE SCREEN -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div id="learningScreen" class="hidden min-h-screen">
+    <div class="max-w-4xl mx-auto p-4 md:p-6">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] p-4 mb-6">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-accent-50 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-xs text-ink-300 font-semibold uppercase tracking-wide">Chế độ học tập</div>
+                        <div id="learningProgress" class="text-sm font-semibold text-ink-500">Câu 1 / 10</div>
+                    </div>
+                </div>
+                <button onclick="quitLearning()" class="text-sm text-ink-400 hover:text-ink-600 font-semibold transition-colors">
+                    Thoát
+                </button>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mt-4 bg-paper-200 rounded-full h-1.5 overflow-hidden">
+                <div id="learningProgressBar" class="progress-bar bg-accent-500 h-full" style="width:10%"></div>
+            </div>
+        </div>
+        
+        <!-- Question Card -->
+        <div id="learningQuestion" class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] p-6 md:p-8">
+            <!-- Question content will be inserted here -->
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- TEST MODE SCREEN -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div id="testScreen" class="hidden">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Desktop Sidebar -->
+        <aside id="testSidebar" class="hidden lg:flex flex-col w-80 bg-paper-100 border-r border-paper-200">
+            <!-- Sidebar Header -->
+            <div class="p-6 border-b border-paper-200">
+                <h2 class="font-serif text-xl font-bold text-ink-600 mb-2">Bài kiểm tra</h2>
+                <p id="sidebarTitle" class="text-sm text-ink-400"></p>
+            </div>
+            
+            <!-- Timer -->
+            <div id="timerSection" class="p-6 border-b border-paper-200">
+                <div class="text-xs font-semibold text-ink-300 uppercase tracking-wide mb-2">Thời gian</div>
+                <div id="timer" class="font-mono text-2xl font-bold text-ink-600">00:00</div>
+            </div>
+            
+            <!-- Question Map -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="text-xs font-semibold text-ink-300 uppercase tracking-wide mb-3">Câu hỏi</div>
+                <div id="questionMap" class="grid grid-cols-5 gap-2">
+                    <!-- Question bubbles will be inserted here -->
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="p-6 border-t border-paper-200">
+                <button id="submitButton" onclick="submitTest()" class="w-full bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-lg font-semibold transition-colors">
+                    Nộp bài
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Mobile Topbar -->
+        <div id="mobileTopbar" class="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-paper-200 z-40">
+            <div class="flex items-center justify-between p-4">
+                <button id="menuButton" onclick="toggleMobileMenu()" class="p-2 hover:bg-paper-50 rounded-lg transition-colors">
+                    <svg class="w-6 h-6 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <div id="mobileTimer" class="font-mono text-lg font-bold text-ink-600">00:00</div>
+                <button onclick="submitTest()" class="text-sm font-semibold text-accent-500 hover:text-accent-600 transition-colors">
+                    Nộp bài
+                </button>
+            </div>
+            
+            <!-- Mobile Question Scroll -->
+            <div class="overflow-x-auto hide-scrollbar px-4 pb-3">
+                <div id="mobileQuestionMap" class="flex gap-2 min-w-max">
+                    <!-- Question bubbles will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu Drawer -->
+        <div id="mobileMenu" class="lg:hidden fixed inset-0 bg-ink-700/50 z-50 hidden" onclick="toggleMobileMenu()">
+            <div class="w-80 h-full bg-white shadow-[0_8px_20px_0_rgba(58,55,49,0.12),0_2px_6px_-1px_rgba(58,55,49,0.08)] overflow-y-auto" onclick="event.stopPropagation()">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="font-serif text-xl font-bold text-ink-600">Bài kiểm tra</h2>
+                        <button onclick="toggleMobileMenu()" class="p-2 hover:bg-paper-50 rounded-lg transition-colors">
+                            <svg class="w-5 h-5 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="text-xs font-semibold text-ink-300 uppercase tracking-wide mb-2">Thời gian</div>
+                        <div id="mobileTimerFull" class="font-mono text-2xl font-bold text-ink-600">00:00</div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-xs font-semibold text-ink-300 uppercase tracking-wide mb-3">Câu hỏi</div>
+                        <div id="mobileQuestionMapFull" class="grid grid-cols-5 gap-2">
+                            <!-- Question bubbles will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <div class="max-w-4xl mx-auto p-4 md:p-8 lg:pt-8 mt-24 lg:mt-0">
+                <div id="testQuestions">
+                    <!-- Questions will be inserted here -->
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- RESULT SCREEN -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div id="resultScreen" class="hidden min-h-screen p-4 md:p-6">
+    <div class="max-w-4xl mx-auto py-8">
+        <!-- Score Card -->
+        <div class="bg-white rounded-xl shadow-[0_8px_20px_0_rgba(58,55,49,0.12),0_2px_6px_-1px_rgba(58,55,49,0.08)] p-8 mb-6 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" id="resultIcon">
+                <!-- Icon will be inserted based on score -->
+            </div>
+            <h2 class="font-serif text-3xl font-bold text-ink-600 mb-2">Hoàn thành!</h2>
+            <div class="text-5xl font-bold mb-4" id="scorePercentage">0%</div>
+            
+            <div class="grid grid-cols-3 gap-4 max-w-md mx-auto mt-6">
+                <div>
+                    <div class="text-2xl font-bold text-success-300" id="correctCount">0</div>
+                    <div class="text-sm text-ink-300">Đúng</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-danger-300" id="wrongCount">0</div>
+                    <div class="text-sm text-ink-300">Sai</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-ink-400" id="totalCount">0</div>
+                    <div class="text-sm text-ink-300">Tổng</div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex gap-3 justify-center flex-wrap">
+                <button onclick="retakeExam()" class="bg-accent-500 hover:bg-accent-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors">
+                    Làm lại
+                </button>
+                <button onclick="location.href='/app'" class="bg-paper-100 hover:bg-paper-200 text-ink-500 px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors">
+                    Về trang chủ
+                </button>
+            </div>
+        </div>
+        
+        <!-- Statistics by Group -->
+        <div id="groupStats" class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] p-6 mb-6">
+            <h3 class="font-serif text-xl font-bold text-ink-600 mb-4">Thống kê theo nhóm</h3>
+            <div id="groupStatsContent">
+                <!-- Group stats will be inserted here -->
+            </div>
+        </div>
+        
+        <!-- Filter -->
+        <div class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] p-4 mb-6">
+            <div class="flex gap-2 flex-wrap">
+                <button onclick="filterResults('all')" class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold transition-colors bg-accent-500 text-white">
+                    Tất cả
+                </button>
+                <button onclick="filterResults('correct')" class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold transition-colors bg-paper-100 text-ink-500 hover:bg-paper-200">
+                    Chỉ câu đúng
+                </button>
+                <button onclick="filterResults('wrong')" class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold transition-colors bg-paper-100 text-ink-500 hover:bg-paper-200">
+                    Chỉ câu sai
+                </button>
+            </div>
+        </div>
+        
+        <!-- Detailed Review -->
+        <div id="detailedReview">
+            <!-- Questions review will be inserted here -->
+        </div>
+    </div>
+</div>
+
+<script src="study.js"></script>
+</body>
+</html>

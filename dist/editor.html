@@ -1967,8 +1967,9 @@ function showConfirm(title, body, onOk) {
   document.getElementById('confirm-body').textContent = body;
   document.getElementById('confirm-modal').classList.remove('hidden');
   document.getElementById('confirm-ok').onclick = () => {
+    const cb = _confirmCallback;
     closeConfirmModal();
-    if (_confirmCallback) _confirmCallback();
+    if (cb) cb();
   };
 }
 function closeConfirmModal() {

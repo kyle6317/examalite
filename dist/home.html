@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Exama Lite - Nền tảng ôn tập đơn giản, miễn phí</title>
+    <!-- Tailwind CSS + Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom configuration to match Exama Design System (Light mode only, custom colors) -->
+    <style>
+        /* Override Tailwind defaults to match Exama Design System tokens */
+        :root {
+            --paper-50: #faf9f6;
+            --paper-100: #f4f2ec;
+            --paper-200: #e8e4d9;
+            --paper-300: #d6d0c4;
+            --ink-100: #e0ddd7;
+            --ink-200: #b8b3a8;
+            --ink-300: #8c8679;
+            --ink-400: #5e5a52;
+            --ink-500: #3a3731;
+            --ink-600: #27251f;
+            --ink-700: #1a1814;
+            --accent-50: #f0f4f8;
+            --accent-100: #d9e5f0;
+            --accent-200: #adc5df;
+            --accent-300: #7aa3c8;
+            --accent-400: #4e84b4;
+            --accent-500: #2d6899;
+            --accent-600: #1f5280;
+            --accent-700: #153d60;
+            --success-300: #5fa85f;
+            --warning-300: #d9a93a;
+            --danger-300: #d05f5f;
+        }
+        body {
+            background-color: var(--paper-50);
+            font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--ink-500);
+        }
+        h1, h2, h3, .serif-heading {
+            font-family: 'Noto Serif', Georgia, 'Times New Roman', serif;
+        }
+        /* Custom shadow from design system */
+        .shadow-paper {
+            box-shadow: 0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06);
+        }
+        .shadow-paper-md {
+            box-shadow: 0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08);
+        }
+        .btn-primary {
+            background-color: var(--accent-500);
+            color: white;
+            padding: 9px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 120ms ease-out;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-600);
+        }
+        .btn-secondary {
+            background-color: var(--paper-100);
+            color: var(--ink-500);
+            border: 1px solid var(--paper-300);
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 120ms ease-out;
+        }
+        .btn-secondary:hover {
+            background-color: var(--paper-200);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--accent-500);
+            color: var(--accent-500);
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .btn-outline:hover {
+            background-color: var(--accent-50);
+        }
+        .feature-card {
+            background: white;
+            border: 1px solid var(--paper-200);
+            border-radius: 8px;
+            padding: 24px;
+            transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+        }
+        .feature-card:hover {
+            border-color: var(--accent-300);
+            box-shadow: var(--shadow-paper-md);
+        }
+        .footer-link {
+            color: var(--ink-400);
+            font-size: 14px;
+            transition: color 120ms ease;
+        }
+        .footer-link:hover {
+            color: var(--accent-500);
+        }
+        .mobile-bottom-nav {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .desktop-nav {
+                display: none;
+            }
+            .mobile-bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                border-top: 1px solid var(--paper-200);
+                padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+                justify-content: space-around;
+                z-index: 50;
+            }
+            .mobile-nav-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                font-size: 10px;
+                color: var(--ink-300);
+                font-weight: 500;
+            }
+            .mobile-nav-item.active {
+                color: var(--accent-500);
+            }
+            body {
+                padding-bottom: 64px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- ========== HEADER / NAVBAR (DESKTOP & MOBILE) ========== -->
+    <header class="bg-white border-b border-[#e8e4d9] sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 md:h-20">
+                <!-- Logo + Brand -->
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl font-bold serif-heading text-[#27251f]">Exama Lite</span>
+                    <span class="hidden md:inline-block text-xs bg-[#f4f2ec] text-[#5e5a52] px-2 py-0.5 rounded-full">Beta</span>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="desktop-nav hidden md:flex items-center space-x-6">
+                    <a href="/" class="text-[#3a3731] hover:text-[#1f5280] font-medium transition">Trang chủ</a>
+                    <a href="/about" class="text-[#5e5a52] hover:text-[#1f5280] transition">Giới thiệu</a>
+                    <a href="/wiki" class="text-[#5e5a52] hover:text-[#1f5280] transition">Hướng dẫn</a>
+                    <a href="/donate" class="text-[#5e5a52] hover:text-[#1f5280] transition">Ủng hộ</a>
+                </nav>
+
+                <!-- Auth Buttons Desktop -->
+                <div class="desktop-nav hidden md:flex items-center space-x-3">
+                    <a href="/login" class="text-[#2d6899] border border-[#2d6899] px-4 py-2 rounded-md text-sm font-medium hover:bg-[#f0f4f8] transition">Đăng nhập</a>
+                    <a href="/signup" class="bg-[#2d6899] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#1f5280] transition shadow-paper">Đăng ký miễn phí</a>
+                </div>
+
+                <!-- Mobile Menu Icon (simple hamburger placeholder, but we use bottom bar; just show icon for drawer? but we rely on bottom nav + drawer from design? For simplicity we show a simple avatar but not needed. But design system suggests hamburger for deep links; we keep minimal. -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-md text-[#5e5a52] focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer (hidden by default) - simple navigation drawer from design system (hamburger drawer) -->
+    <div id="mobileDrawer" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div class="absolute inset-0 bg-[#1a1814]/35" id="drawerOverlay"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-[80%] max-w-[280px] bg-white border-r border-[#e8e4d9] shadow-paper-lg transform -translate-x-full transition-transform duration-200 ease-out flex flex-col">
+            <div class="p-5 border-b border-[#e8e4d9] flex justify-between items-center">
+                <span class="font-serif text-xl font-bold text-[#27251f]">Exama Lite</span>
+                <button id="closeDrawerBtn" class="p-2 rounded-full hover:bg-[#f4f2ec]">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="flex-1 py-6 px-4 space-y-5">
+                <a href="/" class="block text-[#3a3731] font-medium">Trang chủ</a>
+                <a href="/about" class="block text-[#5e5a52]">Giới thiệu</a>
+                <a href="/wiki" class="block text-[#5e5a52]">Hướng dẫn</a>
+                <a href="/donate" class="block text-[#5e5a52]">Ủng hộ</a>
+                <div class="pt-4 border-t border-[#e8e4d9] space-y-3">
+                    <a href="/login" class="block w-full text-center border border-[#2d6899] text-[#2d6899] py-2 rounded-md">Đăng nhập</a>
+                    <a href="/signup" class="block w-full bg-[#2d6899] text-white py-2 rounded-md text-center">Đăng ký</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <!-- HERO Section (Split layout concept, but single column on mobile) -->
+        <section class="relative overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <!-- Left content: introduction -->
+                    <div>
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold serif-heading text-[#27251f] leading-tight">
+                            Ôn tập <span class="text-[#2d6899]">đơn giản</span>,<br> không quảng cáo
+                        </h1>
+                        <p class="mt-6 text-lg text-[#5e5a52] leading-relaxed">
+                            Exama Lite là nền tảng nhỏ hỗ trợ tạo và làm đề ôn tập cá nhân hoàn toàn miễn phí. 
+                            Không quảng cáo, không phức tạp. Chỉ cần một email để bắt đầu.
+                        </p>
+                        <div class="mt-8 flex flex-wrap gap-4">
+                            <a href="/signup" class="btn-primary text-base px-6 py-3">Bắt đầu ngay</a>
+                            <a href="/study?demo=true" class="btn-outline text-base px-6 py-3">Dùng thử (demo)</a>
+                        </div>
+                        <div class="mt-6 flex items-center gap-4 text-sm text-[#8c8679]">
+                            <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Miễn phí trọn đời</span>
+                            <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Không quảng cáo</span>
+                        </div>
+                    </div>
+                    <!-- Right: illustration / mockup (paper metaphor) -->
+                    <div class="relative flex justify-center">
+                        <div class="bg-white rounded-lg shadow-paper-md border border-[#e8e4d9] p-5 max-w-md w-full">
+                            <div class="flex items-center justify-between border-b border-[#e8e4d9] pb-3">
+                                <div class="flex space-x-1">
+                                    <div class="w-3 h-3 rounded-full bg-[#d6d0c4]"></div>
+                                    <div class="w-3 h-3 rounded-full bg-[#d6d0c4]"></div>
+                                    <div class="w-3 h-3 rounded-full bg-[#d6d0c4]"></div>
+                                </div>
+                                <span class="text-xs text-[#8c8679] font-mono">Đề thi mẫu</span>
+                            </div>
+                            <div class="mt-4 space-y-3">
+                                <div class="h-2 bg-[#f4f2ec] rounded w-3/4"></div>
+                                <div class="h-2 bg-[#f4f2ec] rounded w-full"></div>
+                                <div class="h-2 bg-[#f4f2ec] rounded w-5/6"></div>
+                                <div class="mt-4 flex gap-2">
+                                    <div class="w-6 h-6 rounded border border-[#adc5df] bg-[#d9e5f0]"></div>
+                                    <div class="h-6 bg-[#f4f2ec] rounded flex-1"></div>
+                                </div>
+                                <div class="mt-4 flex justify-end">
+                                    <div class="h-8 w-20 bg-[#2d6899] rounded-md"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features / Điểm nổi bật -->
+        <section class="py-16 bg-[#f4f2ec]/30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto">
+                    <span class="text-xs font-bold uppercase tracking-wider text-[#5e5a52] bg-[#e8e4d9] px-3 py-1 rounded-full">Tại sao chọn Exama Lite</span>
+                    <h2 class="mt-4 text-3xl md:text-4xl font-bold serif-heading text-[#27251f]">Đơn giản. Tự do. Tập trung.</h2>
+                    <p class="mt-4 text-[#5e5a52]">Không bị giới hạn bởi tài khoản giáo viên hay quảng cáo phiền phức.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8 mt-12">
+                    <div class="feature-card">
+                        <div class="w-12 h-12 rounded-lg bg-[#f0f4f8] flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-[#2d6899]"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                        </div>
+                        <h3 class="text-xl font-bold serif-heading text-[#27251f]">Miễn phí & không quảng cáo</h3>
+                        <p class="mt-2 text-[#5e5a52] leading-relaxed">Hoàn toàn không có banner, popup hay quảng cáo làm gián đoạn việc ôn tập của bạn.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="w-12 h-12 rounded-lg bg-[#f0f4f8] flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-[#2d6899]"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
+                        </div>
+                        <h3 class="text-xl font-bold serif-heading text-[#27251f]">Tự tạo đề & chia sẻ</h3>
+                        <p class="mt-2 text-[#5e5a52] leading-relaxed">Học sinh tự tạo đề ôn tập, cấu hình thời gian, xáo trộn câu hỏi và gửi link cho bạn bè.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="w-12 h-12 rounded-lg bg-[#f0f4f8] flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-[#2d6899]"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" /></svg>
+                        </div>
+                        <h3 class="text-xl font-bold serif-heading text-[#27251f]">Đa dạng câu hỏi</h3>
+                        <p class="mt-2 text-[#5e5a52] leading-relaxed">Trắc nghiệm, Đúng/Sai, Điền số, Nhóm câu hỏi — hỗ trợ nhiều định dạng phù hợp mọi môn học.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works / Cách hoạt động (simple steps) -->
+        <section class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold serif-heading text-[#27251f]">Cách thức hoạt động</h2>
+                    <p class="mt-2 text-[#5e5a52] max-w-2xl mx-auto">Ba bước đơn giản để bắt đầu hành trình ôn tập không căng thẳng.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8 mt-12">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 rounded-full bg-[#d9e5f0] flex items-center justify-center text-2xl font-bold text-[#2d6899]">1</div>
+                        <h3 class="mt-4 text-xl font-semibold">Đăng ký email</h3>
+                        <p class="mt-2 text-[#5e5a52]">Chỉ cần email và tên hiển thị, xác thực nhanh chóng qua magic link.</p>
+                    </div>
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 rounded-full bg-[#d9e5f0] flex items-center justify-center text-2xl font-bold text-[#2d6899]">2</div>
+                        <h3 class="mt-4 text-xl font-semibold">Soạn đề hoặc nhập từ file</h3>
+                        <p class="mt-2 text-[#5e5a52]">Dùng trình soạn thảo trực quan hoặc tải lên docx, hệ thống tự động parse nội dung.</p>
+                    </div>
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 rounded-full bg-[#d9e5f0] flex items-center justify-center text-2xl font-bold text-[#2d6899]">3</div>
+                        <h3 class="mt-4 text-xl font-semibold">Chia sẻ & làm bài</h3>
+                        <p class="mt-2 text-[#5e5a52]">Nhận link công khai để bạn bè làm bài mà không cần đăng nhập. Theo dõi kết quả.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA / Bắt đầu ngay -->
+        <section class="py-16 bg-[#f4f2ec]">
+            <div class="max-w-4xl mx-auto text-center px-4">
+                <h2 class="text-3xl md:text-4xl font-bold serif-heading text-[#27251f]">Sẵn sàng để ôn tập hiệu quả?</h2>
+                <p class="mt-3 text-lg text-[#5e5a52]">Không quảng cáo, không rào cản. Trải nghiệm ngay hôm nay.</p>
+                <div class="mt-8 flex flex-wrap justify-center gap-4">
+                    <a href="/signup" class="btn-primary text-lg px-8 py-3">Đăng ký miễn phí</a>
+                    <a href="/study?demo=true" class="btn-secondary text-lg px-8 py-3">Làm thử đề ôn</a>
+                </div>
+                <p class="mt-6 text-xs text-[#8c8679]">✨ Bạn không cần thẻ tín dụng. Hoàn toàn miễn phí.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER (simple footer with links, consistent with design) -->
+    <footer class="border-t border-[#e8e4d9] bg-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex gap-6 text-sm">
+                    <a href="/about" class="footer-link">Giới thiệu</a>
+                    <a href="/terms" class="footer-link">Điều khoản</a>
+                    <a href="/privacy" class="footer-link">Chính sách bảo mật</a>
+                    <a href="/donate" class="footer-link">Ủng hộ</a>
+                </div>
+                <div class="text-sm text-[#8c8679]">
+                    © 2025 Exama Lite · Tác giả <a href="mailto:nguyenhuuhoa@proton.me" class="text-[#2d6899] hover:underline">Nguyen Huu Hoa</a> · MIT License
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Bottom Navigation (according to design system) -->
+    <div class="mobile-bottom-nav md:hidden">
+        <a href="/" class="mobile-nav-item active flex flex-col items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+            <span>Trang chủ</span>
+        </a>
+        <a href="/app" class="mobile-nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
+            <span>Bài thi</span>
+        </a>
+        <a href="/editor" class="mobile-nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>Tạo đề</span>
+        </a>
+        <a href="/login" class="mobile-nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
+            <span>Đăng nhập</span>
+        </a>
+    </div>
+
+    <script>
+        // Mobile drawer logic (hamburger menu)
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileDrawer = document.getElementById('mobileDrawer');
+        const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const drawerPanel = mobileDrawer?.querySelector('.absolute.left-0');
+
+        function openDrawer() {
+            if (!mobileDrawer || !drawerPanel) return;
+            mobileDrawer.classList.remove('hidden');
+            mobileDrawer.setAttribute('aria-hidden', 'false');
+            setTimeout(() => {
+                drawerPanel.style.transform = 'translateX(0)';
+            }, 10);
+        }
+        function closeDrawer() {
+            if (!drawerPanel) return;
+            drawerPanel.style.transform = 'translateX(-100%)';
+            setTimeout(() => {
+                mobileDrawer.classList.add('hidden');
+                mobileDrawer.setAttribute('aria-hidden', 'true');
+            }, 200);
+        }
+        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openDrawer);
+        if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
+        if (drawerOverlay) drawerOverlay.addEventListener('click', closeDrawer);
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mobileDrawer && !mobileDrawer.classList.contains('hidden')) {
+                closeDrawer();
+            }
+        });
+    </script>
+</body>
+</html>

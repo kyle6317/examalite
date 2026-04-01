@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Điều khoản sử dụng Terms</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Exama Design System — Document Stylesheet */
+    :root {
+      --color-paper-50:  #faf9f6;
+      --color-paper-100: #f4f2ec;
+      --color-paper-200: #e8e4d9;
+      --color-paper-300: #d6d0c4;
+      --color-ink-100: #e0ddd7;
+      --color-ink-200: #b8b3a8;
+      --color-ink-300: #8c8679;
+      --color-ink-400: #5e5a52;
+      --color-ink-500: #3a3731;
+      --color-ink-600: #27251f;
+      --color-ink-700: #1a1814;
+      --color-accent-50:  #f0f4f8;
+      --color-accent-100: #d9e5f0;
+      --color-accent-200: #adc5df;
+      --color-accent-300: #7aa3c8;
+      --color-accent-400: #4e84b4;
+      --color-accent-500: #2d6899;
+      --color-accent-600: #1f5280;
+      --color-accent-700: #153d60;
+      --color-success-50:  #f0f7f0;
+      --color-success-200: #a0cfa0;
+      --color-success-300: #5fa85f;
+      --color-success-500: #256825;
+      --color-warning-50:  #fdf8ed;
+      --color-warning-200: #eecf88;
+      --color-warning-300: #d9a93a;
+      --color-warning-500: #8f6a14;
+      --color-danger-50:  #fdf0f0;
+      --color-danger-200: #e8a0a0;
+      --color-danger-300: #d05f5f;
+      --color-danger-500: #8a2020;
+      --font-serif: 'Noto Serif', Georgia, serif;
+      --font-sans:  'DM Sans', system-ui, sans-serif;
+      --font-mono:  ui-monospace, 'Cascadia Code', monospace;
+      --shadow-paper:    0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06);
+      --shadow-paper-md: 0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--color-ink-500);
+      background-color: var(--color-paper-50);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+      padding: 40px 16px 80px;
+    }
+
+    .doc-wrapper {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* Document header */
+    .doc-header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--color-paper-300);
+    }
+
+    .doc-title {
+      font-family: var(--font-serif);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--color-ink-700);
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .doc-meta {
+      font-size: 13px;
+      color: var(--color-ink-300);
+    }
+
+    /* Main content card */
+    .doc-card {
+      background: #ffffff;
+      border: 1px solid var(--color-paper-200);
+      border-radius: 8px;
+      box-shadow: var(--shadow-paper);
+      padding: 40px 48px;
+    }
+
+    @media (max-width: 600px) {
+      .doc-card { padding: 24px 20px; }
+      .doc-title { font-size: 22px; }
+    }
+
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-serif);
+      color: var(--color-ink-600);
+      line-height: 1.3;
+      margin-top: 2em;
+      margin-bottom: 0.6em;
+    }
+
+    h1 { font-size: 26px; color: var(--color-ink-700); border-bottom: 1px solid var(--color-paper-200); padding-bottom: 12px; margin-top: 0; }
+    h2 { font-size: 22px; color: var(--color-ink-600); }
+    h3 { font-size: 18px; color: var(--color-ink-600); }
+    h4 { font-family: var(--font-sans); font-size: 15px; font-weight: 600; color: var(--color-ink-500); letter-spacing: 0.01em; }
+    h5 { font-family: var(--font-sans); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-ink-300); }
+    h6 { font-family: var(--font-sans); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-ink-300); }
+
+    /* First heading after card start — no top margin */
+    .doc-card > h1:first-child,
+    .doc-card > h2:first-child {
+      margin-top: 0;
+    }
+
+    /* Paragraphs */
+    p { margin-bottom: 1em; line-height: 1.7; }
+    p:last-child { margin-bottom: 0; }
+
+    /* Links */
+    a { color: var(--color-accent-500); text-decoration: underline; text-underline-offset: 2px; }
+    a:hover { color: var(--color-accent-600); }
+
+    /* Strong / Em */
+    strong { font-weight: 600; color: var(--color-ink-600); }
+    em { font-style: italic; color: var(--color-ink-400); }
+    del { text-decoration: line-through; color: var(--color-ink-300); }
+
+    /* Code */
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.875em;
+      background: var(--color-paper-100);
+      border: 1px solid var(--color-paper-200);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--color-ink-600);
+    }
+
+    pre {
+      background: var(--color-ink-700);
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 1.5em 0;
+      box-shadow: var(--shadow-paper-md);
+    }
+
+    pre code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: none;
+      border: none;
+      padding: 0;
+      color: #d4c5a9;
+      line-height: 1.6;
+      border-radius: 0;
+    }
+
+    /* Blockquote */
+    blockquote {
+      border-left: 3px solid var(--color-accent-500);
+      background: var(--color-accent-50);
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin: 1.5em 0;
+      color: var(--color-ink-400);
+      font-style: italic;
+    }
+
+    blockquote p { margin-bottom: 0; color: var(--color-ink-400); }
+
+    /* HR */
+    hr {
+      border: none;
+      border-top: 1px solid var(--color-paper-300);
+      margin: 2.5em 0;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin: 0.75em 0 1em 1.5em;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35em;
+      line-height: 1.6;
+    }
+
+    li::marker { color: var(--color-ink-300); }
+
+    ul li::marker { content: "–  "; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5em 0;
+      font-size: 14px;
+      border: 1px solid var(--color-paper-200);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-paper);
+    }
+
+    thead { background: var(--color-paper-100); }
+
+    th {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--color-ink-300);
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-paper-200);
+    }
+
+    td {
+      padding: 10px 14px;
+      color: var(--color-ink-500);
+      border-bottom: 1px solid var(--color-paper-200);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--color-paper-50); }
+
+    /* Images */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--color-paper-200);
+      box-shadow: var(--shadow-paper);
+      margin: 1em 0;
+      display: block;
+    }
+
+    /* Footer */
+    .doc-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--color-paper-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .doc-footer-brand {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      color: var(--color-ink-300);
+    }
+
+    .doc-footer-brand span { color: var(--color-accent-400); }
+
+    .doc-footer-date {
+      font-size: 12px;
+      color: var(--color-ink-200);
+    }
+  </style>
+</head>
+<body>
+  <div class="doc-wrapper">
+    <header class="doc-header">
+      <h1 class="doc-title">Điều khoản sử dụng Terms</h1>
+      <p class="doc-meta">Chuyển đổi từ Markdown · Exama Design System</p>
+    </header>
+
+    <main class="doc-card">
+      <h1 id="iu-khon-s-dng-terms-of-service">Điều khoản sử dụng (Terms of Service)</h1>
+<p><strong>Ngày hiệu lực:</strong> 01/04/2026</p>
+<p>Chào mừng bạn đến với <strong>Exama Lite</strong> (“dịch vụ”, “nền tảng”, “chúng tôi”). Khi truy cập hoặc sử dụng Exama Lite tại <code>examalite.pages.dev</code>, bạn đồng ý tuân theo các điều khoản dưới đây. Nếu bạn không đồng ý với bất kỳ phần nào, vui lòng không sử dụng dịch vụ.</p>
+<h2 id="1-m-t-dch-v">1. Mô tả dịch vụ</h2>
+<p>Exama Lite là nền tảng hỗ trợ tạo, quản lý và ôn tập đề thi cá nhân. Dịch vụ cho phép người dùng soạn đề, luyện tập, kiểm tra và chia sẻ bài làm thông qua liên kết.</p>
+<h2 id="2-iu-kin-s-dng">2. Điều kiện sử dụng</h2>
+<p>Để sử dụng dịch vụ, bạn cần cung cấp một địa chỉ email hợp lệ. Bạn chịu trách nhiệm bảo mật quyền truy cập vào email và các phiên đăng nhập liên quan đến tài khoản của mình.</p>
+<h2 id="3-ti-khon-v-trch-nhim-ngi-dng">3. Tài khoản và trách nhiệm người dùng</h2>
+<p>Bạn chịu trách nhiệm đối với mọi hoạt động phát sinh từ tài khoản hoặc phiên sử dụng của bạn. Bạn cam kết cung cấp thông tin chính xác và không sử dụng tài khoản của mình vào mục đích gian lận, gây rối hoặc vi phạm pháp luật.</p>
+<h2 id="4-ni-dung-do-ngi-dng-to">4. Nội dung do người dùng tạo</h2>
+<p>Bạn có thể tạo, lưu trữ và chia sẻ nội dung ôn tập, bao gồm câu hỏi, đáp án, tài liệu đính kèm và các dữ liệu liên quan.</p>
+<p>Bạn là người chịu trách nhiệm đối với nội dung mà bạn tạo hoặc tải lên. Bạn cam kết không đăng tải nội dung:</p>
+<ul><li>vi phạm bản quyền hoặc quyền sở hữu trí tuệ của người khác;</li><li>chứa mã độc, phần mềm độc hại hoặc hành vi phá hoại;</li><li>có tính xúc phạm, quấy rối, lừa đảo, đe dọa hoặc bất hợp pháp.</li></ul>
+<h2 id="5-quyn-s-dng-ni-dung">5. Quyền sử dụng nội dung</h2>
+<p>Để vận hành dịch vụ, bạn cho phép Exama Lite quyền lưu trữ, xử lý, hiển thị và phân phối nội dung của bạn trong phạm vi cần thiết để cung cấp các chức năng của nền tảng, bao gồm tạo đề, luyện tập, kiểm tra và chia sẻ bài làm.</p>
+<p>Quyền sở hữu nội dung vẫn thuộc về bạn, trừ khi nội dung đó thuộc về bên thứ ba.</p>
+<h2 id="6-chia-s-v-truy-cp-cng-khai">6. Chia sẻ và truy cập công khai</h2>
+<p>Exama Lite cho phép người dùng chia sẻ đề thi hoặc bài ôn tập qua liên kết. Khi bạn chia sẻ nội dung, bạn hiểu rằng người nhận liên kết có thể xem hoặc sử dụng nội dung đó theo cách mà bạn đã cấu hình trong hệ thống.</p>
+<p>Bạn tự chịu trách nhiệm đối với việc chia sẻ liên kết công khai hoặc giới hạn truy cập không đúng mong muốn.</p>
+<h2 id="7-hnh-vi-b-cm">7. Hành vi bị cấm</h2>
+<p>Bạn không được:</p>
+<ul><li>cố gắng truy cập trái phép vào hệ thống, dữ liệu, hoặc tài khoản của người khác;</li><li>can thiệp, phá hoại, làm quá tải hoặc gây gián đoạn dịch vụ;</li><li>tự động thu thập dữ liệu trái phép;</li><li>sử dụng nền tảng cho mục đích spam, lừa đảo hoặc hành vi vi phạm pháp luật;</li><li>cố ý tải lên nội dung độc hại, sai sự thật hoặc gây tổn hại cho người khác.</li></ul>
+<h2 id="8-lu-tr-d-liu">8. Lưu trữ dữ liệu</h2>
+<p>Dữ liệu của nền tảng có thể được lưu trữ và xử lý trên các hệ thống của bên cung cấp hạ tầng mà chúng tôi sử dụng để vận hành dịch vụ. Chúng tôi có thể dùng các dịch vụ bên thứ ba cần thiết cho xác thực, cơ sở dữ liệu, lưu trữ và chức năng máy chủ.</p>
+<h2 id="9-tnh-sn-sng-ca-dch-v">9. Tính sẵn sàng của dịch vụ</h2>
+<p>Chúng tôi cố gắng duy trì dịch vụ ổn định, nhưng không cam kết rằng dịch vụ sẽ luôn không gián đoạn, không lỗi hoặc luôn sẵn sàng trong mọi thời điểm.</p>
+<p>Chúng tôi có thể tạm ngưng, thay đổi, giới hạn hoặc chấm dứt một phần hay toàn bộ dịch vụ bất kỳ lúc nào để bảo trì, nâng cấp, hoặc vì lý do kỹ thuật, bảo mật, hoặc pháp lý.</p>
+<h2 id="10-t-chi-bo-m">10. Từ chối bảo đảm</h2>
+<p>Dịch vụ được cung cấp theo nguyên tắc “như hiện có” và “như có sẵn”. Trong phạm vi pháp luật cho phép, chúng tôi không bảo đảm rằng:</p>
+<ul><li>dịch vụ sẽ phù hợp với mọi nhu cầu của bạn;</li><li>kết quả sử dụng dịch vụ sẽ luôn chính xác hoặc hoàn hảo;</li><li>mọi lỗi hoặc gián đoạn sẽ được khắc phục ngay lập tức.</li></ul>
+<h2 id="11-gii-hn-trch-nhim">11. Giới hạn trách nhiệm</h2>
+<p>Trong phạm vi pháp luật cho phép, Exama Lite và tác giả của nền tảng không chịu trách nhiệm đối với các thiệt hại gián tiếp, ngẫu nhiên, đặc biệt, hoặc hệ quả phát sinh từ việc bạn sử dụng hoặc không thể sử dụng dịch vụ.</p>
+<h2 id="12-chm-dt">12. Chấm dứt</h2>
+<p>Chúng tôi có quyền tạm khóa hoặc chấm dứt quyền truy cập của bạn nếu bạn vi phạm các điều khoản này hoặc có hành vi gây ảnh hưởng đến hoạt động, an toàn hoặc uy tín của dịch vụ.</p>
+<h2 id="13-thay-i-iu-khon">13. Thay đổi điều khoản</h2>
+<p>Chúng tôi có thể cập nhật các điều khoản này theo thời gian. Phiên bản mới sẽ có hiệu lực kể từ thời điểm được đăng tải trên nền tảng. Việc bạn tiếp tục sử dụng dịch vụ sau khi điều khoản được cập nhật đồng nghĩa với việc bạn chấp nhận phiên bản mới.</p>
+<h2 id="14-lut-p-dng">14. Luật áp dụng</h2>
+<p>Các điều khoản này được hiểu và áp dụng theo pháp luật hiện hành của Việt Nam, trừ khi quy định pháp luật bắt buộc khác có hiệu lực.</p>
+<h2 id="15-lin-h">15. Liên hệ</h2>
+<p>Nếu bạn có câu hỏi về các điều khoản này, vui lòng liên hệ:</p>
+<p><strong>Nguyen Huu Hoa</strong> Email: <strong><a href="mailto:nguyenhuuhoa@proton.me">nguyenhuuhoa@proton.me</a></strong></p>
+
+    </main>
+
+    <footer class="doc-footer">
+      <span class="doc-footer-brand">Exam<span>a</span> Design System</span>
+      <span class="doc-footer-date">Tạo ngày 1 tháng 4, 2026</span>
+    </footer>
+  </div>
+</body>
+</html>

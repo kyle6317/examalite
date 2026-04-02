@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>DOCX → HTML (SuperDoc)</title>
+  <link href="https://cdn.jsdelivr.net/npm/superdoc/dist/style.css" rel="stylesheet">
+  <script type="importmap">
+    {
+      "imports": {
+        "yjs": "https://esm.sh/yjs",
+        "lib0/": "https://esm.sh/lib0/",
+        "y-protocols/": "https://esm.sh/y-protocols/"
+      }
+    }
+  </script>
+  <style>
+    body { font-family: sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    #drop-zone {
+      border: 2px dashed #aaa; border-radius: 8px;
+      padding: 40px; text-align: center; cursor: pointer; color: #666;
+      margin-bottom: 20px;
+    }
+    #drop-zone.dragover { border-color: #333; background: #f5f5f5; }
+    #controls { display: none; gap: 10px; margin-bottom: 20px; }
+    button {
+      padding: 8px 16px; cursor: pointer; border: 1px solid #333;
+      border-radius: 4px; background: #fff;
+    }
+    button:hover { background: #f0f0f0; }
+    #html-output {
+      display: none; width: 100%; height: 400px;
+      font-family: monospace; font-size: 13px;
+      border: 1px solid #ccc; border-radius: 4px; padding: 10px;
+      box-sizing: border-box; resize: vertical;
+    }
+    /* SuperDoc editor ẩn để render */
+    #superdoc-container {
+      position: absolute; left: -9999px;
+      width: 800px; height: 1000px; overflow: hidden;
+    }
+    #status { color: #888; font-size: 14px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h2>DOCX → HTML</h2>
+  <p>Dùng SuperDoc để convert, giữ nguyên màu chữ, bold/italic/underline, heading, table.</p>
+
+  <div id="drop-zone">
+    <div>📄 Kéo thả file .docx vào đây</div>
+    <div style="margin-top:8px;font-size:13px">hoặc <label for="file-input" style="text-decoration:underline;cursor:pointer">chọn file</label></div>
+    <input type="file" id="file-input" accept=".docx" style="display:none">
+  </div>
+
+  <div id="status"></div>
+
+  <div id="controls">
+    <button id="btn-copy">📋 Copy HTML</button>
+    <button id="btn-download">⬇️ Download .html</button>
+    <button id="btn-reset">🔄 Chọn file khác</button>
+  </div>
+
+  <textarea id="html-output" readonly placeholder="HTML output sẽ hiện ở đây..."></textarea>
+
+  <!-- SuperDoc render ẩn -->
+  <div id="superdoc-container"></div>
+
+  <script type="module">
+    import { SuperDoc } from 'https://esm.sh/superdoc';
+
+    let superdocInstance = null;
+    let htmlResult = '';
+
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const controls = document.getElementById('controls');
+    const htmlOutput = document.getElementById('html-output');
+    const status = document.getElementById('status');
+
+    // Drag & drop
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+    async function handleFile(file) {
+      if (!file || !file.name.endsWith('.docx')) {
+        alert('Vui lòng chọn file .docx');
+        return;
+      }
+
+      status.textContent = '⏳ Đang load SuperDoc...';
+      dropZone.style.display = 'none';
+
+      // Destroy instance cũ
+      if (superdocInstance) {
+        try { superdocInstance.destroy(); } catch(e) {}
+        document.getElementById('superdoc-container').innerHTML = '';
+      }
+
+      superdocInstance = new SuperDoc({
+        selector: '#superdoc-container',
+        document: file,
+        documentMode: 'viewing',
+      });
+
+      // Chờ editor ready
+      const waitReady = () => new Promise((resolve) => {
+        const check = () => {
+          if (superdocInstance.activeEditor) return resolve();
+          setTimeout(check, 100);
+        };
+        check();
+
+        // event nếu có
+        try {
+          superdocInstance.on('ready', resolve);
+        } catch(e) {}
+      });
+
+      await waitReady();
+
+      // Thêm delay nhỏ để đảm bảo render xong
+      await new Promise(r => setTimeout(r, 500));
+
+      try {
+        const html = superdocInstance.activeEditor.getHTML();
+        htmlResult = html;
+        htmlOutput.value = html;
+        htmlOutput.style.display = 'block';
+        controls.style.display = 'flex';
+        status.textContent = `✅ Done — ${html.length.toLocaleString()} ký tự HTML`;
+      } catch(e) {
+        status.textContent = '❌ Lỗi khi lấy HTML: ' + e.message;
+      }
+    }
+
+    // Copy
+    document.getElementById('btn-copy').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(htmlResult);
+      document.getElementById('btn-copy').textContent = '✅ Đã copy!';
+      setTimeout(() => document.getElementById('btn-copy').textContent = '📋 Copy HTML', 2000);
+    });
+
+    // Download
+    document.getElementById('btn-download').addEventListener('click', () => {
+      const blob = new Blob([htmlResult], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'output.html';
+      a.click();
+    });
+
+    // Reset
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      dropZone.style.display = 'block';
+      controls.style.display = 'none';
+      htmlOutput.style.display = 'none';
+      status.textContent = '';
+      fileInput.value = '';
+      htmlResult = '';
+    });
+  </script>
+</body>
+</html>

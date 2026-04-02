@@ -142,9 +142,10 @@ export function parseHtmlToExam(html) {
     if (Q_START.test(text)) questionStarts.push(idx);
   });
 
-  const groups = [];
-  let gCounter = 1;
+  // ── Parse each question slice into a typed result ──────────────────────────
+  const parsed = []; // { type, group, questions, startBlockIdx }
   let qCounter = 1;
+  let gCounter = 1;
 
   for (let qi = 0; qi < questionStarts.length; qi++) {
     const start = questionStarts[qi];
@@ -152,11 +153,98 @@ export function parseHtmlToExam(html) {
     const qBlocks = blocks.slice(start, end);
 
     const result = parseQuestionBlocks(qBlocks, qCounter, gCounter);
-    if (!result) continue; // skip unrecognized (tự luận, etc.)
+    if (!result) continue;
+
+    // Determine question type from first question
+    const qType = result.questions[0]?.type || 'unknown';
 
     qCounter += result.questions.length;
     gCounter++;
-    groups.push(result.group);
+    parsed.push({ type: qType, group: result.group, questions: result.questions, startBlockIdx: start });
+  }
+
+  // ── Merge consecutive single_choice into groups ────────────────────────────
+  const groups = [];
+  let mergedGCounter = 1;
+  let mergedQCounter = 1;
+
+  let i = 0;
+  while (i < parsed.length) {
+    const item = parsed[i];
+
+    if (item.type === 'single_choice') {
+      // Collect run of consecutive single_choice items
+      const run = [item];
+      let j = i + 1;
+      while (j < parsed.length && parsed[j].type === 'single_choice') {
+        run.push(parsed[j]);
+        j++;
+      }
+
+      // Pick label: text of the block immediately before the first question block
+      const firstBlockIdx = run[0].startBlockIdx;
+      let label = '';
+      if (firstBlockIdx > 0) {
+        const prevBlock = blocks[firstBlockIdx - 1];
+        const prevText = prevBlock?.textContent?.trim() || '';
+        // Only use as label if it doesn't look like another question
+        if (prevText && !Q_START.test(prevText)) {
+          label = prevText;
+        }
+      }
+
+      // Re-number and collect all questions from the run
+      const allQuestions = [];
+      let localQIdx = mergedQCounter;
+      let localCIdx = 1;
+      for (const r of run) {
+        for (const q of r.questions) {
+          // Re-map choice ids to be unique within this merged group
+          const choiceIdMap = {};
+          const newChoices = (q.choices || []).map(c => {
+            const newId = `c${localCIdx}`;
+            choiceIdMap[c.id] = newId;
+            localCIdx++;
+            return { ...c, id: newId };
+          });
+          // Re-map answer
+          let newAnswer = q.answer;
+          if (typeof q.answer === 'string' && choiceIdMap[q.answer]) {
+            newAnswer = choiceIdMap[q.answer];
+          } else if (Array.isArray(q.answer)) {
+            newAnswer = q.answer.map(a => choiceIdMap[a] || a);
+          }
+          allQuestions.push({
+            ...q,
+            id: `q${localQIdx++}`,
+            choices: newChoices,
+            answer: newAnswer,
+          });
+        }
+      }
+
+      groups.push({
+        id: `g${mergedGCounter++}`,
+        label,
+        context: '',
+        context_media: [],
+        questions: allQuestions,
+      });
+
+      mergedQCounter += allQuestions.length;
+      i = j;
+    } else {
+      // Non-single_choice: keep as individual group (e.g. true_false_group)
+      const q = item.group;
+      // Re-number
+      const reNumbered = {
+        ...q,
+        id: `g${mergedGCounter++}`,
+        questions: q.questions.map(qq => ({ ...qq, id: `q${mergedQCounter++}` })),
+      };
+      groups.push(reNumbered);
+      i++;
+    }
   }
 
   return { groups };
@@ -195,6 +283,9 @@ function detectLayout(blocks) {
   // Check for paragraph-based ABCD (text starts with A. B. C. D.)
   const paraABCD = blocks.filter(b => /^\s*[A-D]\s*[.)]\s*\S/.test(b.textContent));
 
+  // Check for 2-choices-per-paragraph (A...B... on same line)
+  const twoPerLine = blocks.filter(b => /^\s*[A-D]\s*[.)].+[B-D]\s*[.)]/i.test(b.textContent));
+
   // Check for paragraph-based abcd
   const paraAbcd = blocks.filter(b => /^\s*[a-d]\s*[.)]\s*\S/.test(b.textContent));
 
@@ -204,7 +295,7 @@ function detectLayout(blocks) {
     return /A\s*[.)]/i.test(t) && /B\s*[.)]/i.test(t) && /C\s*[.)]/i.test(t) && /D\s*[.)]/i.test(t);
   });
 
-  const hasUpperABCD = listABCD.length >= 2 || paraABCD.length >= 2 || inlineABCD;
+  const hasUpperABCD = listABCD.length >= 2 || paraABCD.length >= 2 || twoPerLine.length >= 1 || inlineABCD;
   const hasLowerAbcd = listAbcd.length >= 2 || paraAbcd.length >= 2;
 
   if (hasLowerAbcd) return 'true_false_group';
@@ -311,22 +402,31 @@ function extractChoicesABCD(blocks) {
     }));
   }
 
-  // Layout 2: separate paragraphs starting with A. B. C. D.
+  // Layout 2: paragraphs starting with A. / B. / C. / D.
+  // A paragraph may contain 1 OR 2 choices (e.g. "A. text [tab] B. text")
   const paraItems = blocks.filter(b => /^\s*[A-D]\s*[.)]\s*\S/.test(b.textContent));
   if (paraItems.length >= 2) {
-    return paraItems.map(b => {
-      const m = b.textContent.match(/^\s*([A-D])\s*[.)]\s*(.*)/s);
-      return {
-        letter: m ? m[1] : '?',
-        text: m ? m[2].trim() : b.textContent.trim(),
-        media: extractMediaRefs([b]),
-        formatting: getFormatting(b),
-        block: b,
-      };
-    });
+    const choices = [];
+    for (const b of paraItems) {
+      const t = b.textContent;
+      // Block contains a second choice marker → split with parseInlineChoices
+      if (/^\s*[A-D]\s*[.)].+[B-D]\s*[.)]/i.test(t)) {
+        choices.push(...parseInlineChoices(b));
+      } else {
+        const m = t.match(/^\s*([A-D])\s*[.)]\s*(.*)/s);
+        choices.push({
+          letter: m ? m[1] : '?',
+          text: m ? m[2].trim() : t.trim(),
+          media: extractMediaRefs([b]),
+          formatting: getFormatting(b),
+          block: b,
+        });
+      }
+    }
+    if (choices.length >= 2) return choices;
   }
 
-  // Layout 3: inline — split from the paragraph
+  // Layout 3: inline — all choices in one paragraph
   const inlineBlock = blocks.find(b => {
     const t = b.textContent;
     return /A\s*[.)]/i.test(t) && /B\s*[.)]/i.test(t);

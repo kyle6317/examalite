@@ -2,14 +2,13 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Exama Lite — Nền tảng tạo đề ôn tập</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>README</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
+    /* Exama Design System — Document Stylesheet */
     :root {
       --color-paper-50:  #faf9f6;
       --color-paper-100: #f4f2ec;
@@ -31,544 +30,309 @@
       --color-accent-600: #1f5280;
       --color-accent-700: #153d60;
       --color-success-50:  #f0f7f0;
+      --color-success-200: #a0cfa0;
       --color-success-300: #5fa85f;
       --color-success-500: #256825;
-      --shadow-paper:    0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06);
-      --shadow-paper-md: 0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08);
-      --shadow-paper-lg: 0 8px 20px 0 rgba(58,55,49,0.12), 0 2px 6px -1px rgba(58,55,49,0.08);
+      --color-warning-50:  #fdf8ed;
+      --color-warning-200: #eecf88;
+      --color-warning-300: #d9a93a;
+      --color-warning-500: #8f6a14;
+      --color-danger-50:  #fdf0f0;
+      --color-danger-200: #e8a0a0;
+      --color-danger-300: #d05f5f;
+      --color-danger-500: #8a2020;
       --font-serif: 'Noto Serif', Georgia, serif;
       --font-sans:  'DM Sans', system-ui, sans-serif;
+      --font-mono:  ui-monospace, 'Cascadia Code', monospace;
+      --shadow-paper:    0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06);
+      --shadow-paper-md: 0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08);
     }
 
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: var(--font-sans);
-      background-color: var(--color-paper-50);
-      color: var(--color-ink-500);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      font-size: 15px;
       line-height: 1.6;
+      color: var(--color-ink-500);
+      background-color: var(--color-paper-50);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+      padding: 40px 16px 80px;
     }
 
-    h1, h2, h3 { font-family: var(--font-serif); color: var(--color-ink-700); }
-
-    /* Navbar */
-    .navbar {
-      background: rgba(250, 249, 246, 0.94);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--color-paper-200);
-      position: sticky; top: 0; z-index: 50;
+    .doc-wrapper {
+      max-width: 760px;
+      margin: 0 auto;
     }
 
-    /* Buttons */
-    .btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-family: var(--font-sans); font-size: 14px; font-weight: 500;
-      border-radius: 6px; cursor: pointer; border: none;
-      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-      text-decoration: none; white-space: nowrap;
+    /* Document header */
+    .doc-header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--color-paper-300);
     }
-    .btn-sm  { padding: 6px 12px; font-size: 12px; }
-    .btn-md  { padding: 9px 16px; font-size: 14px; }
-    .btn-lg  { padding: 10px 20px; font-size: 16px; }
 
-    .btn-primary {
-      background: var(--color-accent-500); color: #fff;
+    .doc-title {
+      font-family: var(--font-serif);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--color-ink-700);
+      line-height: 1.25;
+      margin-bottom: 8px;
     }
-    .btn-primary:hover { background: var(--color-accent-600); }
-    .btn-primary:active { background: var(--color-accent-700); box-shadow: inset 0 1px 2px rgba(0,0,0,0.12); }
 
-    .btn-secondary {
-      background: var(--color-paper-100); color: var(--color-ink-500);
-      border: 1px solid var(--color-paper-300);
+    .doc-meta {
+      font-size: 13px;
+      color: var(--color-ink-300);
     }
-    .btn-secondary:hover { background: var(--color-paper-200); }
 
-    .btn-outline {
-      background: transparent; color: var(--color-accent-500);
-      border: 1px solid var(--color-accent-500);
-    }
-    .btn-outline:hover { background: var(--color-accent-50); border-color: var(--color-accent-600); color: var(--color-accent-600); }
-
-    /* Cards */
-    .card {
-      background: #fff;
+    /* Main content card */
+    .doc-card {
+      background: #ffffff;
       border: 1px solid var(--color-paper-200);
       border-radius: 8px;
       box-shadow: var(--shadow-paper);
+      padding: 40px 48px;
     }
-    .card-hover:hover {
-      border-color: var(--color-accent-300);
+
+    @media (max-width: 600px) {
+      .doc-card { padding: 24px 20px; }
+      .doc-title { font-size: 22px; }
+    }
+
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-serif);
+      color: var(--color-ink-600);
+      line-height: 1.3;
+      margin-top: 2em;
+      margin-bottom: 0.6em;
+    }
+
+    h1 { font-size: 26px; color: var(--color-ink-700); border-bottom: 1px solid var(--color-paper-200); padding-bottom: 12px; margin-top: 0; }
+    h2 { font-size: 22px; color: var(--color-ink-600); }
+    h3 { font-size: 18px; color: var(--color-ink-600); }
+    h4 { font-family: var(--font-sans); font-size: 15px; font-weight: 600; color: var(--color-ink-500); letter-spacing: 0.01em; }
+    h5 { font-family: var(--font-sans); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-ink-300); }
+    h6 { font-family: var(--font-sans); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-ink-300); }
+
+    /* First heading after card start — no top margin */
+    .doc-card > h1:first-child,
+    .doc-card > h2:first-child {
+      margin-top: 0;
+    }
+
+    /* Paragraphs */
+    p { margin-bottom: 1em; line-height: 1.7; }
+    p:last-child { margin-bottom: 0; }
+
+    /* Links */
+    a { color: var(--color-accent-500); text-decoration: underline; text-underline-offset: 2px; }
+    a:hover { color: var(--color-accent-600); }
+
+    /* Strong / Em */
+    strong { font-weight: 600; color: var(--color-ink-600); }
+    em { font-style: italic; color: var(--color-ink-400); }
+    del { text-decoration: line-through; color: var(--color-ink-300); }
+
+    /* Code */
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.875em;
+      background: var(--color-paper-100);
+      border: 1px solid var(--color-paper-200);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--color-ink-600);
+    }
+
+    pre {
+      background: var(--color-ink-700);
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 1.5em 0;
       box-shadow: var(--shadow-paper-md);
     }
 
-    /* Hero badge */
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--color-accent-50); color: var(--color-accent-600);
-      border: 1px solid var(--color-accent-200);
-      border-radius: 9999px; padding: 4px 14px;
-      font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    pre code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: none;
+      border: none;
+      padding: 0;
+      color: #d4c5a9;
+      line-height: 1.6;
+      border-radius: 0;
     }
 
-    /* Feature Icon */
-    .feature-icon {
-      width: 44px; height: 44px;
+    /* Blockquote */
+    blockquote {
+      border-left: 3px solid var(--color-accent-500);
       background: var(--color-accent-50);
-      border: 1px solid var(--color-accent-200);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin: 1.5em 0;
+      color: var(--color-ink-400);
+      font-style: italic;
     }
 
-    /* Step number */
-    .step-num {
-      width: 36px; height: 36px; border-radius: 9999px;
-      background: var(--color-accent-500); color: #fff;
-      font-family: var(--font-serif); font-weight: 700; font-size: 15px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    blockquote p { margin-bottom: 0; color: var(--color-ink-400); }
+
+    /* HR */
+    hr {
+      border: none;
+      border-top: 1px solid var(--color-paper-300);
+      margin: 2.5em 0;
     }
 
-    .section-label {
-      font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
-      text-transform: uppercase; color: var(--color-ink-300);
-      font-family: var(--font-sans);
+    /* Lists */
+    ul, ol {
+      margin: 0.75em 0 1em 1.5em;
+      padding: 0;
     }
 
-    hr { border: none; border-top: 1px solid var(--color-paper-200); }
-
-    footer { border-top: 1px solid var(--color-paper-200); }
-
-    /* Animations */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(18px); }
-      to   { opacity: 1; transform: translateY(0); }
+    li {
+      margin-bottom: 0.35em;
+      line-height: 1.6;
     }
-    .animate-fade-up { animation: fadeUp 0.55s ease both; }
-    .delay-1 { animation-delay: 0.1s; }
-    .delay-2 { animation-delay: 0.2s; }
-    .delay-3 { animation-delay: 0.3s; }
-    .delay-4 { animation-delay: 0.4s; }
-    .delay-5 { animation-delay: 0.5s; }
 
-    /* Mobile menu */
-    .mobile-menu {
-      display: none; flex-direction: column; gap: 12px;
-      padding: 16px 20px;
-      border-top: 1px solid var(--color-paper-200);
-      background: var(--color-paper-50);
-    }
-    .mobile-menu.open { display: flex; }
+    li::marker { color: var(--color-ink-300); }
 
-    /* Demo image card */
-    .demo-image-card {
-      background: #fff;
-      border: 1px solid var(--color-paper-200);
-      border-radius: 20px;
-      box-shadow: var(--shadow-paper-lg);
-      overflow: hidden;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .demo-image-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 30px -12px rgba(0,0,0,0.12);
-    }
-    .demo-img-placeholder {
+    ul li::marker { content: "–  "; }
+
+    /* Tables */
+    table {
       width: 100%;
-      background: linear-gradient(145deg, #f1efe8 0%, #eae7df 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 280px;
-      position: relative;
+      border-collapse: collapse;
+      margin: 1.5em 0;
+      font-size: 14px;
+      border: 1px solid var(--color-paper-200);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-paper);
+    }
+
+    thead { background: var(--color-paper-100); }
+
+    th {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--color-ink-300);
+      padding: 10px 14px;
+      text-align: left;
       border-bottom: 1px solid var(--color-paper-200);
     }
-    .demo-img-placeholder img {
+
+    td {
+      padding: 10px 14px;
+      color: var(--color-ink-500);
+      border-bottom: 1px solid var(--color-paper-200);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--color-paper-50); }
+
+    /* Images */
+    img {
       max-width: 100%;
       height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--color-paper-200);
+      box-shadow: var(--shadow-paper);
+      margin: 1em 0;
       display: block;
-      object-fit: cover;
-    }
-    /* fallback nếu ảnh chưa có */
-    .demo-fallback {
-      text-align: center;
-      padding: 32px 20px;
-      color: var(--color-ink-400);
-      font-size: 14px;
     }
 
-    /* Scroll reveal */
-    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    /* Responsive navbar tweaks */
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .hamburger { display: flex !important; }
-      /* Ẩn logo-icon trên mobile nhưng giữ text Exama Lite */
-      .logo-icon-mobile-hide {
-        display: none !important;
-      }
-      .navbar .flex.items-center.justify-between .logo-icon-area {
-        display: none;
-      }
-    }
-
-    /* Helper */
-    .logo-icon-area {
+    /* Footer */
+    .doc-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--color-paper-200);
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .doc-footer-brand {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      color: var(--color-ink-300);
+    }
+
+    .doc-footer-brand span { color: var(--color-accent-400); }
+
+    .doc-footer-date {
+      font-size: 12px;
+      color: var(--color-ink-200);
     }
   </style>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          maxWidth: { '8xl': '1280px' }
-        }
-      }
-    }
-  </script>
 </head>
-
 <body>
+  <div class="doc-wrapper">
+    <header class="doc-header">
+      <h1 class="doc-title">README</h1>
+      <p class="doc-meta">Chuyển đổi từ Markdown · Exama Design System</p>
+    </header>
 
-<!-- ═══════════════════════════════════════ NAVBAR (optimized for mobile) ═══════════════════════════════════════ -->
-<nav class="navbar" role="navigation" aria-label="Điều hướng chính">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+    <main class="doc-card">
+      <h1>Exama Lite</h1>
+<p><strong>Exama Lite</strong> là một nền tảng nhỏ hỗ trợ tạo và làm đề ôn tập cá nhân. Dự án ra đời nhằm cung cấp một phương án thay thế đơn giản, không quảng cáo và dễ tiếp cận cho học sinh trong các kỳ thi, khi mà các nền tảng hiện có thường quá phức tạp hoặc bị giới hạn tính năng.</p>
+<p><strong>Trải nghiệm tại:</strong> <a href="https://examalite.pages.dev/">examalite.pages.dev</a></p>
+<hr>
+<h2>Điểm nổi bật</h2>
+<ul>
+<li><strong>Đơn giản &amp; Miễn phí:</strong> Chỉ cần một địa chỉ email để bắt đầu.</li>
+<li><strong>Không quảng cáo:</strong> Tập trung hoàn toàn vào việc ôn tập mà không bị xao nhãng.</li>
+<li><strong>Tự do:</strong> Không cần tài khoản giáo viên, học sinh có thể tự tạo đề và chia sẻ link cho nhau.</li>
+</ul>
+<hr>
+<h2>Công nghệ</h2>
+<p>Dự án ưu tiên sự tối giản trong mã nguồn để dễ dàng bảo trì và mở rộng:</p>
+<ul>
+<li><strong>Frontend:</strong> Vanilla JS &amp; Tailwind CSS.</li>
+<li><strong>Backend:</strong> Supabase (Auth, Database, Storage, Edge Functions).</li>
+<li><strong>Lưu trữ:</strong> Nội dung đề thi được đóng gói dạng file <code>.zip</code> (JSON + Media) để tiết kiệm tài nguyên.</li>
+</ul>
+<hr>
+<h2>Các chức năng chính</h2>
+<h3>1. Trình soạn đề (/editor)</h3>
+<ul>
+<li>Hỗ trợ các loại câu hỏi cơ bản: Trắc nghiệm (đơn/đa đáp án), Đúng/Sai, Điền số, Điền từ, và Nhóm câu hỏi dùng chung dữ kiện.</li>
+<li>Thiết lập: Tên đề, thời gian làm bài, thời hạn truy cập, xáo trộn câu hỏi và đáp án.</li>
+<li>Hỗ trợ đọc nội dung từ file <code>.docx</code> ngay trên trình duyệt để tiết kiệm thời gian nhập liệu.</li>
+</ul>
+<h3>2. Chế độ luyện tập (/study)</h3>
+<ul>
+<li><strong>Chế độ Học tập:</strong> Trả lời theo dạng flashcard. Câu hỏi trả lời sai sẽ xuất hiện lại cho đến khi hoàn thành bài học.</li>
+<li><strong>Chế độ Kiểm tra:</strong> Giao diện làm bài nghiêm túc với đồng hồ đếm ngược, danh sách câu hỏi điều hướng và chấm điểm sau khi nộp.</li>
+</ul>
+<h3>3. Dashboard quản lý (/app)</h3>
+<ul>
+<li>Nơi lưu trữ và quản lý các đề thi đã tạo.</li>
+<li>Cho phép chỉnh sửa hoặc lấy link chia sẻ bài thi cho người khác làm mà không cần đăng nhập.</li>
+</ul>
+<hr>
+<h2>Thông tin dự án</h2>
+<ul>
+<li><strong>Tác giả:</strong> Nguyen Huu Hoa (<a href="mailto:nguyenhuuhoa@proton.me">nguyenhuuhoa@proton.me</a>)</li>
+<li><strong>Giấy phép:</strong> MIT</li>
+</ul>
+<hr>
+<p><em>Hy vọng Exama Lite sẽ giúp ích phần nào cho các bạn trong mùa thi cử.</em></p>
 
-    <!-- Logo (chỉ hiển thị text, icon ẩn trên mobile) -->
-    <a href="/" class="flex items-center gap-2 no-underline" aria-label="Exama Lite — Trang chủ">
-      <!-- Icon chỉ hiển thị trên desktop, trên mobile bị ẩn nhờ class -->
-      <div class="logo-icon-area logo-icon-mobile-hide" style="width:30px;height:30px;background:var(--color-accent-500);border-radius:7px;display:flex;align-items:center;justify-content:center;">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="2" y="2" width="12" height="2.5" rx="1" fill="white"/>
-          <rect x="2" y="6.75" width="8" height="2.5" rx="1" fill="white" opacity="0.8"/>
-          <rect x="2" y="11.5" width="10" height="2.5" rx="1" fill="white" opacity="0.6"/>
-        </svg>
-      </div>
-      <span style="font-family:var(--font-serif);font-weight:700;font-size:17px;color:var(--color-ink-700);">Exama Lite</span>
-    </a>
+    </main>
 
-    <!-- Desktop nav links -->
-    <div class="nav-links flex items-center gap-6">
-      <a href="/wiki" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;" onmouseover="this.style.color='var(--color-ink-600)'" onmouseout="this.style.color='var(--color-ink-400)'">Hướng dẫn</a>
-      <a href="/about" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;" onmouseover="this.style.color='var(--color-ink-600)'" onmouseout="this.style.color='var(--color-ink-400)'">Giới thiệu</a>
-      <a href="/donate" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;" onmouseover="this.style.color='var(--color-ink-600)'" onmouseout="this.style.color='var(--color-ink-400)'">Ủng hộ</a>
-    </div>
-
-    <!-- Auth buttons + hamburger -->
-    <div class="flex items-center gap-2 sm:gap-3">
-      <div class="nav-links flex items-center gap-2 sm:gap-3">
-        <a href="/login" class="btn btn-secondary btn-sm">Đăng nhập</a>
-        <a href="/signup" class="btn btn-primary btn-sm">Đăng ký</a>
-      </div>
-      <!-- Hamburger (mobile) -->
-      <button class="hamburger" id="hamburgerBtn" aria-label="Mở menu" aria-expanded="false"
-        style="display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px;">
-        <span id="hb1" style="display:block;width:22px;height:2px;background:var(--color-ink-500);border-radius:2px;transition:transform 0.2s,opacity 0.2s;"></span>
-        <span id="hb2" style="display:block;width:22px;height:2px;background:var(--color-ink-500);border-radius:2px;transition:transform 0.2s,opacity 0.2s;"></span>
-        <span id="hb3" style="display:block;width:22px;height:2px;background:var(--color-ink-500);border-radius:2px;transition:transform 0.2s,opacity 0.2s;"></span>
-      </button>
-    </div>
-
+    <footer class="doc-footer">
+      <span class="doc-footer-brand">Exam<span>a</span> Design System</span>
+      <span class="doc-footer-date">Tạo ngày 3 tháng 4, 2026</span>
+    </footer>
   </div>
-
-  <!-- Mobile menu -->
-  <div class="mobile-menu" id="mobileMenu" role="menu">
-    <a href="/wiki" style="font-size:15px;color:var(--color-ink-500);text-decoration:none;padding:4px 0;" role="menuitem">Hướng dẫn</a>
-    <a href="/about" style="font-size:15px;color:var(--color-ink-500);text-decoration:none;padding:4px 0;" role="menuitem">Giới thiệu</a>
-    <a href="/donate" style="font-size:15px;color:var(--color-ink-500);text-decoration:none;padding:4px 0;" role="menuitem">Ủng hộ</a>
-    <hr />
-    <a href="/login" class="btn btn-secondary btn-md" style="justify-content:center;">Đăng nhập</a>
-    <a href="/signup" class="btn btn-primary btn-md" style="justify-content:center;">Đăng ký</a>
-  </div>
-</nav>
-
-<main>
-
-<!-- ═══════════════════════════════════════ HERO (replaced demo card with demo.png) ═══════════════════════════════════════ -->
-<section style="padding: 64px 24px 72px;" aria-labelledby="hero-heading">
-  <div class="max-w-7xl mx-auto">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-
-      <!-- Left: text -->
-      <div>
-        <div class="animate-fade-up">
-          <span class="hero-badge">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="6" fill="#2d6899" opacity="0.25"/><circle cx="6" cy="6" r="3" fill="#2d6899"/></svg>
-            Miễn phí · Không quảng cáo
-          </span>
-        </div>
-
-        <h1 id="hero-heading" class="animate-fade-up delay-1"
-          style="font-size:clamp(1.8rem,4vw,3rem);font-weight:700;line-height:1.2;margin:20px 0 20px;color:var(--color-ink-700);">
-          Tạo đề ôn tập<br/>
-          <em style="font-style:italic;color:var(--color-accent-500);">đơn giản, nhanh gọn.</em>
-        </h1>
-
-        <p class="animate-fade-up delay-2"
-          style="font-size:16px;line-height:1.7;color:var(--color-ink-400);max-width:480px;margin-bottom:32px;">
-          Exama Lite giúp bạn soạn đề trắc nghiệm, chia sẻ link và luyện tập ngay trên trình duyệt — không cần cài đặt, không cần tài khoản giáo viên.
-        </p>
-
-        <div class="animate-fade-up delay-3 flex flex-wrap gap-3 items-center">
-          <a href="/signup" class="btn btn-primary btn-lg">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-            Tạo đề ngay
-          </a>
-          <a href="/wiki" class="btn btn-secondary btn-lg">Xem hướng dẫn</a>
-        </div>
-
-        <p class="animate-fade-up delay-4" style="margin-top:20px;font-size:13px;color:var(--color-ink-300);">
-          Chỉ cần một địa chỉ email để bắt đầu. Miễn phí hoàn toàn.
-        </p>
-      </div>
-
-      <!-- Right: demo.png (thay thế demo card cũ) -->
-      <div class="animate-fade-up delay-3" aria-label="Hình ảnh minh họa giao diện làm bài">
-        <div class="demo-image-card" style="max-width:520px;margin:0 auto;">
-          <div class="demo-img-placeholder">
-            <!-- Ảnh demo.png cùng thư mục, fallback nếu không tải được -->
-            <img src="demo.png" alt="Giao diện làm bài Exama Lite - minh họa trực quan" 
-                 onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'demo-fallback\'><svg width=\'48\' height=\'48\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1\'><rect x=\'2\' y=\'4\' width=\'20\' height=\'16\' rx=\'2\'/><path d=\'M8 12h8\'/></svg><p style=\'margin-top:12px;\'>demo.png — hình ảnh minh họa đề thi trắc nghiệm</p><p style=\'font-size:12px; margin-top:6px;\'>(Đặt file demo.png cùng thư mục để hiển thị)</p></div>';"
-                 style="width:100%; height:auto; display:block; border-radius: 20px 20px 0 0;" />
-          </div>
-          <div style="padding: 16px 20px 20px; background: #fff; border-top: 1px solid var(--color-paper-100);">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div>
-                <p style="font-size:12px; font-weight:600; color: var(--color-accent-500); letter-spacing:0.5px;">📋 Giao diện làm bài thực tế</p>
-                <p style="font-size:13px; color:var(--color-ink-400); margin-top:4px;">Trải nghiệm mượt mà, hỗ trợ flashcard và kiểm tra</p>
-              </div>
-              <div class="bg-paper-100 p-1.5 rounded-full" style="background: var(--color-paper-100); border-radius: 999px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════ SOCIAL PROOF ═══════════════════════════════════════ -->
-<section style="padding:0 24px 64px;">
-  <div class="max-w-7xl mx-auto">
-    <div class="card" style="padding:20px 32px;display:flex;flex-wrap:wrap;gap:32px;align-items:center;justify-content:center;">
-      <div style="text-align:center;">
-        <p style="font-family:var(--font-serif);font-size:28px;font-weight:700;color:var(--color-ink-700);line-height:1;">6</p>
-        <p style="font-size:12px;color:var(--color-ink-300);margin-top:4px;">Loại câu hỏi</p>
-      </div>
-      <div style="width:1px;height:36px;background:var(--color-paper-300);"></div>
-      <div style="text-align:center;">
-        <p style="font-family:var(--font-serif);font-size:28px;font-weight:700;color:var(--color-ink-700);line-height:1;">100%</p>
-        <p style="font-size:12px;color:var(--color-ink-300);margin-top:4px;">Miễn phí</p>
-      </div>
-      <div style="width:1px;height:36px;background:var(--color-paper-300);"></div>
-      <div style="text-align:center;">
-        <p style="font-family:var(--font-serif);font-size:28px;font-weight:700;color:var(--color-ink-700);line-height:1;">0</p>
-        <p style="font-size:12px;color:var(--color-ink-300);margin-top:4px;">Quảng cáo</p>
-      </div>
-      <div style="width:1px;height:36px;background:var(--color-paper-300);"></div>
-      <div style="text-align:center;">
-        <p style="font-family:var(--font-serif);font-size:28px;font-weight:700;color:var(--color-ink-700);line-height:1;">∞</p>
-        <p style="font-size:12px;color:var(--color-ink-300);margin-top:4px;">Đề ôn có thể tạo</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════ FEATURES ═══════════════════════════════════════ -->
-<section style="padding:64px 24px;" aria-labelledby="features-heading">
-  <div class="max-w-7xl mx-auto">
-
-    <div class="reveal text-center" style="margin-bottom:48px;">
-      <p class="section-label">Tính năng</p>
-      <h2 id="features-heading" style="font-size:clamp(1.5rem,3vw,1.875rem);margin-top:10px;">
-        Đủ mọi thứ bạn cần để ôn tập
-      </h2>
-      <p style="font-size:15px;color:var(--color-ink-400);margin-top:10px;max-width:480px;margin-left:auto;margin-right:auto;">
-        Được thiết kế gọn nhẹ, không phức tạp — tập trung vào điều quan trọng nhất: nội dung học.
-      </p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-      <div class="card card-hover reveal" style="padding:24px;">
-        <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        </div>
-        <h3 style="font-size:17px;margin:14px 0 8px;">Soạn đề đa dạng</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Trắc nghiệm đơn, đa đáp án, đúng/sai, điền số, điền từ và nhóm câu hỏi dùng chung dữ kiện.</p>
-      </div>
-
-      <div class="card card-hover reveal" style="padding:24px;">
-        <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-        </div>
-        <h3 style="font-size:17px;margin:14px 0 8px;">Chia sẻ bằng link</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Tạo link làm bài công khai và gửi cho bạn bè. Người làm bài không cần đăng nhập.</p>
-      </div>
-
-      <div class="card card-hover reveal" style="padding:24px;">
-        <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <h3 style="font-size:17px;margin:14px 0 8px;">Giới hạn thời gian</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Cấu hình thời gian làm bài, ngày mở và ngày đóng đề — linh hoạt cho mọi nhu cầu.</p>
-      </div>
-
-      <div class="card card-hover reveal" style="padding:24px;">
-        <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><path d="M2 13s3-3 7-3 7 3 7 3"/><path d="M2 6s3-3 7-3 7 3 7 3"/><path d="M2 20s3-3 7-3 7 3 7 3"/></svg>
-        </div>
-        <h3 style="font-size:17px;margin:14px 0 8px;">Chế độ học Flashcard</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Trả lời sai? Câu hỏi tự động xuất hiện lại. Học đến khi nắm chắc toàn bộ nội dung.</p>
-      </div>
-
-      <div class="card card-hover reveal" style="padding:24px;">
-        <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        </div>
-        <h3 style="font-size:17px;margin:14px 0 8px;">Xáo trộn đề thi</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Tùy chọn xáo trộn thứ tự câu hỏi và đáp án — mỗi lần làm là một lần thử sức mới.</p>
-      </div>
-
-      <div class="card card-hover reveal" style="padding:24px;">
-        <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </div>
-        <h3 style="font-size:17px;margin:14px 0 8px;">Nhập từ file Word</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Tải lên file .docx hoặc .pdf, nội dung được phân tích ngay trên trình duyệt — không cần server.</p>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════ HOW IT WORKS ═══════════════════════════════════════ -->
-<section style="padding:64px 24px;background:var(--color-paper-100);border-top:1px solid var(--color-paper-200);border-bottom:1px solid var(--color-paper-200);" aria-labelledby="how-heading">
-  <div class="max-w-7xl mx-auto">
-
-    <div class="reveal text-center" style="margin-bottom:48px;">
-      <p class="section-label">Cách hoạt động</p>
-      <h2 id="how-heading" style="font-size:clamp(1.5rem,3vw,1.875rem);margin-top:10px;">Ba bước để sẵn sàng ôn tập</h2>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-      <div class="reveal" style="display:flex;flex-direction:column;align-items:flex-start;gap:16px;">
-        <div class="step-num" aria-hidden="true">1</div>
-        <div><h3 style="font-size:18px;margin-bottom:8px;">Tạo đề ôn</h3><p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Đăng ký bằng email, vào trang soạn đề và thêm câu hỏi theo ý muốn. Hỗ trợ nhập từ file Word để tiết kiệm thời gian.</p></div>
-      </div>
-
-      <div class="reveal" style="display:flex;flex-direction:column;align-items:flex-start;gap:16px;">
-        <div class="step-num" aria-hidden="true">2</div>
-        <div><h3 style="font-size:18px;margin-bottom:8px;">Chia sẻ link</h3><p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Sau khi lưu, hệ thống tạo link làm bài dạng <code style="font-size:12px;background:var(--color-paper-200);padding:1px 5px;border-radius:4px;">/study?uuid=...</code>. Gửi link cho người muốn làm bài.</p></div>
-      </div>
-
-      <div class="reveal" style="display:flex;flex-direction:column;align-items:flex-start;gap:16px;">
-        <div class="step-num" aria-hidden="true">3</div>
-        <div><h3 style="font-size:18px;margin-bottom:8px;">Học & Kiểm tra</h3><p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Người làm bài chọn chế độ Học tập (flashcard) hoặc Kiểm tra (thi thật), nhận kết quả ngay sau khi nộp.</p></div>
-      </div>
-
-    </div>
-
-    <div class="hidden md:flex justify-center items-center gap-0 mt-8 reveal" aria-hidden="true">
-      <div style="flex:1;height:2px;background:linear-gradient(to right,transparent,var(--color-accent-300));max-width:160px;margin-left:auto;"></div>
-      <div style="width:8px;height:8px;border-radius:9999px;background:var(--color-accent-500);"></div>
-      <div style="flex:1;height:2px;background:var(--color-accent-300);max-width:160px;"></div>
-      <div style="width:8px;height:8px;border-radius:9999px;background:var(--color-accent-500);"></div>
-      <div style="flex:1;height:2px;background:linear-gradient(to right,var(--color-accent-300),transparent);max-width:160px;margin-right:auto;"></div>
-    </div>
-
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════ CTA ═══════════════════════════════════════ -->
-<section style="padding:80px 24px;" aria-labelledby="cta-heading">
-  <div class="max-w-7xl mx-auto">
-    <div class="card reveal" style="padding:clamp(32px,5vw,56px);text-align:center;border-color:var(--color-accent-200);background:linear-gradient(135deg,#fff 60%,var(--color-accent-50));">
-      <p class="section-label">Bắt đầu ngay hôm nay</p>
-      <h2 id="cta-heading" style="font-size:clamp(1.5rem,3vw,2rem);margin:12px auto 16px;max-width:520px;">Không phức tạp. Không mất tiền. Không quảng cáo.</h2>
-      <p style="font-size:15px;color:var(--color-ink-400);max-width:420px;margin:0 auto 32px;">Chỉ cần một địa chỉ email — bạn đã có thể tạo đề, chia sẻ và ôn tập ngay lập tức.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
-        <a href="/signup" class="btn btn-primary btn-lg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Tạo tài khoản miễn phí</a>
-        <a href="/app" class="btn btn-outline btn-lg">Vào Dashboard</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-</main>
-
-<!-- ═══════════════════════════════════════ FOOTER ═══════════════════════════════════════ -->
-<footer style="background:var(--color-paper-100);" role="contentinfo">
-  <div class="max-w-7xl mx-auto px-6 py-12">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-      <div class="md:col-span-2">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-          <div style="width:26px;height:26px;background:var(--color-accent-500);border-radius:6px;display:flex;align-items:center;justify-content:center;" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="2.5" rx="1" fill="white"/><rect x="2" y="6.75" width="8" height="2.5" rx="1" fill="white" opacity="0.8"/><rect x="2" y="11.5" width="10" height="2.5" rx="1" fill="white" opacity="0.6"/></svg></div>
-          <span style="font-family:var(--font-serif);font-weight:700;font-size:16px;color:var(--color-ink-700);">Exama Lite</span>
-        </div>
-        <p style="font-size:13px;color:var(--color-ink-400);line-height:1.7;max-width:280px;margin-bottom:16px;">Nền tảng tạo đề ôn tập nhỏ gọn, miễn phí và không quảng cáo dành cho học sinh Việt Nam.</p>
-        <a href="mailto:nguyenhuuhoa@proton.me" style="font-size:13px;color:var(--color-accent-500);text-decoration:none;display:inline-flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>nguyenhuuhoa@proton.me</a>
-      </div>
-      <div><p class="section-label" style="margin-bottom:14px;">Dự án</p><nav aria-label="Liên kết dự án"><ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;"><li><a href="/about" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;">Giới thiệu</a></li><li><a href="/donate" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;">Ủng hộ dự án</a></li><li><a href="/wiki" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;">Hướng dẫn sử dụng</a></li><li><a href="https://github.com/kyle6317/examalite" target="_blank" rel="noopener noreferrer" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;display:inline-flex;align-items:center;gap:5px;">GitHub<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></li></ul></nav></div>
-      <div><p class="section-label" style="margin-bottom:14px;">Pháp lý</p><nav aria-label="Liên kết pháp lý"><ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;"><li><a href="/terms" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;">Điều khoản sử dụng</a></li><li><a href="/privacy" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;">Chính sách bảo mật</a></li></ul></nav></div>
-    </div>
-    <hr style="margin:32px 0;border-color:var(--color-paper-300);" />
-    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;"><p style="font-size:13px;color:var(--color-ink-300);">© 2025 Exama Lite · Giấy phép MIT · Được xây dựng bởi <a href="https://github.com/kyle6317" target="_blank" rel="noopener noreferrer" style="color:var(--color-ink-400);text-decoration:none;">kyle2910</a></p><a href="https://examalite.pages.dev/" style="font-size:13px;color:var(--color-ink-300);text-decoration:none;">examalite.pages.dev</a></div>
-  </div>
-</footer>
-
-<script>
-  // Demo option (không còn sử dụng nữa nhưng giữ lại để tránh lỗi)
-  function selectOption(el) {
-    if(document.querySelectorAll) {
-      document.querySelectorAll('.demo-option')?.forEach(o => o.classList.remove('selected'));
-      if(el) el.classList.add('selected');
-    }
-  }
-
-  // Hamburger menu
-  const hamburgerBtn = document.getElementById('hamburgerBtn');
-  const mobileMenu = document.getElementById('mobileMenu');
-  if(hamburgerBtn && mobileMenu) {
-    hamburgerBtn.addEventListener('click', () => {
-      const isOpen = mobileMenu.classList.contains('open');
-      mobileMenu.classList.toggle('open');
-      hamburgerBtn.setAttribute('aria-expanded', String(!isOpen));
-      const b1 = document.getElementById('hb1'), b2 = document.getElementById('hb2'), b3 = document.getElementById('hb3');
-      if(b1 && b2 && b3) {
-        if (!isOpen) {
-          b1.style.transform = 'translateY(7px) rotate(45deg)';
-          b2.style.opacity = '0';
-          b3.style.transform = 'translateY(-7px) rotate(-45deg)';
-        } else {
-          b1.style.transform = '';
-          b2.style.opacity = '';
-          b3.style.transform = '';
-        }
-      }
-    });
-  }
-
-  // Scroll reveal
-  const revealEls = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  revealEls.forEach(el => observer.observe(el));
-</script>
-
 </body>
 </html>

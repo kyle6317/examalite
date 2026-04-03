@@ -354,41 +354,27 @@ function prepareQuestions() {
     
     let allQuestions = [];
     
-    if (shuffleQuestions) {
-        const shuffledGroups = [...examData.groups].sort(() => Math.random() - 0.5);
+    const groups = shuffleQuestions
+        ? [...examData.groups].sort(() => Math.random() - 0.5)
+        : [...examData.groups];
+    
+    groups.forEach(group => {
+        const questions = shuffleQuestions
+            ? [...group.questions].sort(() => Math.random() - 0.5)
+            : [...group.questions];
         
-        shuffledGroups.forEach(group => {
-            const shuffledQuestions = [...group.questions].sort(() => Math.random() - 0.5);
-            
-            shuffledQuestions.forEach(q => {
-                const newId = 'q_' + Math.random().toString(36).substr(2, 9);
-                questionIdToOriginal[newId] = {
-                    originalId: q.id,
-                    groupId: group.id,
-                    question: q,
-                    group: group
-                };
-                originalToShuffled[q.id] = newId;
-                allQuestions.push({ ...q, id: newId, groupId: group.id, group: group });
-            });
+        questions.forEach(q => {
+            const newId = 'q_' + Math.random().toString(36).substr(2, 9);
+            questionIdToOriginal[newId] = {
+                originalId: q.id,
+                groupId: group.id,
+                question: q,
+                group: group
+            };
+            originalToShuffled[q.id] = newId;
+            allQuestions.push({ ...q, id: newId, groupId: group.id, group: group });
         });
-    } else {
-        examData.groups.forEach(group => {
-            const shuffledQuestions = [...group.questions].sort(() => Math.random() - 0.5);
-            
-            shuffledQuestions.forEach(q => {
-                const newId = 'q_' + Math.random().toString(36).substr(2, 9);
-                questionIdToOriginal[newId] = {
-                    originalId: q.id,
-                    groupId: group.id,
-                    question: q,
-                    group: group
-                };
-                originalToShuffled[q.id] = newId;
-                allQuestions.push({ ...q, id: newId, groupId: group.id, group: group });
-            });
-        });
-    }
+    });
     
     if (shuffleChoices) {
         allQuestions.forEach(q => {
@@ -699,45 +685,71 @@ function startTestMode() {
 
 function renderTestQuestions(questions) {
     let html = '';
+    let questionCounter = 0;
     
-    questions.forEach((q, index) => {
-        const qData = questionIdToOriginal[q.id];
-        const group = qData.group;
+    // Group questions by groupId, preserving order
+    const groups = [];
+    const groupIndexMap = {};
+    questions.forEach(q => {
+        const groupId = q.groupId;
+        if (groupIndexMap[groupId] === undefined) {
+            groupIndexMap[groupId] = groups.length;
+            groups.push({ group: questionIdToOriginal[q.id].group, questions: [] });
+        }
+        groups[groupIndexMap[groupId]].questions.push(q);
+    });
+    
+    groups.forEach(({ group, questions: groupQuestions }) => {
+        const hasContext = group.label || group.context || (group.context_media && group.context_media.length > 0);
         
-        html += `<div id="question-${q.id}" class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] p-6 md:p-8 mb-6 scroll-mt-24">`;
-        
-        // Question number
-        html += `<div class="flex items-center gap-3 mb-4 pb-4 border-b border-paper-200">`;
-        html += `<div class="w-10 h-10 rounded-full bg-accent-50 flex items-center justify-center font-bold text-accent-600">${index + 1}</div>`;
-        html += `<div class="text-xs font-semibold text-ink-300 uppercase tracking-wide">${getQuestionTypeLabel(q.type)}</div>`;
-        html += `</div>`;
-        
-        // Group context
-        if (group.label || group.context) {
-            html += '<div class="mb-6 pb-6 border-b border-paper-200">';
+        if (hasContext) {
+            // Wrap the whole group in one card
+            html += `<div class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] mb-6">`;
+            
+            // Group context header
+            html += `<div class="p-6 md:p-8 border-b border-paper-200">`;
             if (group.label) {
-                html += `<div class="text-sm font-semibold text-ink-400 mb-2">${escapeHtml(group.label)}</div>`;
+                html += `<div class="text-xs font-semibold text-ink-300 uppercase tracking-wide mb-3">${escapeHtml(group.label)}</div>`;
             }
             if (group.context) {
-                html += `<div class="prose prose-sm max-w-none">${marked.parse(group.context)}</div>`;
+                html += `<div class="prose prose-sm max-w-none text-ink-500">${marked.parse(group.context)}</div>`;
             }
             if (group.context_media && group.context_media.length > 0) {
                 html += renderMedia(group.context_media);
             }
-            html += '</div>';
+            html += `</div>`;
+            
+            // Questions inside the group card
+            groupQuestions.forEach((q, qIdx) => {
+                questionCounter++;
+                const isLast = qIdx === groupQuestions.length - 1;
+                html += `<div id="question-${q.id}" class="p-6 md:p-8 scroll-mt-24${isLast ? '' : ' border-b border-paper-100'}">`;
+                html += `<div class="flex items-center gap-3 mb-4">`;
+                html += `<div class="w-8 h-8 rounded-full bg-accent-50 flex items-center justify-center font-bold text-accent-600 text-sm">${questionCounter}</div>`;
+                html += `<div class="text-xs font-semibold text-ink-300 uppercase tracking-wide">${getQuestionTypeLabel(q.type)}</div>`;
+                html += `</div>`;
+                html += `<div class="text-base font-semibold text-ink-600 mb-4">${marked.parse(q.prompt)}</div>`;
+                if (q.prompt_media && q.prompt_media.length > 0) html += renderMedia(q.prompt_media);
+                html += renderQuestionChoices(q, 'test');
+                html += `</div>`;
+            });
+            
+            html += `</div>`;
+        } else {
+            // No shared context — each question gets its own standalone card
+            groupQuestions.forEach(q => {
+                questionCounter++;
+                html += `<div id="question-${q.id}" class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] p-6 md:p-8 mb-6 scroll-mt-24">`;
+                html += `<div class="flex items-center gap-3 mb-4 pb-4 border-b border-paper-200">`;
+                html += `<div class="w-10 h-10 rounded-full bg-accent-50 flex items-center justify-center font-bold text-accent-600">${questionCounter}</div>`;
+                html += `<div class="text-xs font-semibold text-ink-300 uppercase tracking-wide">${getQuestionTypeLabel(q.type)}</div>`;
+                html += `</div>`;
+                html += `<div class="text-lg font-semibold text-ink-600 mb-4">${marked.parse(q.prompt)}</div>`;
+                if (q.prompt_media && q.prompt_media.length > 0) html += renderMedia(q.prompt_media);
+                html += renderQuestionChoices(q, 'test');
+                html += `</div>`;
+            });
         }
-        
-        // Question
-        html += `<div class="text-lg font-semibold text-ink-600 mb-4">${marked.parse(q.prompt)}</div>`;
-        
-        if (q.prompt_media && q.prompt_media.length > 0) {
-            html += renderMedia(q.prompt_media);
-        }
-        
-        // Choices
-        html += renderQuestionChoices(q, 'test');
-        
-        html += '</div>';
     });
     
     document.getElementById('testQuestions').innerHTML = html;

@@ -171,10 +171,26 @@
         .sticky-nav-2 { top: 48px; z-index: 21; }
         .sticky-nav-3 { top: 96px; z-index: 20; }
 
+        /* Global checkbox/radio accent color to match accent-500 (#2d6899) */
+        input[type="checkbox"],
+        input[type="radio"] {
+            accent-color: #2d6899;
+        }
+
         /* Mobile drawer question map scroll */
         .mobile-qmap-scroll {
             max-height: calc(100vh - 200px);
             overflow-y: auto;
+        }
+
+        /* Learning screen: switch to mobile layout below 1120px */
+        @media (max-width: 1119px) {
+            #learningScreen .learning-logo {
+                display: none;
+            }
+            #learningScreen .learning-content {
+                padding-top: 1rem;
+            }
         }
     </style>
 </head>
@@ -212,10 +228,10 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <div id="loadingScreen" class="flex items-center justify-center min-h-screen p-4 relative">
     <!-- Logo -->
-    <div class="absolute top-4 left-4 flex items-center gap-1">
+    <a href="https://examalite.pages.dev/home" class="absolute top-4 left-4 flex items-center gap-1 hover:opacity-80 transition-opacity">
         <span class="font-serif font-bold text-ink-600 text-xl" style="letter-spacing: -0.01em;">Exama</span>
         <span class="font-serif font-bold text-xl" style="color: #2d6899; letter-spacing: -0.01em;">Lite</span>
-    </div>
+    </a>
     
     <div class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] p-8 max-w-md w-full text-center">
         <div class="w-12 h-12 border-4 border-paper-200 border-t-accent-500 rounded-full spinner mx-auto mb-4"></div>
@@ -254,10 +270,10 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <div id="prepScreen" class="hidden min-h-screen p-4 md:p-6 relative">
     <!-- Logo -->
-    <div class="absolute top-4 left-4 flex items-center gap-1 md:top-6 md:left-6">
+    <a href="https://examalite.pages.dev/home" class="absolute top-4 left-4 flex items-center gap-1 md:top-6 md:left-6 hover:opacity-80 transition-opacity">
         <span class="font-serif font-bold text-ink-600 text-xl" style="letter-spacing: -0.01em;">Exama</span>
         <span class="font-serif font-bold text-xl" style="color: #2d6899; letter-spacing: -0.01em;">Lite</span>
-    </div>
+    </a>
 
     <div class="max-w-3xl mx-auto py-8 pt-16">
         <!-- Info Card -->
@@ -344,12 +360,12 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <div id="learningScreen" class="hidden min-h-screen relative">
     <!-- Logo -->
-    <div class="absolute top-4 left-4 flex items-center gap-1 z-10 md:top-6 md:left-6">
+    <a href="https://examalite.pages.dev/home" class="learning-logo absolute top-4 left-4 flex items-center gap-1 z-10 md:top-6 md:left-6 hover:opacity-80 transition-opacity">
         <span class="font-serif font-bold text-ink-600 text-lg" style="letter-spacing: -0.01em;">Exama</span>
         <span class="font-serif font-bold text-lg" style="color: #2d6899; letter-spacing: -0.01em;">Lite</span>
-    </div>
+    </a>
 
-    <div class="max-w-4xl mx-auto p-4 md:p-6 pt-14">
+    <div class="learning-content max-w-4xl mx-auto p-4 md:p-6 pt-14">
         <!-- Header -->
         <div class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] p-4 mb-6">
             <div class="flex items-center justify-between flex-wrap gap-4">

@@ -650,7 +650,7 @@ function startTestMode() {
     checkAndResumeSave('test').then(save => {
         let questions;
         if (save) {
-            // ── Resume: rebuild questions in saved order ──
+            // ── Resume: rebuild questions preserving saved order ──
             questionIdToOriginal = {};
             originalToShuffled = {};
 
@@ -675,11 +675,11 @@ function startTestMode() {
 
             currentTestQuestions = questions;
 
-            // Restore answers: map original IDs → new shuffled IDs
+            // Restore answers: save.answers keys are originalIds → map to new shuffled IDs
             testAnswers = {};
             Object.entries(save.answers || {}).forEach(([origId, answer]) => {
-                const q = questions.find(q => questionIdToOriginal[q.id].originalId === origId);
-                if (q) testAnswers[q.id] = answer;
+                const newShuffledId = originalToShuffled[origId];
+                if (newShuffledId) testAnswers[newShuffledId] = answer;
             });
         } else {
             // ── Fresh start ──
@@ -741,7 +741,48 @@ function renderTestQuestions(questions) {
     });
     
     document.getElementById('testQuestions').innerHTML = html;
+    // Restore previously saved answers into DOM inputs (for resume)
+    restoreAnswersToDOM(questions);
 }
+
+function restoreAnswersToDOM(questions) {
+    questions.forEach(q => {
+        const answer = testAnswers[q.id];
+        if (answer === undefined) return;
+
+        switch (q.type) {
+            case 'single_choice':
+            case 'true_false': {
+                const radio = document.querySelector(`input[name="test_${q.id}"][value="${answer}"]`);
+                if (radio) radio.checked = true;
+                break;
+            }
+            case 'multi_choice': {
+                if (Array.isArray(answer)) {
+                    answer.forEach(val => {
+                        const cb = document.querySelector(`input[name="test_${q.id}"][value="${val}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                }
+                break;
+            }
+            case 'fill_number':
+            case 'fill_text': {
+                const input = document.getElementById(`test_${q.id}`);
+                if (input) input.value = answer;
+                break;
+            }
+            case 'fill_blank': {
+                if (Array.isArray(answer)) {
+                    const inputs = document.querySelectorAll(`.blank-input-${q.id}`);
+                    inputs.forEach((input, i) => {
+                        if (answer[i] !== undefined) input.value = answer[i];
+                    });
+                }
+                break;
+            }
+        }
+    });
 
 function renderQuestionMap(questions) {
     let html = '';
@@ -1412,11 +1453,17 @@ function buildQuestionFingerprint() {
 
 function autoSaveTest() {
     try {
+        // Convert answers: map shuffled ID keys → originalId keys before saving
+        const answersWithOrigIds = {};
+        Object.entries(testAnswers).forEach(([shuffledId, answer]) => {
+            const origId = questionIdToOriginal[shuffledId]?.originalId;
+            if (origId) answersWithOrigIds[origId] = answer;
+        });
+
         const data = {
             uuid: getExamUuid(),
             fingerprint: buildQuestionFingerprint(),
-            answers: testAnswers,
-            // Save original IDs so we can restore regardless of shuffle
+            answers: answersWithOrigIds,
             questionOrder: currentTestQuestions
                 ? currentTestQuestions.map(q => questionIdToOriginal[q.id].originalId)
                 : []

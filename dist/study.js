@@ -374,7 +374,9 @@ function prepareQuestions() {
         });
     } else {
         examData.groups.forEach(group => {
-            group.questions.forEach(q => {
+            const shuffledQuestions = [...group.questions].sort(() => Math.random() - 0.5);
+            
+            shuffledQuestions.forEach(q => {
                 const newId = 'q_' + Math.random().toString(36).substr(2, 9);
                 questionIdToOriginal[newId] = {
                     originalId: q.id,
@@ -404,18 +406,26 @@ function prepareQuestions() {
 // ═══════════════════════════════════════════════════════════════════
 
 function startLearningMode() {
-    learningQueue = prepareQuestions();
-    learningIndex = 0;
-    learningAnswered = new Set();
-    learningCorrectSet = new Set();
-    learningFirstTryCorrect = 0;
-    learningStartTime = Date.now();
-    
     document.getElementById('prepScreen').classList.add('hidden');
     document.getElementById('learningScreen').classList.remove('hidden');
-    
-    loadSavedAnswers('learning');
-    renderLearningQuestion();
+
+    checkAndResumeSave('learning').then(save => {
+        if (save) {
+            // ── Resume ──
+            questionIdToOriginal = {};
+            originalToShuffled = {};
+            restoreLearningQueueFromSave(save);
+        } else {
+            // ── Fresh start ──
+            learningQueue = prepareQuestions();
+            learningIndex = 0;
+            learningAnswered = new Set();
+            learningCorrectSet = new Set();
+            learningFirstTryCorrect = 0;
+            learningStartTime = Date.now();
+        }
+        renderLearningQuestion();
+    });
 }
 
 function renderLearningQuestion() {
@@ -496,6 +506,7 @@ function checkLearningAnswer() {
         learningCorrectSet.add(q.id);
     }
     
+    autoSaveLearning();
     showLearningResult(q, userAnswer, isCorrect);
 }
 
@@ -542,6 +553,7 @@ function showLearningResult(q, userAnswer, isCorrect) {
 
 function nextLearningQuestion() {
     learningIndex++;
+    autoSaveLearning();
     renderLearningQuestion();
 }
 
@@ -556,6 +568,7 @@ function requeueQuestion() {
         learningQueue.push(q);
     }
     
+    autoSaveLearning();
     renderLearningQuestion();
 }
 
@@ -615,6 +628,7 @@ async function quitLearning() {
     });
     
     if (result) {
+        clearAutoSave('learning');
         // Go back to prep screen
         document.getElementById('learningScreen').classList.add('hidden');
         document.getElementById('prepScreen').classList.remove('hidden');
@@ -626,26 +640,61 @@ async function quitLearning() {
 // ═══════════════════════════════════════════════════════════════════
 
 function startTestMode() {
-    const questions = prepareQuestions();
-    currentTestQuestions = questions; // FIXED: store for grading later
-    testAnswers = {};
-    testStartTime = Date.now();
-    
     document.getElementById('prepScreen').classList.add('hidden');
     document.getElementById('testScreen').classList.remove('hidden');
-    
+
     document.getElementById('sidebarTitle').textContent = examMetadata.title || 'Bài kiểm tra';
-    
-    // Set mobile title
     const mobileTitle = document.getElementById('mobileExamTitle');
-    if (mobileTitle) {
-        mobileTitle.textContent = examMetadata.title || 'Bài kiểm tra';
-    }
-    
-    loadSavedAnswers('test');
-    renderTestQuestions(questions);
-    renderQuestionMap(questions);
-    startTimer();
+    if (mobileTitle) mobileTitle.textContent = examMetadata.title || 'Bài kiểm tra';
+
+    checkAndResumeSave('test').then(save => {
+        let questions;
+        if (save) {
+            // ── Resume: rebuild questions in saved order ──
+            questionIdToOriginal = {};
+            originalToShuffled = {};
+
+            const origLookup = {};
+            examData.groups.forEach(g => g.questions.forEach(q => {
+                origLookup[q.id] = { q, group: g };
+            }));
+
+            questions = (save.questionOrder || []).map(origId => {
+                const entry = origLookup[origId];
+                if (!entry) return null;
+                const newId = 'q_' + Math.random().toString(36).substr(2, 9);
+                questionIdToOriginal[newId] = {
+                    originalId: origId,
+                    groupId: entry.group.id,
+                    question: entry.q,
+                    group: entry.group
+                };
+                originalToShuffled[origId] = newId;
+                return { ...entry.q, id: newId, groupId: entry.group.id, group: entry.group };
+            }).filter(Boolean);
+
+            currentTestQuestions = questions;
+
+            // Restore answers: map original IDs → new shuffled IDs
+            testAnswers = {};
+            Object.entries(save.answers || {}).forEach(([origId, answer]) => {
+                const q = questions.find(q => questionIdToOriginal[q.id].originalId === origId);
+                if (q) testAnswers[q.id] = answer;
+            });
+        } else {
+            // ── Fresh start ──
+            questions = prepareQuestions();
+            currentTestQuestions = questions;
+            testAnswers = {};
+        }
+
+        testStartTime = Date.now();
+        renderTestQuestions(questions);
+        renderQuestionMap(questions);
+        // Restore bubble states for resumed answers
+        Object.keys(testAnswers).forEach(id => updateQuestionBubble(id));
+        startTimer();
+    });
 }
 
 function renderTestQuestions(questions) {
@@ -1336,35 +1385,182 @@ function formatUserAnswer(q, userAnswer) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// LOCAL STORAGE
+// AUTO SAVE / LOCAL STORAGE
 // ═══════════════════════════════════════════════════════════════════
 
-function saveToLocalStorage(mode) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const examUuid = urlParams.get('uuid');
-    const key = `exam_${examUuid}_${mode}`;
-    
-    if (mode === 'test') {
-        localStorage.setItem(key, JSON.stringify(testAnswers));
+// Key schema:
+//   autosave_<uuid>_test    → { uuid, questionIds[], answers{} }
+//   autosave_<uuid>_learning → { uuid, questionIds[], index, answered[], correctSet[], firstTryCorrect }
+
+function getExamUuid() {
+    return new URLSearchParams(window.location.search).get('uuid');
+}
+
+function getAutoSaveKey(mode) {
+    return `autosave_${getExamUuid()}_${mode}`;
+}
+
+// Build a sorted list of original question IDs from current examData
+// Used as a "fingerprint" to detect if the exam content changed
+function buildQuestionFingerprint() {
+    const ids = [];
+    if (examData && examData.groups) {
+        examData.groups.forEach(g => g.questions.forEach(q => ids.push(q.id)));
+    }
+    return ids.sort().join(',');
+}
+
+function autoSaveTest() {
+    try {
+        const data = {
+            uuid: getExamUuid(),
+            fingerprint: buildQuestionFingerprint(),
+            answers: testAnswers,
+            // Save original IDs so we can restore regardless of shuffle
+            questionOrder: currentTestQuestions
+                ? currentTestQuestions.map(q => questionIdToOriginal[q.id].originalId)
+                : []
+        };
+        localStorage.setItem(getAutoSaveKey('test'), JSON.stringify(data));
+    } catch (e) { /* quota exceeded or private mode — ignore silently */ }
+}
+
+function autoSaveLearning() {
+    try {
+        const data = {
+            uuid: getExamUuid(),
+            fingerprint: buildQuestionFingerprint(),
+            index: learningIndex,
+            // Store original IDs for the full queue (including re-queued items)
+            queue: learningQueue.map(q => questionIdToOriginal[q.id].originalId),
+            answered: [...learningAnswered].map(id => questionIdToOriginal[id]?.originalId).filter(Boolean),
+            correctSet: [...learningCorrectSet].map(id => questionIdToOriginal[id]?.originalId).filter(Boolean),
+            firstTryCorrect: learningFirstTryCorrect,
+            startTime: learningStartTime
+        };
+        localStorage.setItem(getAutoSaveKey('learning'), JSON.stringify(data));
+    } catch (e) { /* ignore */ }
+}
+
+function clearAutoSave(mode) {
+    localStorage.removeItem(getAutoSaveKey(mode));
+}
+
+// Returns parsed save data if valid and matching current exam, otherwise null
+function loadAutoSave(mode) {
+    try {
+        const raw = localStorage.getItem(getAutoSaveKey(mode));
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        if (!data || data.uuid !== getExamUuid()) return null;
+        if (data.fingerprint !== buildQuestionFingerprint()) return null;
+        return data;
+    } catch (e) {
+        return null;
     }
 }
 
-function loadSavedAnswers(mode) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const examUuid = urlParams.get('uuid');
-    const key = `exam_${examUuid}_${mode}`;
-    
-    const saved = localStorage.getItem(key);
-    if (saved && mode === 'test') {
-        testAnswers = JSON.parse(saved);
-    }
+// Legacy: keep these names so existing call-sites don't break
+function saveToLocalStorage(mode) {
+    if (mode === 'test') autoSaveTest();
 }
 
 function clearSavedAnswers(mode) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const examUuid = urlParams.get('uuid');
-    const key = `exam_${examUuid}_${mode}`;
-    localStorage.removeItem(key);
+    clearAutoSave(mode);
+}
+
+// ── Ask user & resume or restart ────────────────────────────────────
+
+async function checkAndResumeSave(mode) {
+    const save = loadAutoSave(mode);
+    if (!save) return false; // no valid save → start fresh
+
+    const label = mode === 'test' ? 'kiểm tra' : 'học tập';
+    const result = await showCustomDialog({
+        title: 'Tiếp tục bài làm?',
+        message: `Bạn có bản lưu chưa hoàn thành của bài ${label} này. Muốn tiếp tục hay làm lại từ đầu?`,
+        icon: 'info',
+        buttons: [
+            { label: 'Làm lại', value: 'restart' },
+            { label: 'Tiếp tục', value: 'resume', primary: true }
+        ]
+    });
+
+    if (result === 'resume') {
+        return save; // caller gets the save object
+    } else {
+        clearAutoSave(mode);
+        return false;
+    }
+}
+
+// ── Restore helpers ─────────────────────────────────────────────────
+
+// Rebuild originalId → shuffled question object map from currentTestQuestions
+function buildOriginalIdMap() {
+    const map = {};
+    if (currentTestQuestions) {
+        currentTestQuestions.forEach(q => {
+            const origId = questionIdToOriginal[q.id].originalId;
+            map[origId] = q;
+        });
+    }
+    return map;
+}
+
+function restoreTestSave(save) {
+    const origMap = buildOriginalIdMap();
+    testAnswers = {};
+    Object.entries(save.answers || {}).forEach(([savedId, answer]) => {
+        // savedId might be a shuffled id (old format) or originalId — handle both
+        if (questionIdToOriginal[savedId]) {
+            // old format: key was shuffled id
+            testAnswers[savedId] = answer;
+        } else {
+            // new format: key is original id, map to current shuffled id
+            const q = origMap[savedId];
+            if (q) testAnswers[q.id] = answer;
+        }
+    });
+}
+
+function restoreLearningQueueFromSave(save) {
+    // Build a lookup: originalId → question object from examData
+    const origLookup = {};
+    if (examData && examData.groups) {
+        examData.groups.forEach(g => g.questions.forEach(q => {
+            origLookup[q.id] = { q, group: g };
+        }));
+    }
+
+    // Reconstruct the saved queue order
+    const restoredQueue = [];
+    (save.queue || []).forEach(origId => {
+        const entry = origLookup[origId];
+        if (!entry) return;
+        const newId = 'q_' + Math.random().toString(36).substr(2, 9);
+        questionIdToOriginal[newId] = {
+            originalId: origId,
+            groupId: entry.group.id,
+            question: entry.q,
+            group: entry.group
+        };
+        originalToShuffled[origId] = newId;
+        restoredQueue.push({ ...entry.q, id: newId, groupId: entry.group.id, group: entry.group });
+    });
+
+    learningQueue = restoredQueue;
+    learningIndex = Math.min(save.index || 0, Math.max(restoredQueue.length - 1, 0));
+
+    // Restore Sets using current shuffled IDs
+    learningAnswered = new Set(
+        (save.answered || []).map(origId => originalToShuffled[origId]).filter(Boolean)
+    );
+    learningCorrectSet = new Set(
+        (save.correctSet || []).map(origId => originalToShuffled[origId]).filter(Boolean)
+    );
+    learningFirstTryCorrect = save.firstTryCorrect || 0;
+    learningStartTime = save.startTime || Date.now();
 }
 
 // ═══════════════════════════════════════════════════════════════════

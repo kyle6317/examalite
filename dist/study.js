@@ -783,6 +783,7 @@ function restoreAnswersToDOM(questions) {
             }
         }
     });
+}
 
 function renderQuestionMap(questions) {
     let html = '';

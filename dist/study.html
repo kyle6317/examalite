@@ -183,13 +183,21 @@
             overflow-y: auto;
         }
 
-        /* Learning screen: switch to mobile layout below 1120px */
-        @media (max-width: 1119px) {
-            #learningScreen .learning-logo {
-                display: none;
-            }
+        /* Learning screen: keep mobile layout (with logo space) up to 1120px.
+           Tailwind's md:p-6 (≥768px) would override pt-14, so we restore it here. */
+        @media (min-width: 768px) and (max-width: 1119px) {
             #learningScreen .learning-content {
-                padding-top: 1rem;
+                padding: 1rem;
+                padding-top: 3.5rem; /* equivalent to pt-14 */
+            }
+        }
+        @media (min-width: 1120px) {
+            #learningScreen .learning-content {
+                padding: 1.5rem; /* md:p-6 */
+            }
+            #learningScreen .learning-logo {
+                top: 1.5rem;
+                left: 1.5rem;
             }
         }
     </style>
@@ -360,7 +368,7 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <div id="learningScreen" class="hidden min-h-screen relative">
     <!-- Logo -->
-    <a href="https://examalite.pages.dev/home" class="learning-logo absolute top-4 left-4 flex items-center gap-1 z-10 md:top-6 md:left-6 hover:opacity-80 transition-opacity">
+    <a href="https://examalite.pages.dev/home" class="learning-logo absolute top-4 left-4 flex items-center gap-1 z-10 hover:opacity-80 transition-opacity">
         <span class="font-serif font-bold text-ink-600 text-lg" style="letter-spacing: -0.01em;">Exama</span>
         <span class="font-serif font-bold text-lg" style="color: #2d6899; letter-spacing: -0.01em;">Lite</span>
     </a>

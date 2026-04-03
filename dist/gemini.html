@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini Proxy Tester — Exama Lite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: { 50:'#faf9f6', 100:'#f4f2ec', 200:'#e8e4d9', 300:'#d6d0c4' },
+            ink:   { 100:'#e0ddd7', 200:'#b8b3a8', 300:'#8c8679', 400:'#5e5a52', 500:'#3a3731', 600:'#27251f', 700:'#1a1814' },
+            accent:{ 50:'#f0f4f8', 100:'#d9e5f0', 200:'#adc5df', 300:'#7aa3c8', 400:'#4e84b4', 500:'#2d6899', 600:'#1f5280', 700:'#153d60' },
+            danger:{ 50:'#fdf0f0', 200:'#e8a0a0', 300:'#d05f5f', 400:'#b03838' },
+            success:{ 50:'#f0faf4', 200:'#9fd5b2', 400:'#2d8a5a' },
+          },
+          fontFamily: {
+            serif: ['"Noto Serif"', 'Georgia', 'serif'],
+            sans:  ['"DM Sans"', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin 0.7s linear infinite; }
+    #response-box { font-family: 'DM Sans', monospace; white-space: pre-wrap; word-break: break-word; }
+  </style>
+</head>
+<body class="bg-paper-50 text-ink-500 min-h-screen font-sans">
+
+<!-- Header -->
+<header class="bg-paper-100 border-b border-paper-200 px-6 py-4 flex items-center justify-between">
+  <a href="/" class="font-serif text-[18px] font-bold text-ink-700 no-underline">Exama Lite</a>
+  <div id="user-badge" class="flex items-center gap-2.5 text-sm text-ink-400">
+    <div class="w-2 h-2 rounded-full bg-success-400"></div>
+    <span id="user-email">Đang tải…</span>
+    <span class="text-ink-200">·</span>
+    <button id="btn-logout" class="text-danger-400 hover:underline text-[13px] border-0 bg-transparent cursor-pointer p-0">Đăng xuất</button>
+  </div>
+</header>
+
+<div class="max-w-3xl mx-auto px-6 py-10">
+
+  <h1 class="font-serif text-2xl font-bold text-ink-700 mb-1">Gemini Proxy Tester</h1>
+  <p class="text-sm text-ink-300 mb-8">Gửi request đến edge function <code class="bg-paper-200 px-1.5 py-0.5 rounded text-xs text-ink-500">/functions/v1/gemini-proxy</code> và xem kết quả.</p>
+
+  <!-- Config card -->
+  <div class="bg-white border border-paper-200 rounded-xl p-5 mb-6">
+    <h2 class="font-serif text-base font-bold text-ink-600 mb-4">Cấu hình</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium text-ink-400 uppercase tracking-wide">Supabase Project URL</label>
+        <input id="cfg-url" type="text"
+          value="https://hmzowbcufyobdfwdfcaw.supabase.co"
+          class="text-sm text-ink-500 bg-paper-50 border border-paper-300 rounded-md px-3 py-2 outline-none focus:border-accent-400 transition-all" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium text-ink-400 uppercase tracking-wide">Model</label>
+        <select id="cfg-model"
+          class="text-sm text-ink-500 bg-paper-50 border border-paper-300 rounded-md px-3 py-2 outline-none focus:border-accent-400 transition-all">
+          <option value="gemini-2.0-flash-lite-preview">gemini-2.0-flash-lite-preview</option>
+          <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+          <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+          <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-medium text-ink-400 uppercase tracking-wide">Endpoint path</label>
+      <input id="cfg-path" type="text"
+        value="/v1beta/models/{model}:generateContent"
+        class="text-sm text-ink-500 font-mono bg-paper-50 border border-paper-300 rounded-md px-3 py-2 outline-none focus:border-accent-400 transition-all" />
+      <span class="text-[11px] text-ink-300"><code>{model}</code> sẽ được thay bằng model đã chọn ở trên</span>
+    </div>
+  </div>
+
+  <!-- Request card -->
+  <div class="bg-white border border-paper-200 rounded-xl p-5 mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-serif text-base font-bold text-ink-600">Request body (JSON)</h2>
+      <button id="btn-reset" class="text-[12px] text-accent-500 hover:underline border-0 bg-transparent cursor-pointer p-0">Đặt lại mặc định</button>
+    </div>
+    <textarea id="request-body" rows="10"
+      class="w-full text-sm text-ink-500 font-mono bg-paper-50 border border-paper-300 rounded-md px-3.5 py-3 outline-none focus:border-accent-400 resize-y transition-all"
+    ></textarea>
+  </div>
+
+  <!-- Send button -->
+  <button id="btn-send" type="button"
+    class="w-full flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-accent-500 rounded-lg cursor-pointer border-0
+           hover:bg-accent-600 active:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mb-8">
+    <svg id="send-spinner" class="hidden w-4 h-4 spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" stroke="white" stroke-width="3" stroke-opacity="0.25"></circle>
+      <path fill="white" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <span id="send-text">Gửi request</span>
+  </button>
+
+  <!-- Response -->
+  <div id="response-section" class="hidden">
+    <div class="flex items-center gap-3 mb-3">
+      <h2 class="font-serif text-base font-bold text-ink-600">Kết quả</h2>
+      <span id="status-badge" class="text-xs font-medium px-2 py-0.5 rounded-full"></span>
+      <span id="elapsed-badge" class="text-[12px] text-ink-300 ml-auto"></span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-3 border-b border-paper-200">
+      <button class="tab-btn active-tab px-3 py-1.5 text-sm font-medium border-b-2 border-accent-500 text-accent-500" data-tab="text">Văn bản</button>
+      <button class="tab-btn px-3 py-1.5 text-sm font-medium border-b-2 border-transparent text-ink-300 hover:text-ink-500" data-tab="raw">JSON thô</button>
+      <button class="tab-btn px-3 py-1.5 text-sm font-medium border-b-2 border-transparent text-ink-300 hover:text-ink-500" data-tab="meta">Metadata</button>
+    </div>
+
+    <div id="tab-text" class="tab-panel bg-white border border-paper-200 rounded-xl p-5">
+      <p id="response-text" class="text-sm text-ink-500 leading-relaxed whitespace-pre-wrap"></p>
+    </div>
+    <div id="tab-raw" class="tab-panel hidden bg-paper-50 border border-paper-200 rounded-xl p-5 overflow-auto max-h-[400px]">
+      <pre id="response-box" class="text-xs text-ink-500"></pre>
+    </div>
+    <div id="tab-meta" class="tab-panel hidden bg-white border border-paper-200 rounded-xl p-5">
+      <table class="w-full text-sm">
+        <tbody id="meta-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL_FALLBACK = 'https://hmzowbcufyobdfwdfcaw.supabase.co';
+
+  const DEFAULT_BODY = {
+    contents: [
+      { parts: [{ text: "Xin chào! Bạn là AI gì? Trả lời ngắn gọn bằng tiếng Việt." }] }
+    ],
+    generationConfig: { temperature: 0.7, maxOutputTokens: 256 }
+  };
+
+  /* ── Auth check ── */
+  const accessToken = localStorage.getItem('sb_access_token');
+  if (!accessToken) {
+    window.location.replace('/login.html');
+  }
+
+  const sbUser = (() => { try { return JSON.parse(localStorage.getItem('sb_user') || '{}'); } catch { return {}; } })();
+  document.getElementById('user-email').textContent = sbUser.email || 'Đã đăng nhập';
+
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    localStorage.removeItem('sb_access_token');
+    localStorage.removeItem('sb_refresh_token');
+    localStorage.removeItem('sb_user');
+    window.location.replace('/login.html');
+  });
+
+  /* ── Default body ── */
+  const textarea = document.getElementById('request-body');
+  textarea.value = JSON.stringify(DEFAULT_BODY, null, 2);
+
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    textarea.value = JSON.stringify(DEFAULT_BODY, null, 2);
+  });
+
+  /* ── Tabs ── */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active-tab', 'border-accent-500', 'text-accent-500');
+        b.classList.add('border-transparent', 'text-ink-300');
+      });
+      btn.classList.add('active-tab', 'border-accent-500', 'text-accent-500');
+      btn.classList.remove('border-transparent', 'text-ink-300');
+
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+    });
+  });
+
+  /* ── Send ── */
+  document.getElementById('btn-send').addEventListener('click', async () => {
+    const projectUrl = document.getElementById('cfg-url').value.trim().replace(/\/$/, '');
+    const model      = document.getElementById('cfg-model').value;
+    const pathTpl    = document.getElementById('cfg-path').value.trim();
+    const path       = pathTpl.replace('{model}', model);
+    const endpoint   = `${projectUrl}/functions/v1/gemini-proxy${path}`;
+
+    let body;
+    try { body = JSON.parse(textarea.value); }
+    catch { alert('Request body không hợp lệ JSON.'); return; }
+
+    setLoading(true);
+    showResponse(false);
+    const t0 = Date.now();
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      const elapsed = Date.now() - t0;
+      const rawText = await res.text();
+      let data;
+      try { data = JSON.parse(rawText); } catch { data = { _raw: rawText }; }
+
+      renderResponse(res.status, elapsed, data, endpoint);
+    } catch (err) {
+      renderError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  function setLoading(on) {
+    const btn = document.getElementById('btn-send');
+    btn.disabled = on;
+    document.getElementById('send-spinner').classList.toggle('hidden', !on);
+    document.getElementById('send-text').textContent = on ? 'Đang gửi…' : 'Gửi request';
+  }
+
+  function showResponse(show) {
+    document.getElementById('response-section').classList.toggle('hidden', !show);
+  }
+
+  function renderResponse(status, elapsed, data, url) {
+    showResponse(true);
+
+    // Status badge
+    const badge = document.getElementById('status-badge');
+    const ok = status >= 200 && status < 300;
+    badge.textContent = status;
+    badge.className = `text-xs font-medium px-2 py-0.5 rounded-full ${ok
+      ? 'bg-success-50 text-success-400'
+      : 'bg-danger-50 text-danger-400'}`;
+
+    document.getElementById('elapsed-badge').textContent = `${elapsed} ms`;
+
+    // Text tab
+    const textEl = document.getElementById('response-text');
+    if (ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      textEl.textContent = data.candidates[0].content.parts[0].text;
+    } else if (data?.error) {
+      textEl.textContent = `Lỗi: ${data.error?.message || JSON.stringify(data.error)}`;
+    } else {
+      textEl.textContent = '(Không có nội dung văn bản — xem tab JSON thô)';
+    }
+
+    // Raw tab
+    document.getElementById('response-box').textContent = JSON.stringify(data, null, 2);
+
+    // Meta tab
+    const meta = [];
+    meta.push(['URL', url]);
+    meta.push(['HTTP status', status]);
+    meta.push(['Thời gian', `${elapsed} ms`]);
+    if (data?.usageMetadata) {
+      const u = data.usageMetadata;
+      meta.push(['Prompt tokens', u.promptTokenCount ?? '—']);
+      meta.push(['Output tokens', u.candidatesTokenCount ?? '—']);
+      meta.push(['Total tokens', u.totalTokenCount ?? '—']);
+    }
+    if (data?.candidates?.[0]?.finishReason) {
+      meta.push(['Finish reason', data.candidates[0].finishReason]);
+    }
+    if (data?.modelVersion) meta.push(['Model version', data.modelVersion]);
+
+    document.getElementById('meta-table').innerHTML = meta.map(([k, v]) => `
+      <tr class="border-b border-paper-100 last:border-0">
+        <td class="py-2 pr-4 text-ink-300 text-xs w-1/3">${k}</td>
+        <td class="py-2 font-mono text-xs text-ink-500">${v}</td>
+      </tr>`).join('');
+
+    // Show text tab by default
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active-tab', 'border-accent-500', 'text-accent-500');
+      b.classList.add('border-transparent', 'text-ink-300');
+    });
+    const firstTab = document.querySelector('[data-tab="text"]');
+    firstTab.classList.add('active-tab', 'border-accent-500', 'text-accent-500');
+    firstTab.classList.remove('border-transparent', 'text-ink-300');
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById('tab-text').classList.remove('hidden');
+  }
+
+  function renderError(msg) {
+    showResponse(true);
+    const badge = document.getElementById('status-badge');
+    badge.textContent = 'Network Error';
+    badge.className = 'text-xs font-medium px-2 py-0.5 rounded-full bg-danger-50 text-danger-400';
+    document.getElementById('elapsed-badge').textContent = '';
+    document.getElementById('response-text').textContent = msg;
+    document.getElementById('response-box').textContent = msg;
+    document.getElementById('meta-table').innerHTML = '';
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById('tab-text').classList.remove('hidden');
+  }
+</script>
+</body>
+</html>

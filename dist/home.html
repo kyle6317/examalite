@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Exama Lite — Nền tảng tạo đề ôn tập</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,8 +33,6 @@
       --color-success-50:  #f0f7f0;
       --color-success-300: #5fa85f;
       --color-success-500: #256825;
-      --color-warning-50:  #fdf8ed;
-      --color-warning-300: #d9a93a;
       --shadow-paper:    0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06);
       --shadow-paper-md: 0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08);
       --shadow-paper-lg: 0 8px 20px 0 rgba(58,55,49,0.12), 0 2px 6px -1px rgba(58,55,49,0.08);
@@ -48,22 +46,21 @@
       font-family: var(--font-sans);
       background-color: var(--color-paper-50);
       color: var(--color-ink-500);
-      /* subtle paper texture via noise */
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
       line-height: 1.6;
     }
 
     h1, h2, h3 { font-family: var(--font-serif); color: var(--color-ink-700); }
 
-    /* ── Navbar ── */
+    /* Navbar */
     .navbar {
-      background: rgba(250, 249, 246, 0.92);
-      backdrop-filter: blur(8px);
+      background: rgba(250, 249, 246, 0.94);
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--color-paper-200);
       position: sticky; top: 0; z-index: 50;
     }
 
-    /* ── Buttons ── */
+    /* Buttons */
     .btn {
       display: inline-flex; align-items: center; gap: 6px;
       font-family: var(--font-sans); font-size: 14px; font-weight: 500;
@@ -93,7 +90,7 @@
     }
     .btn-outline:hover { background: var(--color-accent-50); border-color: var(--color-accent-600); color: var(--color-accent-600); }
 
-    /* ── Cards ── */
+    /* Cards */
     .card {
       background: #fff;
       border: 1px solid var(--color-paper-200);
@@ -105,7 +102,7 @@
       box-shadow: var(--shadow-paper-md);
     }
 
-    /* ── Hero ── */
+    /* Hero badge */
     .hero-badge {
       display: inline-flex; align-items: center; gap: 6px;
       background: var(--color-accent-50); color: var(--color-accent-600);
@@ -114,7 +111,7 @@
       font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
     }
 
-    /* ── Feature Icon ── */
+    /* Feature Icon */
     .feature-icon {
       width: 44px; height: 44px;
       background: var(--color-accent-50);
@@ -124,7 +121,7 @@
       flex-shrink: 0;
     }
 
-    /* ── How it works step number ── */
+    /* Step number */
     .step-num {
       width: 36px; height: 36px; border-radius: 9999px;
       background: var(--color-accent-500); color: #fff;
@@ -132,20 +129,17 @@
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
 
-    /* ── Section label ── */
     .section-label {
       font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
       text-transform: uppercase; color: var(--color-ink-300);
       font-family: var(--font-sans);
     }
 
-    /* ── Divider ── */
     hr { border: none; border-top: 1px solid var(--color-paper-200); }
 
-    /* ── Footer ── */
     footer { border-top: 1px solid var(--color-paper-200); }
 
-    /* ── Animations ── */
+    /* Animations */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -157,7 +151,7 @@
     .delay-4 { animation-delay: 0.4s; }
     .delay-5 { animation-delay: 0.5s; }
 
-    /* ── Mobile hamburger ── */
+    /* Mobile menu */
     .mobile-menu {
       display: none; flex-direction: column; gap: 12px;
       padding: 16px 20px;
@@ -166,43 +160,65 @@
     }
     .mobile-menu.open { display: flex; }
 
-    /* ── Demo exam card preview ── */
-    .demo-card {
+    /* Demo image card */
+    .demo-image-card {
       background: #fff;
       border: 1px solid var(--color-paper-200);
-      border-radius: 12px;
+      border-radius: 20px;
       box-shadow: var(--shadow-paper-lg);
       overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .demo-topbar {
-      background: var(--color-paper-100);
+    .demo-image-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 30px -12px rgba(0,0,0,0.12);
+    }
+    .demo-img-placeholder {
+      width: 100%;
+      background: linear-gradient(145deg, #f1efe8 0%, #eae7df 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+      position: relative;
       border-bottom: 1px solid var(--color-paper-200);
-      padding: 10px 16px;
-      display: flex; align-items: center; justify-content: space-between;
     }
-    .demo-option {
-      border: 1px solid var(--color-paper-300);
-      border-radius: 6px; padding: 10px 14px;
-      font-size: 13px; cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
+    .demo-img-placeholder img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
     }
-    .demo-option:hover {
-      border-color: var(--color-accent-300);
-      background: var(--color-accent-50);
-    }
-    .demo-option.selected {
-      border-color: var(--color-accent-500);
-      background: var(--color-accent-50);
-      color: var(--color-accent-700);
+    /* fallback nếu ảnh chưa có */
+    .demo-fallback {
+      text-align: center;
+      padding: 32px 20px;
+      color: var(--color-ink-400);
+      font-size: 14px;
     }
 
-    /* ── Scroll reveal ── */
+    /* Scroll reveal */
     .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
 
+    /* Responsive navbar tweaks */
     @media (max-width: 768px) {
       .nav-links { display: none; }
       .hamburger { display: flex !important; }
+      /* Ẩn logo-icon trên mobile nhưng giữ text Exama Lite */
+      .logo-icon-mobile-hide {
+        display: none !important;
+      }
+      .navbar .flex.items-center.justify-between .logo-icon-area {
+        display: none;
+      }
+    }
+
+    /* Helper */
+    .logo-icon-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 
@@ -219,13 +235,14 @@
 
 <body>
 
-<!-- ═══════════════════════════════════════ NAVBAR ═══════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════ NAVBAR (optimized for mobile) ═══════════════════════════════════════ -->
 <nav class="navbar" role="navigation" aria-label="Điều hướng chính">
-  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
 
-    <!-- Logo -->
+    <!-- Logo (chỉ hiển thị text, icon ẩn trên mobile) -->
     <a href="/" class="flex items-center gap-2 no-underline" aria-label="Exama Lite — Trang chủ">
-      <div style="width:30px;height:30px;background:var(--color-accent-500);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+      <!-- Icon chỉ hiển thị trên desktop, trên mobile bị ẩn nhờ class -->
+      <div class="logo-icon-area logo-icon-mobile-hide" style="width:30px;height:30px;background:var(--color-accent-500);border-radius:7px;display:flex;align-items:center;justify-content:center;">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect x="2" y="2" width="12" height="2.5" rx="1" fill="white"/>
           <rect x="2" y="6.75" width="8" height="2.5" rx="1" fill="white" opacity="0.8"/>
@@ -243,8 +260,8 @@
     </div>
 
     <!-- Auth buttons + hamburger -->
-    <div class="flex items-center gap-3">
-      <div class="nav-links flex items-center gap-3">
+    <div class="flex items-center gap-2 sm:gap-3">
+      <div class="nav-links flex items-center gap-2 sm:gap-3">
         <a href="/login" class="btn btn-secondary btn-sm">Đăng nhập</a>
         <a href="/signup" class="btn btn-primary btn-sm">Đăng ký</a>
       </div>
@@ -272,8 +289,8 @@
 
 <main>
 
-<!-- ═══════════════════════════════════════ HERO ═══════════════════════════════════════ -->
-<section style="padding: 80px 24px 72px;" aria-labelledby="hero-heading">
+<!-- ═══════════════════════════════════════ HERO (replaced demo card with demo.png) ═══════════════════════════════════════ -->
+<section style="padding: 64px 24px 72px;" aria-labelledby="hero-heading">
   <div class="max-w-7xl mx-auto">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
@@ -287,7 +304,7 @@
         </div>
 
         <h1 id="hero-heading" class="animate-fade-up delay-1"
-          style="font-size:clamp(2rem,4vw,3rem);font-weight:700;line-height:1.2;margin:20px 0 20px;color:var(--color-ink-700);">
+          style="font-size:clamp(1.8rem,4vw,3rem);font-weight:700;line-height:1.2;margin:20px 0 20px;color:var(--color-ink-700);">
           Tạo đề ôn tập<br/>
           <em style="font-style:italic;color:var(--color-accent-500);">đơn giản, nhanh gọn.</em>
         </h1>
@@ -310,34 +327,25 @@
         </p>
       </div>
 
-      <!-- Right: demo preview card -->
-      <div class="animate-fade-up delay-3" aria-hidden="true">
-        <div class="demo-card" style="max-width:460px;margin:0 auto;">
-          <div class="demo-topbar">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:13px;font-weight:600;color:var(--color-ink-500);font-family:var(--font-serif);">Đề Ôn Vật Lý 12</span>
-              <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:4px;background:var(--color-success-50);color:var(--color-success-500);border:1px solid #a0cfa0;">● Đang mở</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-300)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              <span style="font-size:12px;font-family:monospace;color:var(--color-ink-400);">28:14</span>
-            </div>
+      <!-- Right: demo.png (thay thế demo card cũ) -->
+      <div class="animate-fade-up delay-3" aria-label="Hình ảnh minh họa giao diện làm bài">
+        <div class="demo-image-card" style="max-width:520px;margin:0 auto;">
+          <div class="demo-img-placeholder">
+            <!-- Ảnh demo.png cùng thư mục, fallback nếu không tải được -->
+            <img src="demo.png" alt="Giao diện làm bài Exama Lite - minh họa trực quan" 
+                 onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'demo-fallback\'><svg width=\'48\' height=\'48\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1\'><rect x=\'2\' y=\'4\' width=\'20\' height=\'16\' rx=\'2\'/><path d=\'M8 12h8\'/></svg><p style=\'margin-top:12px;\'>demo.png — hình ảnh minh họa đề thi trắc nghiệm</p><p style=\'font-size:12px; margin-top:6px;\'>(Đặt file demo.png cùng thư mục để hiển thị)</p></div>';"
+                 style="width:100%; height:auto; display:block; border-radius: 20px 20px 0 0;" />
           </div>
-          <div style="padding:20px 20px 8px;">
-            <p style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--color-ink-300);margin-bottom:8px;">Câu 3 / 20</p>
-            <p style="font-family:var(--font-serif);font-size:15px;line-height:1.7;color:var(--color-ink-600);margin-bottom:16px;">
-              Một vật dao động điều hòa với biên độ A = 5 cm và chu kỳ T = 2 s. Tốc độ cực đại của vật là bao nhiêu?
-            </p>
-            <div style="display:flex;flex-direction:column;gap:8px;" id="demoOptions">
-              <button class="demo-option" onclick="selectOption(this)">A. &nbsp;5π cm/s</button>
-              <button class="demo-option selected" onclick="selectOption(this)">B. &nbsp;10π cm/s</button>
-              <button class="demo-option" onclick="selectOption(this)">C. &nbsp;2,5π cm/s</button>
-              <button class="demo-option" onclick="selectOption(this)">D. &nbsp;20π cm/s</button>
+          <div style="padding: 16px 20px 20px; background: #fff; border-top: 1px solid var(--color-paper-100);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <p style="font-size:12px; font-weight:600; color: var(--color-accent-500); letter-spacing:0.5px;">📋 Giao diện làm bài thực tế</p>
+                <p style="font-size:13px; color:var(--color-ink-400); margin-top:4px;">Trải nghiệm mượt mà, hỗ trợ flashcard và kiểm tra</p>
+              </div>
+              <div class="bg-paper-100 p-1.5 rounded-full" style="background: var(--color-paper-100); border-radius: 999px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
             </div>
-          </div>
-          <div style="padding:12px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--color-paper-100);margin-top:12px;">
-            <button class="btn btn-secondary btn-sm">← Câu trước</button>
-            <button class="btn btn-primary btn-sm">Câu sau →</button>
           </div>
         </div>
       </div>
@@ -389,70 +397,52 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-      <!-- Feature 1 -->
-      <div class="card card-hover reveal" style="padding:24px;transition:border-color .2s,box-shadow .2s;">
+      <div class="card card-hover reveal" style="padding:24px;">
         <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         </div>
         <h3 style="font-size:17px;margin:14px 0 8px;">Soạn đề đa dạng</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">
-          Trắc nghiệm đơn, đa đáp án, đúng/sai, điền số, điền từ và nhóm câu hỏi dùng chung dữ kiện.
-        </p>
+        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Trắc nghiệm đơn, đa đáp án, đúng/sai, điền số, điền từ và nhóm câu hỏi dùng chung dữ kiện.</p>
       </div>
 
-      <!-- Feature 2 -->
-      <div class="card card-hover reveal" style="padding:24px;transition:border-color .2s,box-shadow .2s;">
+      <div class="card card-hover reveal" style="padding:24px;">
         <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
         </div>
         <h3 style="font-size:17px;margin:14px 0 8px;">Chia sẻ bằng link</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">
-          Tạo link làm bài công khai và gửi cho bạn bè. Người làm bài không cần đăng nhập.
-        </p>
+        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Tạo link làm bài công khai và gửi cho bạn bè. Người làm bài không cần đăng nhập.</p>
       </div>
 
-      <!-- Feature 3 -->
-      <div class="card card-hover reveal" style="padding:24px;transition:border-color .2s,box-shadow .2s;">
+      <div class="card card-hover reveal" style="padding:24px;">
         <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
         <h3 style="font-size:17px;margin:14px 0 8px;">Giới hạn thời gian</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">
-          Cấu hình thời gian làm bài, ngày mở và ngày đóng đề — linh hoạt cho mọi nhu cầu.
-        </p>
+        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Cấu hình thời gian làm bài, ngày mở và ngày đóng đề — linh hoạt cho mọi nhu cầu.</p>
       </div>
 
-      <!-- Feature 4 -->
-      <div class="card card-hover reveal" style="padding:24px;transition:border-color .2s,box-shadow .2s;">
+      <div class="card card-hover reveal" style="padding:24px;">
         <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13s3-3 7-3 7 3 7 3"/><path d="M2 6s3-3 7-3 7 3 7 3"/><path d="M2 20s3-3 7-3 7 3 7 3"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><path d="M2 13s3-3 7-3 7 3 7 3"/><path d="M2 6s3-3 7-3 7 3 7 3"/><path d="M2 20s3-3 7-3 7 3 7 3"/></svg>
         </div>
         <h3 style="font-size:17px;margin:14px 0 8px;">Chế độ học Flashcard</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">
-          Trả lời sai? Câu hỏi tự động xuất hiện lại. Học đến khi nắm chắc toàn bộ nội dung.
-        </p>
+        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Trả lời sai? Câu hỏi tự động xuất hiện lại. Học đến khi nắm chắc toàn bộ nội dung.</p>
       </div>
 
-      <!-- Feature 5 -->
-      <div class="card card-hover reveal" style="padding:24px;transition:border-color .2s,box-shadow .2s;">
+      <div class="card card-hover reveal" style="padding:24px;">
         <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
         </div>
         <h3 style="font-size:17px;margin:14px 0 8px;">Xáo trộn đề thi</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">
-          Tùy chọn xáo trộn thứ tự câu hỏi và đáp án — mỗi lần làm là một lần thử sức mới.
-        </p>
+        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Tùy chọn xáo trộn thứ tự câu hỏi và đáp án — mỗi lần làm là một lần thử sức mới.</p>
       </div>
 
-      <!-- Feature 6 -->
-      <div class="card card-hover reveal" style="padding:24px;transition:border-color .2s,box-shadow .2s;">
+      <div class="card card-hover reveal" style="padding:24px;">
         <div class="feature-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-500)" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </div>
         <h3 style="font-size:17px;margin:14px 0 8px;">Nhập từ file Word</h3>
-        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">
-          Tải lên file .docx hoặc .pdf, nội dung được phân tích ngay trên trình duyệt — không cần server.
-        </p>
+        <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Tải lên file .docx hoặc .pdf, nội dung được phân tích ngay trên trình duyệt — không cần server.</p>
       </div>
 
     </div>
@@ -465,51 +455,28 @@
 
     <div class="reveal text-center" style="margin-bottom:48px;">
       <p class="section-label">Cách hoạt động</p>
-      <h2 id="how-heading" style="font-size:clamp(1.5rem,3vw,1.875rem);margin-top:10px;">
-        Ba bước để sẵn sàng ôn tập
-      </h2>
+      <h2 id="how-heading" style="font-size:clamp(1.5rem,3vw,1.875rem);margin-top:10px;">Ba bước để sẵn sàng ôn tập</h2>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-      <!-- Step 1 -->
       <div class="reveal" style="display:flex;flex-direction:column;align-items:flex-start;gap:16px;">
         <div class="step-num" aria-hidden="true">1</div>
-        <div>
-          <h3 style="font-size:18px;margin-bottom:8px;">Tạo đề ôn</h3>
-          <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">
-            Đăng ký bằng email, vào trang soạn đề và thêm câu hỏi theo ý muốn. Hỗ trợ nhập từ file Word để tiết kiệm thời gian.
-          </p>
-        </div>
-        <!-- Connector -->
-        <div class="hidden md:block" aria-hidden="true"></div>
+        <div><h3 style="font-size:18px;margin-bottom:8px;">Tạo đề ôn</h3><p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Đăng ký bằng email, vào trang soạn đề và thêm câu hỏi theo ý muốn. Hỗ trợ nhập từ file Word để tiết kiệm thời gian.</p></div>
       </div>
 
-      <!-- Step 2 -->
       <div class="reveal" style="display:flex;flex-direction:column;align-items:flex-start;gap:16px;">
         <div class="step-num" aria-hidden="true">2</div>
-        <div>
-          <h3 style="font-size:18px;margin-bottom:8px;">Chia sẻ link</h3>
-          <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">
-            Sau khi lưu, hệ thống tạo link làm bài dạng <code style="font-size:12px;background:var(--color-paper-200);padding:1px 5px;border-radius:4px;">/study?uuid=...</code>. Gửi link cho người muốn làm bài.
-          </p>
-        </div>
+        <div><h3 style="font-size:18px;margin-bottom:8px;">Chia sẻ link</h3><p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Sau khi lưu, hệ thống tạo link làm bài dạng <code style="font-size:12px;background:var(--color-paper-200);padding:1px 5px;border-radius:4px;">/study?uuid=...</code>. Gửi link cho người muốn làm bài.</p></div>
       </div>
 
-      <!-- Step 3 -->
       <div class="reveal" style="display:flex;flex-direction:column;align-items:flex-start;gap:16px;">
         <div class="step-num" aria-hidden="true">3</div>
-        <div>
-          <h3 style="font-size:18px;margin-bottom:8px;">Học & Kiểm tra</h3>
-          <p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">
-            Người làm bài chọn chế độ Học tập (flashcard) hoặc Kiểm tra (thi thật), nhận kết quả ngay sau khi nộp.
-          </p>
-        </div>
+        <div><h3 style="font-size:18px;margin-bottom:8px;">Học & Kiểm tra</h3><p style="font-size:14px;color:var(--color-ink-400);line-height:1.65;">Người làm bài chọn chế độ Học tập (flashcard) hoặc Kiểm tra (thi thật), nhận kết quả ngay sau khi nộp.</p></div>
       </div>
 
     </div>
 
-    <!-- Visual connector line (desktop only) -->
     <div class="hidden md:flex justify-center items-center gap-0 mt-8 reveal" aria-hidden="true">
       <div style="flex:1;height:2px;background:linear-gradient(to right,transparent,var(--color-accent-300));max-width:160px;margin-left:auto;"></div>
       <div style="width:8px;height:8px;border-radius:9999px;background:var(--color-accent-500);"></div>
@@ -526,17 +493,10 @@
   <div class="max-w-7xl mx-auto">
     <div class="card reveal" style="padding:clamp(32px,5vw,56px);text-align:center;border-color:var(--color-accent-200);background:linear-gradient(135deg,#fff 60%,var(--color-accent-50));">
       <p class="section-label">Bắt đầu ngay hôm nay</p>
-      <h2 id="cta-heading" style="font-size:clamp(1.5rem,3vw,2rem);margin:12px auto 16px;max-width:520px;">
-        Không phức tạp. Không mất tiền. Không quảng cáo.
-      </h2>
-      <p style="font-size:15px;color:var(--color-ink-400);max-width:420px;margin:0 auto 32px;">
-        Chỉ cần một địa chỉ email — bạn đã có thể tạo đề, chia sẻ và ôn tập ngay lập tức.
-      </p>
+      <h2 id="cta-heading" style="font-size:clamp(1.5rem,3vw,2rem);margin:12px auto 16px;max-width:520px;">Không phức tạp. Không mất tiền. Không quảng cáo.</h2>
+      <p style="font-size:15px;color:var(--color-ink-400);max-width:420px;margin:0 auto 32px;">Chỉ cần một địa chỉ email — bạn đã có thể tạo đề, chia sẻ và ôn tập ngay lập tức.</p>
       <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
-        <a href="/signup" class="btn btn-primary btn-lg">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-          Tạo tài khoản miễn phí
-        </a>
+        <a href="/signup" class="btn btn-primary btn-lg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Tạo tài khoản miễn phí</a>
         <a href="/app" class="btn btn-outline btn-lg">Vào Dashboard</a>
       </div>
     </div>
@@ -549,98 +509,55 @@
 <footer style="background:var(--color-paper-100);" role="contentinfo">
   <div class="max-w-7xl mx-auto px-6 py-12">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-
-      <!-- Brand -->
       <div class="md:col-span-2">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-          <div style="width:26px;height:26px;background:var(--color-accent-500);border-radius:6px;display:flex;align-items:center;justify-content:center;" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="2.5" rx="1" fill="white"/><rect x="2" y="6.75" width="8" height="2.5" rx="1" fill="white" opacity="0.8"/><rect x="2" y="11.5" width="10" height="2.5" rx="1" fill="white" opacity="0.6"/></svg>
-          </div>
+          <div style="width:26px;height:26px;background:var(--color-accent-500);border-radius:6px;display:flex;align-items:center;justify-content:center;" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="2.5" rx="1" fill="white"/><rect x="2" y="6.75" width="8" height="2.5" rx="1" fill="white" opacity="0.8"/><rect x="2" y="11.5" width="10" height="2.5" rx="1" fill="white" opacity="0.6"/></svg></div>
           <span style="font-family:var(--font-serif);font-weight:700;font-size:16px;color:var(--color-ink-700);">Exama Lite</span>
         </div>
-        <p style="font-size:13px;color:var(--color-ink-400);line-height:1.7;max-width:280px;margin-bottom:16px;">
-          Nền tảng tạo đề ôn tập nhỏ gọn, miễn phí và không quảng cáo dành cho học sinh Việt Nam.
-        </p>
-        <a href="mailto:nguyenhuuhoa@proton.me" style="font-size:13px;color:var(--color-accent-500);text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          nguyenhuuhoa@proton.me
-        </a>
+        <p style="font-size:13px;color:var(--color-ink-400);line-height:1.7;max-width:280px;margin-bottom:16px;">Nền tảng tạo đề ôn tập nhỏ gọn, miễn phí và không quảng cáo dành cho học sinh Việt Nam.</p>
+        <a href="mailto:nguyenhuuhoa@proton.me" style="font-size:13px;color:var(--color-accent-500);text-decoration:none;display:inline-flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>nguyenhuuhoa@proton.me</a>
       </div>
-
-      <!-- Links col 1 -->
-      <div>
-        <p class="section-label" style="margin-bottom:14px;">Dự án</p>
-        <nav aria-label="Liên kết dự án">
-          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
-            <li><a href="/about" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;" onmouseover="this.style.color='var(--color-accent-500)'" onmouseout="this.style.color='var(--color-ink-400)'">Giới thiệu</a></li>
-            <li><a href="/donate" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;" onmouseover="this.style.color='var(--color-accent-500)'" onmouseout="this.style.color='var(--color-ink-400)'">Ủng hộ dự án</a></li>
-            <li><a href="/wiki" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;" onmouseover="this.style.color='var(--color-accent-500)'" onmouseout="this.style.color='var(--color-ink-400)'">Hướng dẫn sử dụng</a></li>
-            <li>
-              <a href="https://github.com/kyle6317/examalite" target="_blank" rel="noopener noreferrer"
-                style="font-size:14px;color:var(--color-ink-400);text-decoration:none;display:inline-flex;align-items:center;gap:5px;"
-                onmouseover="this.style.color='var(--color-accent-500)'" onmouseout="this.style.color='var(--color-ink-400)'">
-                GitHub
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-
-      <!-- Links col 2 -->
-      <div>
-        <p class="section-label" style="margin-bottom:14px;">Pháp lý</p>
-        <nav aria-label="Liên kết pháp lý">
-          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
-            <li><a href="/terms" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;" onmouseover="this.style.color='var(--color-accent-500)'" onmouseout="this.style.color='var(--color-ink-400)'">Điều khoản sử dụng</a></li>
-            <li><a href="/privacy" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;" onmouseover="this.style.color='var(--color-accent-500)'" onmouseout="this.style.color='var(--color-ink-400)'">Chính sách bảo mật</a></li>
-          </ul>
-        </nav>
-      </div>
-
+      <div><p class="section-label" style="margin-bottom:14px;">Dự án</p><nav aria-label="Liên kết dự án"><ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;"><li><a href="/about" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;">Giới thiệu</a></li><li><a href="/donate" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;">Ủng hộ dự án</a></li><li><a href="/wiki" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;">Hướng dẫn sử dụng</a></li><li><a href="https://github.com/kyle6317/examalite" target="_blank" rel="noopener noreferrer" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;display:inline-flex;align-items:center;gap:5px;">GitHub<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></li></ul></nav></div>
+      <div><p class="section-label" style="margin-bottom:14px;">Pháp lý</p><nav aria-label="Liên kết pháp lý"><ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;"><li><a href="/terms" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;">Điều khoản sử dụng</a></li><li><a href="/privacy" style="font-size:14px;color:var(--color-ink-400);text-decoration:none;">Chính sách bảo mật</a></li></ul></nav></div>
     </div>
-
     <hr style="margin:32px 0;border-color:var(--color-paper-300);" />
-
-    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
-      <p style="font-size:13px;color:var(--color-ink-300);">
-        © 2025 Exama Lite · Giấy phép MIT · Được xây dựng bởi
-        <a href="https://github.com/kyle6317" target="_blank" rel="noopener noreferrer" style="color:var(--color-ink-400);text-decoration:none;" onmouseover="this.style.color='var(--color-accent-500)'" onmouseout="this.style.color='var(--color-ink-400)'">kyle2910</a>
-      </p>
-      <a href="https://examalite.pages.dev/" style="font-size:13px;color:var(--color-ink-300);text-decoration:none;" onmouseover="this.style.color='var(--color-accent-500)'" onmouseout="this.style.color='var(--color-ink-300)'">examalite.pages.dev</a>
-    </div>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;"><p style="font-size:13px;color:var(--color-ink-300);">© 2025 Exama Lite · Giấy phép MIT · Được xây dựng bởi <a href="https://github.com/kyle6317" target="_blank" rel="noopener noreferrer" style="color:var(--color-ink-400);text-decoration:none;">kyle2910</a></p><a href="https://examalite.pages.dev/" style="font-size:13px;color:var(--color-ink-300);text-decoration:none;">examalite.pages.dev</a></div>
   </div>
 </footer>
 
 <script>
-  // ── Demo option selection ──
+  // Demo option (không còn sử dụng nữa nhưng giữ lại để tránh lỗi)
   function selectOption(el) {
-    document.querySelectorAll('.demo-option').forEach(o => o.classList.remove('selected'));
-    el.classList.add('selected');
+    if(document.querySelectorAll) {
+      document.querySelectorAll('.demo-option')?.forEach(o => o.classList.remove('selected'));
+      if(el) el.classList.add('selected');
+    }
   }
 
-  // ── Hamburger menu ──
+  // Hamburger menu
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const mobileMenu = document.getElementById('mobileMenu');
-  hamburgerBtn.addEventListener('click', () => {
-    const isOpen = mobileMenu.classList.contains('open');
-    mobileMenu.classList.toggle('open');
-    hamburgerBtn.setAttribute('aria-expanded', String(!isOpen));
-    hamburgerBtn.setAttribute('aria-label', isOpen ? 'Mở menu' : 'Đóng menu');
-    // Animate bars
-    const [b1, b2, b3] = [document.getElementById('hb1'), document.getElementById('hb2'), document.getElementById('hb3')];
-    if (!isOpen) {
-      b1.style.transform = 'translateY(7px) rotate(45deg)';
-      b2.style.opacity = '0';
-      b3.style.transform = 'translateY(-7px) rotate(-45deg)';
-    } else {
-      b1.style.transform = '';
-      b2.style.opacity = '';
-      b3.style.transform = '';
-    }
-  });
+  if(hamburgerBtn && mobileMenu) {
+    hamburgerBtn.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.contains('open');
+      mobileMenu.classList.toggle('open');
+      hamburgerBtn.setAttribute('aria-expanded', String(!isOpen));
+      const b1 = document.getElementById('hb1'), b2 = document.getElementById('hb2'), b3 = document.getElementById('hb3');
+      if(b1 && b2 && b3) {
+        if (!isOpen) {
+          b1.style.transform = 'translateY(7px) rotate(45deg)';
+          b2.style.opacity = '0';
+          b3.style.transform = 'translateY(-7px) rotate(-45deg)';
+        } else {
+          b1.style.transform = '';
+          b2.style.opacity = '';
+          b3.style.transform = '';
+        }
+      }
+    });
+  }
 
-  // ── Scroll reveal ──
+  // Scroll reveal
   const revealEls = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {

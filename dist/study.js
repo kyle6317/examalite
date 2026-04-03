@@ -374,9 +374,7 @@ function prepareQuestions() {
         });
     } else {
         examData.groups.forEach(group => {
-            const shuffledQuestions = [...group.questions].sort(() => Math.random() - 0.5);
-            
-            shuffledQuestions.forEach(q => {
+            group.questions.forEach(q => {
                 const newId = 'q_' + Math.random().toString(36).substr(2, 9);
                 questionIdToOriginal[newId] = {
                     originalId: q.id,

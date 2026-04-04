@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini không khả dụng</title>  <!-- Tailwind CDN -->  <script src="https://cdn.tailwindcss.com"></script>  <!-- Fonts -->  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet">  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['DM Sans', 'sans-serif'],
+            serif: ['Noto Serif', 'serif'],
+          },
+          colors: {
+            paper: {
+              50: '#faf9f6',
+              100: '#f4f2ec',
+              200: '#e8e4d9',
+            },
+            ink: {
+              500: '#3a3731',
+              600: '#27251f',
+            },
+            accent: {
+              500: '#2d6899',
+              600: '#1f5280',
+            }
+          }
+        }
+      }
+    }
+  </script></head><body class="bg-paper-50 text-ink-500 font-sans min-h-screen flex items-center justify-center p-4">  <div class="bg-white border border-paper-200 rounded-md shadow-md p-8 max-w-md w-full text-center"><h1 class="font-serif text-2xl text-ink-600 mb-3">
+  Gemini hiện không khả dụng
+</h1>
+
+<p class="text-sm text-[#5e5a52] leading-relaxed mb-6">
+  Tính năng Gemini đang tạm thời không thể sử dụng.
+  Vui lòng thử lại sau hoặc quay về trang khác.
+</p>
+
+<div class="flex gap-3 justify-center flex-wrap">
+  <a href="/" 
+     class="px-4 py-2 rounded-md text-sm bg-paper-100 border border-paper-200 hover:bg-paper-200 transition">
+    Quay về Trang chủ
+  </a>
+
+  <a href="/app" 
+     class="px-4 py-2 rounded-md text-sm text-white bg-accent-500 hover:bg-accent-600 transition">
+    Quay về Dashboard
+  </a>
+</div>
+
+<div class="mt-5 text-xs">
+  Cần hỗ trợ gấp?
+  <a href="mailto:nguyenhuuhoa@proton.me" 
+     class="text-accent-500 hover:underline ml-1">
+    Liên hệ hỗ trợ
+  </a>
+</div>
+
+  </div></body>
+</html>

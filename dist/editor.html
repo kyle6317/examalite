@@ -1791,8 +1791,135 @@ async function handleJsonFile(file) {
 }
 
 async function handleZipFile(file) {
-  showToast('info', 'Chức năng import ZIP đang được phát triển.');
-  document.getElementById('file-input').value = '';
+  const uploadBtn = document.getElementById('btn-upload');
+  const originalHTML = uploadBtn.innerHTML;
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = `
+    <div class="spinner"></div>
+    <span class="topbar-label">Đang xử lý...</span>
+  `;
+
+  try {
+    // Load JSZip nếu chưa có
+    if (!window.JSZip) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Không thể tải thư viện JSZip.'));
+        document.head.appendChild(script);
+      });
+    }
+
+    // Đọc ZIP
+    const arrayBuffer = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(arrayBuffer);
+
+    // ── 1. Tìm và parse exam.json ──
+    const examFile = zip.file('exam.json');
+    if (!examFile) {
+      throw new Error('Không tìm thấy file exam.json trong ZIP. Đảm bảo ZIP đúng định dạng xuất từ Exama Lite.');
+    }
+
+    const examText = await examFile.async('string');
+    const examData = JSON.parse(examText);
+
+    if (!examData.groups || !Array.isArray(examData.groups)) {
+      throw new Error('exam.json không đúng định dạng (thiếu trường "groups").');
+    }
+
+    // ── 2. Load media files từ thư mục media/ ──
+    const newMediaMap = new Map();
+    const mediaFiles = [];
+    zip.forEach((relativePath, zipEntry) => {
+      if (!zipEntry.dir && relativePath.startsWith('media/')) {
+        mediaFiles.push({ relativePath, zipEntry });
+      }
+    });
+
+    await Promise.all(mediaFiles.map(async ({ relativePath, zipEntry }) => {
+      try {
+        const blob = await zipEntry.async('blob');
+        const filename = relativePath.replace(/^media\//, '');
+        if (!filename) return;
+
+        // Xác định MIME type từ đuôi file
+        const ext = filename.split('.').pop().toLowerCase();
+        const mimeMap = {
+          jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+          gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml',
+          mp3: 'audio/mpeg', ogg: 'audio/ogg', wav: 'audio/wav', m4a: 'audio/mp4',
+          mp4: 'video/mp4', webm: 'video/webm',
+        };
+        const mime = mimeMap[ext] || blob.type || 'application/octet-stream';
+        const typedBlob = new Blob([blob], { type: mime });
+        const url = URL.createObjectURL(typedBlob);
+
+        newMediaMap.set(filename, { url, blob: typedBlob, mime });
+      } catch (e) {
+        console.warn('Bỏ qua media file lỗi:', relativePath, e);
+      }
+    }));
+
+    // Merge mediaMap mới vào state (giữ lại media cũ nếu có)
+    for (const [k, v] of newMediaMap.entries()) {
+      state.mediaMap.set(k, v);
+    }
+
+    // ── 3. Gán blob URL cho media references trong exam data ──
+    function resolveMediaInList(mediaArr) {
+      if (!Array.isArray(mediaArr)) return;
+      mediaArr.forEach(m => {
+        if (m.src && state.mediaMap.has(m.src)) {
+          m._blob = state.mediaMap.get(m.src).url;
+        }
+      });
+    }
+
+    examData.groups.forEach(g => {
+      resolveMediaInList(g.context_media);
+      (g.questions || []).forEach(q => {
+        resolveMediaInList(q.prompt_media);
+        (q.choices || []).forEach(c => resolveMediaInList(c.media));
+      });
+    });
+
+    // ── 4. Remap IDs để tránh xung đột ──
+    let totalQ = 0;
+    examData.groups.forEach(g => {
+      g.id = newGid();
+      (g.questions || []).forEach(q => {
+        q.id = newQid();
+        (q.choices || []).forEach(c => {
+          if (c.id !== 'true' && c.id !== 'false') {
+            const oldId = c.id;
+            c.id = newCid();
+            if (q.answer === oldId) q.answer = c.id;
+            if (Array.isArray(q.answer)) {
+              q.answer = q.answer.map(a => a === oldId ? c.id : a);
+            }
+          }
+        });
+        totalQ++;
+      });
+    });
+
+    // ── 5. Đẩy vào state và render ──
+    state.groups.push(...examData.groups);
+    markContentDirty();
+    renderGroups();
+
+    const mediaInfo = newMediaMap.size > 0 ? ` (${newMediaMap.size} file media)` : '';
+    showToast('success', `Đã import ${totalQ} câu hỏi từ ${file.name}${mediaInfo}`);
+
+  } catch (err) {
+    console.error('ZIP import error:', err);
+    showToast('error', 'Lỗi import ZIP: ' + err.message);
+  } finally {
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = originalHTML;
+    document.getElementById('file-input').value = '';
+  }
 }
 
 async function downloadExamZip() {

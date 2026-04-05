@@ -2,6 +2,7 @@
 from pathlib import Path
 import shutil
 import sys
+import re
 
 DEFAULT_SUPABASE_URL = "https://hmzowbcufyobdfwdfcaw.supabase.co"
 DEFAULT_ANON_KEY = (
@@ -19,14 +20,14 @@ def normalize_supabase_url(url: str) -> str:
     url = url.strip()
     if not url.startswith("https://"):
         raise ValueError("Supabase project URL phải bắt đầu bằng https://")
-    return url[:-1] if url.endswith("/") else url
+    return url.rstrip("/")
 
 
 def normalize_website(url: str) -> str:
     url = url.strip()
     if not url.startswith("http"):
         raise ValueError("Website dự án phải bắt đầu bằng http")
-    return url
+    return url.rstrip("/")
 
 
 def prompt_nonempty(prompt: str) -> str:
@@ -40,7 +41,9 @@ def prompt_nonempty(prompt: str) -> str:
 def prompt_supabase_url() -> str:
     while True:
         try:
-            return normalize_supabase_url(prompt_nonempty("Nhập Supabase project URL: "))
+            return normalize_supabase_url(
+                prompt_nonempty("Nhập Supabase project URL: ")
+            )
         except ValueError as e:
             print(e)
 
@@ -52,7 +55,9 @@ def prompt_anon_key() -> str:
 def prompt_website() -> str:
     while True:
         try:
-            return normalize_website(prompt_nonempty("Nhập website dự án: "))
+            return normalize_website(
+                prompt_nonempty("Nhập website dự án: ")
+            )
         except ValueError as e:
             print(e)
 
@@ -66,7 +71,9 @@ def copy_dist_to_output(script_dir: Path) -> Path:
     output_dir = script_dir / "output"
 
     if not dist_dir.exists() or not dist_dir.is_dir():
-        raise FileNotFoundError("Không tìm thấy thư mục dist trong cùng thư mục với script.")
+        raise FileNotFoundError(
+            "Không tìm thấy thư mục dist trong cùng thư mục với script."
+        )
 
     if output_dir.exists():
         shutil.rmtree(output_dir)
@@ -95,8 +102,14 @@ def replace_in_file(path: Path, replacements: dict[str, str]) -> bool:
         return False
 
     original = text
+
     for old, new in replacements.items():
-        text = text.replace(old, new)
+        escaped_old = re.escape(old)
+
+        # match cả dạng có "/" hoặc không
+        pattern = rf"{escaped_old}/?"
+
+        text = re.sub(pattern, new, text)
 
     if text != original:
         path.write_text(text, encoding="utf-8")
@@ -106,7 +119,7 @@ def replace_in_file(path: Path, replacements: dict[str, str]) -> bool:
 
 
 def main():
-    script_dir = Path(__file__).resolve().parent
+    script_dir = Path(__file__).parent.resolve()
 
     print("Nhập thông tin mới cho cấu hình.")
     new_supabase_url = prompt_supabase_url()
@@ -147,9 +160,12 @@ def main():
             changed_files += 1
             print(f"Đã cập nhật: {file_path}")
 
-    print(f"\nHoàn tất.")
+    print("\nHoàn tất.")
     print(f"Đã copy dist -> output tại: {output_dir}")
     print(f"Đã quét {scanned_files} file, thay đổi {changed_files} file.")
+
+    if changed_files == 0:
+        print("⚠️ Không tìm thấy cấu hình mặc định để thay. Có thể đã được cấu hình trước đó.")
 
 
 if __name__ == "__main__":

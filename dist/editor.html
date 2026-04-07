@@ -839,39 +839,38 @@ async function saveExam() {
       if (!res.ok) throw new Error('Lỗi cập nhật: ' + await res.text());
     }
 
-    // Build exam.json
-    const examJson = buildExamJson();
-    const jsonBytes = new TextEncoder().encode(JSON.stringify(examJson, null, 2));
-
-    // Build ZIP: include exam.json + all media files from state.mediaMap
-    const zipEntries = [{ name: 'exam.json', data: jsonBytes }];
-
-    // Collect media from state.mediaMap (imported from DOCX or ZIP)
-    if (state.mediaMap && state.mediaMap.size > 0) {
-      await Promise.all(
-        Array.from(state.mediaMap.entries()).map(async ([filename, mediaData]) => {
-          try {
-            const arrayBuf = await mediaData.blob.arrayBuffer();
-            zipEntries.push({ name: `media/${filename}`, data: new Uint8Array(arrayBuf) });
-          } catch (e) {
-            console.warn('Bỏ qua media khi build ZIP:', filename, e);
-          }
-        })
-      );
+    // Load JSZip nếu chưa có
+    if (!window.JSZip) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Không thể tải thư viện JSZip.'));
+        document.head.appendChild(script);
+      });
     }
 
-    // Also collect media uploaded directly via handleMediaUpload (_file blobs stored in mediaArr)
+    // Build exam.json
+    const examJson = buildExamJson();
+    const zip = new JSZip();
+    zip.file('exam.json', JSON.stringify(examJson, null, 2));
+
+    // Tập hợp tất cả media cần đưa vào thư mục media/
+    const mediaToAdd = new Map(); // filename → Blob
+
+    // Nguồn 1: state.mediaMap (media import từ DOCX hoặc ZIP)
+    if (state.mediaMap && state.mediaMap.size > 0) {
+      for (const [filename, mediaData] of state.mediaMap.entries()) {
+        mediaToAdd.set(filename, mediaData.blob);
+      }
+    }
+
+    // Nguồn 2: media upload trực tiếp qua nút "Đính kèm media" (_file còn trên object)
     function collectInlineMedia(mediaArr) {
       if (!Array.isArray(mediaArr)) return;
       mediaArr.forEach(m => {
-        if (m._file && m.src) {
-          // Only add if not already in zipEntries (avoid duplicates from mediaMap)
-          const entryName = `media/${m.src}`;
-          if (!zipEntries.find(e => e.name === entryName)) {
-            // Schedule async read — handled below
-            zipEntries.__pendingFiles = zipEntries.__pendingFiles || [];
-            zipEntries.__pendingFiles.push({ name: entryName, file: m._file });
-          }
+        if (m._file && m.src && !mediaToAdd.has(m.src)) {
+          mediaToAdd.set(m.src, m._file);
         }
       });
     }
@@ -882,22 +881,16 @@ async function saveExam() {
         (q.choices || []).forEach(c => collectInlineMedia(c.media));
       });
     });
-    if (zipEntries.__pendingFiles && zipEntries.__pendingFiles.length > 0) {
-      await Promise.all(
-        zipEntries.__pendingFiles.map(async ({ name, file }) => {
-          try {
-            const arrayBuf = await file.arrayBuffer();
-            zipEntries.push({ name, data: new Uint8Array(arrayBuf) });
-          } catch (e) {
-            console.warn('Bỏ qua media file khi build ZIP:', name, e);
-          }
-        })
-      );
-      delete zipEntries.__pendingFiles;
+
+    // Thêm tất cả media vào thư mục media/ trong ZIP
+    if (mediaToAdd.size > 0) {
+      const mediaFolder = zip.folder('media');
+      for (const [filename, blob] of mediaToAdd.entries()) {
+        mediaFolder.file(filename, blob);
+      }
     }
 
-    // Build ZIP (store method, no compression)
-    const zipBytes = buildZip(zipEntries);
+    const zipBytes = await zip.generateAsync({ type: 'uint8array' });
 
     // Upload ZIP to storage
     const zipPath = `${state.userId}/${examId}.zip`;

@@ -843,8 +843,61 @@ async function saveExam() {
     const examJson = buildExamJson();
     const jsonBytes = new TextEncoder().encode(JSON.stringify(examJson, null, 2));
 
+    // Build ZIP: include exam.json + all media files from state.mediaMap
+    const zipEntries = [{ name: 'exam.json', data: jsonBytes }];
+
+    // Collect media from state.mediaMap (imported from DOCX or ZIP)
+    if (state.mediaMap && state.mediaMap.size > 0) {
+      await Promise.all(
+        Array.from(state.mediaMap.entries()).map(async ([filename, mediaData]) => {
+          try {
+            const arrayBuf = await mediaData.blob.arrayBuffer();
+            zipEntries.push({ name: `media/${filename}`, data: new Uint8Array(arrayBuf) });
+          } catch (e) {
+            console.warn('Bỏ qua media khi build ZIP:', filename, e);
+          }
+        })
+      );
+    }
+
+    // Also collect media uploaded directly via handleMediaUpload (_file blobs stored in mediaArr)
+    function collectInlineMedia(mediaArr) {
+      if (!Array.isArray(mediaArr)) return;
+      mediaArr.forEach(m => {
+        if (m._file && m.src) {
+          // Only add if not already in zipEntries (avoid duplicates from mediaMap)
+          const entryName = `media/${m.src}`;
+          if (!zipEntries.find(e => e.name === entryName)) {
+            // Schedule async read — handled below
+            zipEntries.__pendingFiles = zipEntries.__pendingFiles || [];
+            zipEntries.__pendingFiles.push({ name: entryName, file: m._file });
+          }
+        }
+      });
+    }
+    state.groups.forEach(g => {
+      collectInlineMedia(g.context_media);
+      (g.questions || []).forEach(q => {
+        collectInlineMedia(q.prompt_media);
+        (q.choices || []).forEach(c => collectInlineMedia(c.media));
+      });
+    });
+    if (zipEntries.__pendingFiles && zipEntries.__pendingFiles.length > 0) {
+      await Promise.all(
+        zipEntries.__pendingFiles.map(async ({ name, file }) => {
+          try {
+            const arrayBuf = await file.arrayBuffer();
+            zipEntries.push({ name, data: new Uint8Array(arrayBuf) });
+          } catch (e) {
+            console.warn('Bỏ qua media file khi build ZIP:', name, e);
+          }
+        })
+      );
+      delete zipEntries.__pendingFiles;
+    }
+
     // Build ZIP (store method, no compression)
-    const zipBytes = buildZip([{ name: 'exam.json', data: jsonBytes }]);
+    const zipBytes = buildZip(zipEntries);
 
     // Upload ZIP to storage
     const zipPath = `${state.userId}/${examId}.zip`;
@@ -877,21 +930,27 @@ async function saveExam() {
 }
 
 function buildExamJson() {
+  // Serialize a media array: keep only { type, src, alt } — drop _blob/_file (not JSON-serializable)
+  function serializeMedia(mediaArr) {
+    if (!Array.isArray(mediaArr)) return [];
+    return mediaArr.map(m => ({ type: m.type, src: m.src, alt: m.alt || '' }));
+  }
+
   return {
     groups: state.groups.map(g => ({
       id: g.id,
       label: g.label || '',
       context: g.context || '',
-      context_media: [],
+      context_media: serializeMedia(g.context_media),
       questions: (g.questions || []).map(q => ({
         id: q.id,
         type: q.type,
         prompt: q.prompt || '',
-        prompt_media: [],
+        prompt_media: serializeMedia(q.prompt_media),
         choices: (q.choices || []).map(c => ({
           id: c.id,
           text: c.text || '',
-          media: []
+          media: serializeMedia(c.media)
         })),
         answer: q.answer ?? ''
       }))

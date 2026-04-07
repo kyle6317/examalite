@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Soạn đề — Exama Lite</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -713,14 +714,14 @@ async function loadExam(uuid) {
 }
 
 async function parseZip(arrayBuffer) {
-  // Minimal ZIP parser for exam.json
   try {
-    const bytes = new Uint8Array(arrayBuffer);
-    // Find exam.json in zip entries
-    const entries = readZipEntries(bytes);
-    const examEntry = entries.find(e => e.name === 'exam.json');
-    if (examEntry) {
-      const json = new TextDecoder().decode(examEntry.data);
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    console.log('[parseZip] ZIP loaded, entries:', Object.keys(zip.files));
+
+    // ── 1. Đọc exam.json ──
+    const examFile = zip.file('exam.json');
+    if (examFile) {
+      const json = await examFile.async('string');
       const examData = JSON.parse(json);
       state.groups = examData.groups || [];
       // Re-assign counters
@@ -739,9 +740,66 @@ async function parseZip(arrayBuffer) {
         });
       });
     }
-    // Store media blobs (skip for now; media referenced by name)
+
+    // ── 2. Load tất cả media từ thư mục media/ vào state.mediaMap ──
+    const mimeMap = {
+      jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+      gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml',
+      mp3: 'audio/mpeg', ogg: 'audio/ogg', wav: 'audio/wav', m4a: 'audio/mp4',
+      mp4: 'video/mp4', webm: 'video/webm',
+    };
+    const mediaPromises = [];
+    zip.forEach((relativePath, zipEntry) => {
+      if (!zipEntry.dir && relativePath.startsWith('media/')) {
+        const filename = relativePath.slice('media/'.length);
+        if (!filename) return;
+        mediaPromises.push(
+          zipEntry.async('blob').then(blob => {
+            const ext = filename.split('.').pop().toLowerCase();
+            const mime = mimeMap[ext] || 'application/octet-stream';
+            const typedBlob = new Blob([blob], { type: mime });
+            const url = URL.createObjectURL(typedBlob);
+            state.mediaMap.set(filename, { url, blob: typedBlob, mime });
+          })
+        );
+      }
+    });
+    await Promise.all(mediaPromises);
+    console.log('[parseZip] mediaMap loaded:', state.mediaMap.size, 'files:', Array.from(state.mediaMap.keys()));
+
+    // ── 3. Gán _blob URL cho media references trong state.groups ──
+    function resolveMedia(mediaArr) {
+      if (!Array.isArray(mediaArr)) return;
+      mediaArr.forEach(m => {
+        if (m.src && state.mediaMap.has(m.src)) {
+          m._blob = state.mediaMap.get(m.src).url;
+          // Đảm bảo type được set đúng nếu bị thiếu
+          if (!m.type) {
+            const mime = state.mediaMap.get(m.src).mime || '';
+            m.type = mime.startsWith('image') ? 'image' : mime.startsWith('audio') ? 'audio' : 'video';
+          }
+        }
+      });
+    }
+    state.groups.forEach(g => {
+      resolveMedia(g.context_media);
+      (g.questions || []).forEach(q => {
+        resolveMedia(q.prompt_media);
+        (q.choices || []).forEach(c => resolveMedia(c.media));
+      });
+    });
+
+    // Debug: log all media refs that still have no _blob
+    state.groups.forEach(g => {
+      [...(g.context_media||[]), ...(g.questions||[]).flatMap(q => [...(q.prompt_media||[]), ...(q.choices||[]).flatMap(c => c.media||[])])].forEach(m => {
+        if (m.src && !m._blob) console.warn('[parseZip] unresolved media:', m.src, '| mediaMap has it:', state.mediaMap.has(m.src));
+        if (m.src && m._blob) console.log('[parseZip] resolved media:', m.src, '→', m._blob.slice(0, 40));
+      });
+    });
+
   } catch (e) {
-    console.warn('ZIP parse error:', e);
+    console.error('ZIP parse error:', e);
+    throw e; // bubble lên để loadExam hiển thị lỗi cho user
   }
 }
 
@@ -837,17 +895,6 @@ async function saveExam() {
         body: JSON.stringify(configPayload)
       });
       if (!res.ok) throw new Error('Lỗi cập nhật: ' + await res.text());
-    }
-
-    // Load JSZip nếu chưa có
-    if (!window.JSZip) {
-      await new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-        script.onload = resolve;
-        script.onerror = () => reject(new Error('Không thể tải thư viện JSZip.'));
-        document.head.appendChild(script);
-      });
     }
 
     // Build exam.json
@@ -1359,11 +1406,9 @@ function renderMediaZone(fieldKey, mediaArr) {
   const existingItems = (mediaArr || []).map((m, mi) => {
     if (m.type === 'image') {
       // Nếu src là tên file (từ DOCX import), lấy object URL từ mediaMap
-      let imgSrc = m.src;
-      if (state.mediaMap && state.mediaMap.has(m.src)) {
-        const mediaData = state.mediaMap.get(m.src);
-        imgSrc = mediaData.url;
-      }
+      const imgSrc = m._blob
+        || (state.mediaMap && state.mediaMap.has(m.src) ? state.mediaMap.get(m.src).url : null)
+        || m.src;
       return `<div class="media-item">
         <img src="${escHtml(imgSrc)}" alt="${escHtml(m.alt||'')}">
         <button class="remove-btn" onclick="removeMedia('${fieldKey}', ${mi})" title="Xóa">×</button>
@@ -1852,17 +1897,6 @@ async function handleZipFile(file) {
   `;
 
   try {
-    // Load JSZip nếu chưa có
-    if (!window.JSZip) {
-      await new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-        script.onload = resolve;
-        script.onerror = () => reject(new Error('Không thể tải thư viện JSZip.'));
-        document.head.appendChild(script);
-      });
-    }
-
     // Đọc ZIP
     const arrayBuffer = await file.arrayBuffer();
     const zip = await JSZip.loadAsync(arrayBuffer);
@@ -1976,17 +2010,6 @@ async function handleZipFile(file) {
 
 async function downloadExamZip() {
   try {
-    // Import JSZip dynamically
-    if (!window.JSZip) {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-      document.head.appendChild(script);
-      await new Promise((resolve, reject) => {
-        script.onload = resolve;
-        script.onerror = reject;
-      });
-    }
-
     const zip = new JSZip();
     
     // Add exam.json

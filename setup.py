@@ -105,10 +105,7 @@ def replace_in_file(path: Path, replacements: dict[str, str]) -> bool:
 
     for old, new in replacements.items():
         escaped_old = re.escape(old)
-
-        # match cả dạng có "/" hoặc không
-        pattern = rf"{escaped_old}/?"
-
+        pattern = rf"{escaped_old}(?=/|$)"
         text = re.sub(pattern, new, text)
 
     if text != original:

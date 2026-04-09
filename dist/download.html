@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tải xuống bài ôn — Exama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    /* ── Design Tokens ──────────────────────────────────────────────── */
+    :root {
+      --color-paper-50:  #faf9f6;
+      --color-paper-100: #f4f2ec;
+      --color-paper-200: #e8e4d9;
+      --color-paper-300: #d6d0c4;
+      --color-ink-100: #e0ddd7;
+      --color-ink-200: #b8b3a8;
+      --color-ink-300: #8c8679;
+      --color-ink-400: #5e5a52;
+      --color-ink-500: #3a3731;
+      --color-ink-600: #27251f;
+      --color-ink-700: #1a1814;
+      --color-accent-50:  #f0f4f8;
+      --color-accent-100: #d9e5f0;
+      --color-accent-200: #adc5df;
+      --color-accent-300: #7aa3c8;
+      --color-accent-400: #4e84b4;
+      --color-accent-500: #2d6899;
+      --color-accent-600: #1f5280;
+      --color-accent-700: #153d60;
+      --color-success-50:  #f0f7f0;
+      --color-success-200: #a0cfa0;
+      --color-success-300: #5fa85f;
+      --color-danger-50:  #fdf0f0;
+      --color-danger-200: #e8a0a0;
+      --color-danger-300: #d05f5f;
+      --color-warning-50: #fdf8ed;
+      --color-warning-300: #d9a93a;
+      --font-serif: 'Noto Serif', Georgia, serif;
+      --font-sans:  'DM Sans', system-ui, sans-serif;
+      --shadow-paper:    0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06);
+      --shadow-paper-md: 0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08);
+      --shadow-paper-lg: 0 8px 20px 0 rgba(58,55,49,0.12), 0 2px 6px -1px rgba(58,55,49,0.08);
+      --shadow-focus:    0 0 0 3px rgba(77,132,180,0.14);
+      --radius-sm:   4px;
+      --radius-base: 6px;
+      --radius-md:   8px;
+      --radius-lg:   12px;
+      --radius-xl:   16px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--color-paper-50);
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      color: var(--color-ink-500);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 80px;
+    }
+
+    /* ── Header ──────────────────────────────────────────────────────── */
+    .page-header {
+      width: 100%;
+      max-width: 560px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--color-accent-500);
+      border-radius: var(--radius-base);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-mark svg { width: 18px; height: 18px; color: white; }
+    .logo-text {
+      font-family: var(--font-serif);
+      font-size: 18px; font-weight: 700;
+      color: var(--color-ink-700);
+      letter-spacing: -0.2px;
+    }
+
+    /* ── Card ──────────────────────────────────────────────────────────── */
+    .card {
+      width: 100%; max-width: 560px;
+      background: white;
+      border: 1px solid var(--color-paper-200);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-paper-lg);
+      overflow: hidden;
+    }
+
+    /* ── Skeleton / Loading ──────────────────────────────────────────── */
+    #loadingSection {
+      padding: 40px 32px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .skeleton-line {
+      background: linear-gradient(90deg, var(--color-paper-100) 25%, var(--color-paper-200) 50%, var(--color-paper-100) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: var(--radius-base);
+      height: 14px;
+    }
+    .skeleton-line.wide  { width: 72%; }
+    .skeleton-line.mid   { width: 50%; }
+    .skeleton-line.short { width: 36%; }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .loading-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--color-paper-200);
+      border-top-color: var(--color-accent-400);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 4px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-label {
+      font-size: 13px; color: var(--color-ink-300);
+    }
+
+    /* ── Error ──────────────────────────────────────────────────────── */
+    #errorSection {
+      padding: 40px 32px;
+      display: none; flex-direction: column; align-items: center; gap: 12px; text-align: center;
+    }
+    .error-icon {
+      width: 48px; height: 48px;
+      background: var(--color-danger-50);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .error-icon svg { width: 24px; height: 24px; color: var(--color-danger-300); }
+    .error-title { font-family: var(--font-serif); font-size: 18px; font-weight: 700; color: var(--color-ink-600); }
+    .error-msg   { font-size: 14px; color: var(--color-ink-300); line-height: 1.6; }
+
+    /* ── Main Content ─────────────────────────────────────────────────── */
+    #mainSection { display: none; }
+
+    /* exam info header strip */
+    .exam-header {
+      padding: 28px 32px 20px;
+      border-bottom: 1px solid var(--color-paper-200);
+    }
+    .exam-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--color-accent-50);
+      border: 1px solid var(--color-accent-200);
+      color: var(--color-accent-600);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      padding: 3px 10px; border-radius: var(--radius-full, 9999px);
+      margin-bottom: 10px;
+    }
+    .exam-title {
+      font-family: var(--font-serif);
+      font-size: 22px; font-weight: 700;
+      color: var(--color-ink-700);
+      line-height: 1.3; margin-bottom: 10px;
+    }
+    .exam-meta {
+      display: flex; flex-wrap: wrap; gap: 16px;
+    }
+    .meta-item {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 13px; color: var(--color-ink-300);
+    }
+    .meta-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* ── Form body ──────────────────────────────────────────────────── */
+    .form-body {
+      padding: 24px 32px 28px;
+      display: flex; flex-direction: column; gap: 24px;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--color-ink-300);
+      margin-bottom: 10px;
+    }
+
+    /* Format options */
+    .format-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .format-option {
+      position: relative;
+    }
+    .format-option input[type="radio"] {
+      position: absolute; opacity: 0; width: 0; height: 0;
+    }
+    .format-option label {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px;
+      border: 1.5px solid var(--color-paper-200);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      background: var(--color-paper-50);
+    }
+    .format-option input:checked + label {
+      border-color: var(--color-accent-400);
+      background: var(--color-accent-50);
+      box-shadow: var(--shadow-focus);
+    }
+    .format-option label:hover:not(.checked) {
+      border-color: var(--color-accent-300);
+      background: white;
+    }
+    .format-icon {
+      width: 34px; height: 34px;
+      border-radius: var(--radius-base);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .format-icon svg { width: 17px; height: 17px; }
+    .format-icon.pdf   { background: #fde8e8; color: #c0392b; }
+    .format-icon.docx  { background: #dbeafe; color: #1d4ed8; }
+    .format-icon.md    { background: #f3e8ff; color: #7c3aed; }
+    .format-icon.txt   { background: var(--color-paper-100); color: var(--color-ink-400); }
+    .format-name { font-size: 14px; font-weight: 600; color: var(--color-ink-600); }
+    .format-desc { font-size: 12px; color: var(--color-ink-300); line-height: 1.4; margin-top: 1px; }
+    .format-default-badge {
+      margin-left: auto;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+      background: var(--color-accent-100); color: var(--color-accent-600);
+      padding: 2px 7px; border-radius: 9999px;
+      flex-shrink: 0;
+    }
+
+    /* Answer toggle */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--color-paper-50);
+      border: 1.5px solid var(--color-paper-200);
+      border-radius: var(--radius-md);
+    }
+    .toggle-info { display: flex; flex-direction: column; gap: 2px; }
+    .toggle-info .t-title { font-size: 14px; font-weight: 600; color: var(--color-ink-600); }
+    .toggle-info .t-desc  { font-size: 12px; color: var(--color-ink-300); }
+    /* iOS-style toggle */
+    .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-switch .track {
+      position: absolute; inset: 0;
+      background: var(--color-paper-200);
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-switch input:checked + .track { background: var(--color-accent-500); }
+    .toggle-switch .thumb {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 18px; height: 18px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+      transition: transform 0.2s;
+      pointer-events: none;
+    }
+    .toggle-switch input:checked ~ .thumb { transform: translateX(20px); }
+
+    /* Download button */
+    .btn-download {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 24px;
+      background: var(--color-accent-500);
+      color: white;
+      border: none; border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 15px; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      box-shadow: 0 2px 6px rgba(45,104,153,0.25);
+    }
+    .btn-download:hover  { background: var(--color-accent-600); box-shadow: 0 4px 12px rgba(45,104,153,0.3); }
+    .btn-download:active { transform: scale(0.985); }
+    .btn-download:disabled {
+      background: var(--color-ink-100); color: var(--color-ink-200);
+      cursor: not-allowed; box-shadow: none;
+    }
+    .btn-download svg { width: 18px; height: 18px; }
+
+    /* Progress bar (during generation) */
+    #progressWrap {
+      display: none;
+      flex-direction: column; gap: 8px;
+    }
+    .progress-label {
+      font-size: 13px; color: var(--color-ink-300);
+      display: flex; justify-content: space-between;
+    }
+    .progress-bar-bg {
+      height: 6px;
+      background: var(--color-paper-200);
+      border-radius: 9999px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--color-accent-500);
+      border-radius: 9999px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* ── Success toast ──────────────────────────────────────────────── */
+    #successToast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+      display: flex; align-items: center; gap: 10px;
+      background: var(--color-ink-700); color: white;
+      padding: 12px 20px; border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-paper-lg);
+      font-size: 14px; font-weight: 500;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      white-space: nowrap; z-index: 100;
+    }
+    #successToast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    #successToast svg { width: 18px; height: 18px; color: var(--color-success-300); flex-shrink: 0; }
+
+    /* ── Responsive ──────────────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      body { padding: 24px 12px 60px; }
+      .exam-header, .form-body { padding-left: 20px; padding-right: 20px; }
+      .format-grid { grid-template-columns: 1fr; }
+      .format-default-badge { display: none; }
+    }
+
+    /* ── Fade-in animation ──────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #mainSection { animation: fadeUp 0.3s ease both; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="logo-mark">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"
+          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+      </svg>
+    </div>
+    <span class="logo-text">Exama</span>
+  </header>
+
+  <!-- Card -->
+  <div class="card">
+
+    <!-- Loading -->
+    <div id="loadingSection">
+      <div class="loading-spinner"></div>
+      <span class="loading-label" id="loadingLabel">Đang tải thông tin bài ôn...</span>
+      <div style="width:100%;display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <div class="skeleton-line wide"></div>
+        <div class="skeleton-line mid"></div>
+        <div class="skeleton-line short"></div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="errorSection">
+      <div class="error-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="error-title">Không thể tải bài ôn</div>
+      <div class="error-msg" id="errorMsg">Đường dẫn không hợp lệ hoặc bài ôn không tồn tại.</div>
+    </div>
+
+    <!-- Main -->
+    <div id="mainSection">
+      <!-- Exam info -->
+      <div class="exam-header">
+        <div class="exam-badge">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:11px;height:11px">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Bài ôn tập
+        </div>
+        <div class="exam-title" id="examTitle">Đang tải...</div>
+        <div class="exam-meta">
+          <span class="meta-item" id="metaQuestions">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            — câu hỏi
+          </span>
+          <span class="meta-item" id="metaGroups">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            — nhóm
+          </span>
+          <span class="meta-item" id="metaDuration" style="display:none">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="metaDurationText"></span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="form-body">
+
+        <!-- Format selector -->
+        <div>
+          <div class="section-label">Định dạng tải xuống</div>
+          <div class="format-grid">
+
+            <div class="format-option">
+              <input type="radio" name="fmt" id="fmtPdf" value="pdf" checked />
+              <label for="fmtPdf">
+                <div class="format-icon pdf">
+                  <!-- PDF icon -->
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8.5 15.5h-1v-5h1.8c1.1 0 1.7.6 1.7 1.6 0 1-.6 1.6-1.7 1.6H8.5v1.8zm0-2.6h.7c.5 0 .8-.2.8-.7s-.3-.7-.8-.7H8.5v1.4zm4.5 2.6h-1.3v-5H13c1.5 0 2.5.9 2.5 2.5S14.5 15.5 13 15.5zm-.3-1h.2c.8 0 1.5-.5 1.5-1.5s-.7-1.5-1.5-1.5h-.2v3zm4.8 1h-1v-5h2.7v.9h-1.7v1.2h1.6v.9h-1.6V15.5z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="format-name">PDF</div>
+                  <div class="format-desc">In ấn, chia sẻ</div>
+                </div>
+                <span class="format-default-badge">Mặc định</span>
+              </label>
+            </div>
+
+            <div class="format-option">
+              <input type="radio" name="fmt" id="fmtDocx" value="docx" />
+              <label for="fmtDocx">
+                <div class="format-icon docx">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM7 11h2.3l1.2 4.5 1.3-4.5H14l-2 6h-1.5L9 12.7 7.7 17H6.2l-2-6H6l1.2 4.5L7 11z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="format-name">Word (DOCX)</div>
+                  <div class="format-desc">Chỉnh sửa được</div>
+                </div>
+              </label>
+            </div>
+
+            <div class="format-option">
+              <input type="radio" name="fmt" id="fmtMd" value="md" />
+              <label for="fmtMd">
+                <div class="format-icon md">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.56 18H3.44C2.65 18 2 17.37 2 16.59V7.41C2 6.63 2.65 6 3.44 6h17.12C21.35 6 22 6.63 22 7.41v9.18c0 .78-.65 1.41-1.44 1.41zM9.81 15.45V9l-2.25 2.78-2.28-2.78v6.45H7V12.3l.56.71.56-.71v3.15h1.69zm2.5-6.45H10.6v3.6h1.71c1.49 0 2.29-.75 2.29-1.85 0-1.06-.8-1.75-2.29-1.75zm-.09 2.7h-.62V9.9h.62c.68 0 1.1.32 1.1.9 0 .6-.42.9-1.1.9zm5.68 3.75l-2.06-3.15h.94V9H15.1v3.3h.94l-2.06 3.15h1.35l1.12-1.74 1.12 1.74h1.43z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="format-name">Markdown</div>
+                  <div class="format-desc">Obsidian, Notion…</div>
+                </div>
+              </label>
+            </div>
+
+            <div class="format-option">
+              <input type="radio" name="fmt" id="fmtTxt" value="txt" />
+              <label for="fmtTxt">
+                <div class="format-icon txt">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M9 12h6M9 16h6M9 8h6M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="format-name">Văn bản (.txt)</div>
+                  <div class="format-desc">Đơn giản nhất</div>
+                </div>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Include answers toggle -->
+        <div>
+          <div class="section-label">Tùy chọn nội dung</div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="t-title">Bao gồm đáp án</div>
+              <div class="t-desc">Hiển thị đáp án đúng bên dưới mỗi câu hỏi</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="includeAnswers" checked />
+              <div class="track"></div>
+              <div class="thumb"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Progress bar (shown during generation) -->
+        <div id="progressWrap">
+          <div class="progress-label">
+            <span id="progressLabel">Đang tạo file...</span>
+            <span id="progressPct">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <!-- Download button -->
+        <button class="btn-download" id="btnDownload" onclick="handleDownload()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Tải xuống
+        </button>
+
+      </div>
+    </div><!-- /#mainSection -->
+
+  </div><!-- /.card -->
+
+  <!-- Success Toast -->
+  <div id="successToast">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+    </svg>
+    <span id="toastMsg">Tải xuống thành công!</span>
+  </div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════════════════
+const SUPABASE_URL      = 'https://hmzowbcufyobdfwdfcaw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhtem93YmN1ZnlvYmRmd2RmY2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Nzk1OTQsImV4cCI6MjA5MDM1NTU5NH0.EXsVJ1vQjkPB8YgcHJjTpRvDWBzlKqI8tkD56I3eKlk';
+
+let examMetadata = null;
+let examData     = null;
+
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  const uuid = new URLSearchParams(window.location.search).get('uuid');
+  if (!uuid) { showError('Không tìm thấy mã bài ôn trong URL.'); return; }
+  await init(uuid);
+});
+
+async function init(uuid) {
+  try {
+    setLoading('Đang kiểm tra bài ôn...');
+
+    // 1. Fetch metadata
+    const metaRes = await fetch(`${SUPABASE_URL}/functions/v1/validate-exam`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+      body: JSON.stringify({ exam_id: uuid })
+    });
+    if (!metaRes.ok) {
+      const e = await metaRes.json().catch(() => ({}));
+      throw new Error(e.message || 'Bài ôn không tồn tại hoặc không được công khai.');
+    }
+    examMetadata = await metaRes.json();
+
+    // 2. Download & parse ZIP
+    setLoading('Đang tải nội dung bài ôn...');
+    const signedUrl = examMetadata.signed_url || examMetadata.file_url || examMetadata.url;
+    if (!signedUrl) throw new Error('Không lấy được đường dẫn file ZIP.');
+
+    const zipRes = await fetch(signedUrl);
+    if (!zipRes.ok) throw new Error('Không thể tải file ZIP.');
+    const buf  = await zipRes.arrayBuffer();
+    const zip  = await JSZip.loadAsync(buf);
+    const jsonFile = zip.file('exam.json');
+    if (!jsonFile) throw new Error('Không tìm thấy exam.json trong file ZIP.');
+    examData = JSON.parse(await jsonFile.async('text'));
+
+    // 3. Populate UI
+    renderExamInfo();
+    showMain();
+
+  } catch (err) {
+    console.error(err);
+    showError(err.message || 'Đã xảy ra lỗi không xác định.');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// UI HELPERS
+// ════════════════════════════════════════════════════════════════
+function setLoading(label) {
+  document.getElementById('loadingLabel').textContent = label;
+  document.getElementById('loadingSection').style.display = 'flex';
+  document.getElementById('errorSection').style.display  = 'none';
+  document.getElementById('mainSection').style.display   = 'none';
+}
+function showError(msg) {
+  document.getElementById('loadingSection').style.display = 'none';
+  document.getElementById('errorSection').style.display  = 'flex';
+  document.getElementById('mainSection').style.display   = 'none';
+  document.getElementById('errorMsg').textContent = msg;
+}
+function showMain() {
+  document.getElementById('loadingSection').style.display = 'none';
+  document.getElementById('errorSection').style.display  = 'none';
+  document.getElementById('mainSection').style.display   = 'block';
+}
+
+function renderExamInfo() {
+  const title = examMetadata.title || examMetadata.name || 'Bài ôn tập';
+  document.getElementById('examTitle').textContent = title;
+
+  const totalQ = examData.groups.reduce((s, g) => s + g.questions.length, 0);
+  const totalG = examData.groups.length;
+  document.getElementById('metaQuestions').innerHTML =
+    `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg> ${totalQ} câu hỏi`;
+  document.getElementById('metaGroups').innerHTML =
+    `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+    </svg> ${totalG} nhóm`;
+
+  if (examMetadata.duration_minutes) {
+    const d = document.getElementById('metaDuration');
+    d.style.display = 'flex';
+    document.getElementById('metaDurationText').textContent = `${examMetadata.duration_minutes} phút`;
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('successToast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function setProgress(pct, label) {
+  document.getElementById('progressFill').style.width  = pct + '%';
+  document.getElementById('progressPct').textContent   = pct + '%';
+  if (label) document.getElementById('progressLabel').textContent = label;
+}
+
+// ════════════════════════════════════════════════════════════════
+// CONTENT BUILDERS
+// ════════════════════════════════════════════════════════════════
+
+const CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+function getAnswerText(q) {
+  const { type, answer, choices } = q;
+  if (type === 'single_choice') {
+    const c = choices.find(c => c.id === answer);
+    const idx = choices.findIndex(c => c.id === answer);
+    return c ? `${CHOICE_LABELS[idx] || answer}. ${c.text}` : answer;
+  }
+  if (type === 'multi_choice') {
+    return answer.map(aid => {
+      const idx = choices.findIndex(c => c.id === aid);
+      const c   = choices.find(c => c.id === aid);
+      return `${CHOICE_LABELS[idx] || aid}. ${c ? c.text : aid}`;
+    }).join(', ');
+  }
+  if (type === 'true_false') return answer === 'true' ? 'Đúng' : 'Sai';
+  if (type === 'fill_blank') return Array.isArray(answer) ? answer.join(' / ') : answer;
+  return String(answer);
+}
+
+function buildMarkdown(includeAnswers) {
+  const title = examMetadata.title || examMetadata.name || 'Bài ôn tập';
+  const lines = [];
+  lines.push(`# ${title}\n`);
+
+  examData.groups.forEach((g, gi) => {
+    if (g.label) lines.push(`## ${g.label}\n`);
+    if (g.context) lines.push(`> ${g.context.replace(/\n/g, '\n> ')}\n`);
+
+    g.questions.forEach((q, qi) => {
+      const num = qi + 1;
+      const typeLabel = {
+        single_choice: 'Một đáp án',
+        multi_choice:  'Nhiều đáp án',
+        true_false:    'Đúng/Sai',
+        fill_number:   'Điền số',
+        fill_text:     'Điền từ',
+        fill_blank:    'Điền chỗ trống',
+      }[q.type] || q.type;
+
+      lines.push(`### Câu ${num} _(${typeLabel})_\n`);
+      lines.push(`${q.prompt}\n`);
+
+      if (q.choices && q.choices.length) {
+        q.choices.forEach((c, ci) => {
+          lines.push(`- **${CHOICE_LABELS[ci] || c.id}.** ${c.text}`);
+        });
+        lines.push('');
+      }
+
+      if (includeAnswers) {
+        lines.push(`**✔ Đáp án:** ${getAnswerText(q)}\n`);
+      }
+    });
+  });
+
+  return lines.join('\n');
+}
+
+function buildPlainText(includeAnswers) {
+  const title = examMetadata.title || examMetadata.name || 'Bài ôn tập';
+  const lines = [];
+  lines.push(title.toUpperCase());
+  lines.push('='.repeat(Math.min(title.length, 60)));
+  lines.push('');
+
+  examData.groups.forEach((g, gi) => {
+    if (g.label) { lines.push(`[ ${g.label} ]`); lines.push(''); }
+    if (g.context) { lines.push(g.context); lines.push(''); }
+
+    g.questions.forEach((q, qi) => {
+      lines.push(`Câu ${qi + 1}. ${q.prompt}`);
+      if (q.choices && q.choices.length) {
+        q.choices.forEach((c, ci) => lines.push(`  ${CHOICE_LABELS[ci] || c.id}. ${c.text}`));
+      }
+      if (includeAnswers) lines.push(`  → Đáp án: ${getAnswerText(q)}`);
+      lines.push('');
+    });
+  });
+  return lines.join('\n');
+}
+
+function buildHtmlForPdf(includeAnswers) {
+  const title = examMetadata.title || examMetadata.name || 'Bài ôn tập';
+  let html = `<!DOCTYPE html><html lang="vi"><head>
+<meta charset="UTF-8"/>
+<title>${esc(title)}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=DM+Sans:wght@400;600&display=swap');
+  body { font-family: 'DM Sans', sans-serif; color: #27251f; background: #fff; padding: 48px 64px; max-width: 800px; margin: 0 auto; }
+  h1 { font-family: 'Noto Serif', serif; font-size: 26px; margin-bottom: 4px; }
+  .subtitle { color: #8c8679; font-size: 13px; margin-bottom: 36px; }
+  .group { margin-bottom: 32px; }
+  .group-label { font-family: 'Noto Serif', serif; font-size: 17px; font-weight: 700; border-bottom: 2px solid #e8e4d9; padding-bottom: 6px; margin-bottom: 14px; }
+  .context { background: #f4f2ec; border-left: 3px solid #adc5df; padding: 10px 14px; border-radius: 4px; font-size: 14px; color: #5e5a52; margin-bottom: 16px; }
+  .question { margin-bottom: 20px; }
+  .q-num { font-weight: 600; color: #2d6899; margin-right: 4px; }
+  .q-prompt { font-size: 15px; line-height: 1.6; }
+  .choices { list-style: none; padding: 0; margin: 8px 0 0 20px; }
+  .choices li { font-size: 14px; padding: 3px 0; color: #3a3731; }
+  .answer { margin-top: 8px; margin-left: 20px; font-size: 13px; color: #256825; background: #f0f7f0; border: 1px solid #a0cfa0; border-radius: 4px; padding: 4px 10px; display: inline-block; }
+  @media print { body { padding: 24px; } }
+</style></head><body>`;
+  html += `<h1>${esc(title)}</h1>`;
+  const totalQ = examData.groups.reduce((s, g) => s + g.questions.length, 0);
+  html += `<div class="subtitle">${totalQ} câu hỏi · ${examData.groups.length} nhóm</div>`;
+
+  examData.groups.forEach((g) => {
+    html += `<div class="group">`;
+    if (g.label) html += `<div class="group-label">${esc(g.label)}</div>`;
+    if (g.context) html += `<div class="context">${esc(g.context)}</div>`;
+    g.questions.forEach((q, qi) => {
+      html += `<div class="question">`;
+      html += `<span class="q-num">Câu ${qi + 1}.</span><span class="q-prompt">${esc(q.prompt)}</span>`;
+      if (q.choices && q.choices.length) {
+        html += `<ul class="choices">`;
+        q.choices.forEach((c, ci) => {
+          html += `<li><b>${CHOICE_LABELS[ci] || c.id}.</b> ${esc(c.text)}</li>`;
+        });
+        html += `</ul>`;
+      }
+      if (includeAnswers) {
+        html += `<div class="answer">✔ Đáp án: ${esc(getAnswerText(q))}</div>`;
+      }
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+  html += `</body></html>`;
+  return html;
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Simple DOCX builder using Open XML (no external lib needed for text-only)
+function buildDocxXml(includeAnswers) {
+  const title = examMetadata.title || examMetadata.name || 'Bài ôn tập';
+  const paras = [];
+
+  function p(text, style = 'Normal', bold = false, color = null) {
+    const rPr = [
+      bold ? '<w:b/>' : '',
+      color ? `<w:color w:val="${color}"/>` : '',
+    ].join('');
+    const pPr = style !== 'Normal' ? `<w:pPr><w:pStyle w:val="${style}"/></w:pPr>` : '';
+    paras.push(`<w:p>${pPr}<w:r>${rPr ? `<w:rPr>${rPr}</w:rPr>` : ''}<w:t xml:space="preserve">${xmlEsc(text)}</w:t></w:r></w:p>`);
+  }
+  function xmlEsc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  p(title, 'Heading1');
+  p('');
+
+  examData.groups.forEach((g) => {
+    if (g.label) p(g.label, 'Heading2');
+    if (g.context) p(g.context, 'Normal');
+    g.questions.forEach((q, qi) => {
+      p(`Câu ${qi + 1}. ${q.prompt}`, 'Normal', true);
+      if (q.choices && q.choices.length) {
+        q.choices.forEach((c, ci) => p(`    ${CHOICE_LABELS[ci] || c.id}. ${c.text}`));
+      }
+      if (includeAnswers) p(`✔ Đáp án: ${getAnswerText(q)}`, 'Normal', false, '256825');
+      p('');
+    });
+  });
+
+  const body = paras.join('');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<w:body>${body}<w:sectPr/></w:body>
+</w:document>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// DOWNLOAD HANDLER
+// ════════════════════════════════════════════════════════════════
+async function handleDownload() {
+  if (!examData) return;
+
+  const fmt     = document.querySelector('input[name="fmt"]:checked').value;
+  const withAns = document.getElementById('includeAnswers').checked;
+  const btn     = document.getElementById('btnDownload');
+  const progWrap = document.getElementById('progressWrap');
+  const title   = (examMetadata.title || examMetadata.name || 'bai-on').replace(/\s+/g,'-').toLowerCase();
+
+  btn.disabled = true;
+  btn.innerHTML = `<svg class="spin-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px;height:18px;animation:spin .8s linear infinite">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115-4.7M20 15a9 9 0 01-15 4.7"/>
+  </svg> Đang tạo file...`;
+  progWrap.style.display = 'flex';
+  setProgress(10, 'Đang chuẩn bị nội dung...');
+
+  try {
+    await sleep(120);
+    setProgress(40, 'Đang tạo file...');
+    await sleep(100);
+
+    let blob, filename;
+
+    if (fmt === 'md') {
+      const content = buildMarkdown(withAns);
+      blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+      filename = `${title}.md`;
+    } else if (fmt === 'txt') {
+      const content = buildPlainText(withAns);
+      blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      filename = `${title}.txt`;
+    } else if (fmt === 'pdf') {
+      // Generate printable HTML and open print dialog
+      const htmlContent = buildHtmlForPdf(withAns);
+      setProgress(70, 'Đang mở hộp thoại in...');
+      await sleep(80);
+      const w = window.open('', '_blank', 'width=900,height=700');
+      if (!w) { throw new Error('Trình duyệt đã chặn cửa sổ mới. Vui lòng cho phép pop-up.'); }
+      w.document.write(htmlContent);
+      w.document.close();
+      w.onload = () => { w.focus(); w.print(); };
+      setProgress(100, 'Hoàn thành');
+      await sleep(300);
+      progWrap.style.display = 'none';
+      resetBtn();
+      showToast('Hộp thoại in đã mở — chọn "Save as PDF" để lưu file.');
+      return;
+    } else if (fmt === 'docx') {
+      // Build DOCX using JSZip
+      setProgress(60, 'Đang đóng gói DOCX...');
+      const docxml = buildDocxXml(withAns);
+      const zip = new JSZip();
+      zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml"
+    ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`);
+      zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+    Target="word/document.xml"/>
+</Relationships>`);
+      zip.file('word/document.xml', docxml);
+      zip.file('word/_rels/document.xml.rels', `<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>`);
+
+      const docxBlob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      blob = docxBlob;
+      filename = `${title}.docx`;
+    }
+
+    setProgress(90, 'Đang lưu file...');
+    await sleep(100);
+
+    // Trigger download
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+    setProgress(100, 'Hoàn thành!');
+    await sleep(400);
+    progWrap.style.display = 'none';
+    showToast(`Đã tải xuống ${filename}`);
+
+  } catch (err) {
+    console.error(err);
+    progWrap.style.display = 'none';
+    alert('Lỗi khi tạo file: ' + err.message);
+  } finally {
+    resetBtn();
+  }
+}
+
+function resetBtn() {
+  const btn = document.getElementById('btnDownload');
+  btn.disabled = false;
+  btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px;height:18px">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"
+      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+  </svg> Tải xuống`;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>

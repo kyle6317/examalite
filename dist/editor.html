@@ -2018,11 +2018,39 @@ async function downloadExamZip() {
     };
     zip.file('exam.json', JSON.stringify(examData, null, 2));
     
-    // Add media files from mediaMap
+    // Collect all media: from state.mediaMap AND from _file references in state.groups
+    // Build a unified map: filename -> blob
+    const allMedia = new Map();
+
+    // 1. From state.mediaMap (media imported via ZIP)
     if (state.mediaMap && state.mediaMap.size > 0) {
-      const mediaFolder = zip.folder('media');
       for (const [filename, mediaData] of state.mediaMap.entries()) {
-        mediaFolder.file(filename, mediaData.blob);
+        allMedia.set(filename, mediaData.blob);
+      }
+    }
+
+    // 2. From _file references attached directly to media items (media uploaded manually)
+    function collectMediaFiles(mediaArr) {
+      if (!Array.isArray(mediaArr)) return;
+      mediaArr.forEach(m => {
+        if (m._file && m.src && !allMedia.has(m.src)) {
+          allMedia.set(m.src, m._file);
+        }
+      });
+    }
+    state.groups.forEach(g => {
+      collectMediaFiles(g.context_media);
+      (g.questions || []).forEach(q => {
+        collectMediaFiles(q.prompt_media);
+        (q.choices || []).forEach(c => collectMediaFiles(c.media));
+      });
+    });
+
+    // Write all collected media into the media/ folder
+    if (allMedia.size > 0) {
+      const mediaFolder = zip.folder('media');
+      for (const [filename, blob] of allMedia.entries()) {
+        mediaFolder.file(filename, blob);
       }
     }
     
@@ -2049,7 +2077,7 @@ To import: Use the Upload button and select this ZIP file.
     a.click();
     URL.revokeObjectURL(url);
     
-    showToast('success', 'Đã tải xuống file ZIP');
+    showToast('success', `Đã tải xuống file ZIP${allMedia.size > 0 ? ` (${allMedia.size} file media)` : ''}`);
   } catch (err) {
     console.error('ZIP download error:', err);
     showToast('error', 'Lỗi tạo file ZIP: ' + err.message);

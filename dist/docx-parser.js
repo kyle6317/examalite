@@ -647,29 +647,66 @@ function detectCorrectChoice(choices) {
 }
 
 // ─── Detect true/false answer from item text/formatting ──────────────────────
+// CHỈ áp dụng cho trắc nghiệm ĐÚNG/SAI (true_false), KHÔNG ảnh hưởng ABCD.
+//
+// Hỗ trợ:
+//   1. Marker "ĐÚNG" / "SAI" (viết hoa, có dấu) — không phân biệt vị trí trong text.
+//      Ví dụ: "Linux là hệ điều hành. ĐÚNG"  → true
+//             "ĐÚNG. Linux là mã nguồn mở"   → true
+//   2. Marker cuối: đ / đúng / d → true ; s / sai → false
+//      Có thể kèm giải thích trong (...) ở sau.
+//      Ví dụ: "Linux là hệ điều hành. S (vì Linux là core, không phải hệ điều hành)" → false
 function detectTrueFalseAnswer(item) {
-  const text = item.text.trim();
+  const text = (item.text || '').trim();
+  if (!text) return null;
 
-  // Check last character(s) for explicit marker
-  const last = text.slice(-10).toLowerCase().trim();
+  // (1) Marker "ĐÚNG" / "SAI" viết hoa có dấu — bất kỳ vị trí nào (whole word).
+  const hasDUNG = /(^|[^A-Za-zÀ-ỹ])ĐÚNG([^A-Za-zÀ-ỹ]|$)/.test(text);
+  const hasSAI  = /(^|[^A-Za-zÀ-ỹ])SAI([^A-Za-zÀ-ỹ]|$)/.test(text);
+  if (hasDUNG && !hasSAI) return true;
+  if (hasSAI && !hasDUNG) return false;
+  if (hasDUNG && hasSAI) {
+    // Cái nào xuất hiện sau cùng là marker đáp án.
+    return text.lastIndexOf('ĐÚNG') > text.lastIndexOf('SAI');
+  }
 
-  // Markers for TRUE: Đ, đ, Đúng, đúng, D, d (in context)
-  if (/[\sĐđ]\s*(đúng|đ)\s*$/.test(text.toLowerCase()) || /[^a-zđ]đ\s*$/i.test(text)) return true;
-  if (/\s+d\s*$/.test(text.toLowerCase()) && !/\w\w/.test(text.slice(-3))) return true;
+  // (2) Tách phần giải thích trong (...) ở cuối, nếu có.
+  let core = text;
+  const parenMatch = core.match(/^(.*?)[\s]*\(([^()]*)\)\s*$/);
+  if (parenMatch) core = parenMatch[1].trim();
 
-  // Markers for FALSE: S, s, Sai, sai
-  if (/\s*(sai|s)\s*$/.test(text.toLowerCase())) return false;
+  // Lấy token cuối cùng của core (sau khi bỏ dấu câu cuối)
+  const trimmed = core.replace(/[.!?…,;:\s]+$/u, '');
+  const lastTokenMatch = trimmed.match(/([A-Za-zĐđ]+)\s*$/);
+  if (lastTokenMatch) {
+    const tok = lastTokenMatch[1].toLowerCase();
+    if (tok === 'đ' || tok === 'đúng' || tok === 'dung' || tok === 'd') return true;
+    if (tok === 's' || tok === 'sai') return false;
+  }
 
-  // Check formatting: colored/highlighted/bold outlier among siblings
-  // (handled by parent if needed, here return null)
   return null;
 }
 
 function stripTrueFalseMarker(text) {
-  return text
-    .replace(/\s+(đúng|đ|d)\s*$/i, '')
-    .replace(/\s+(sai|s)\s*$/i, '')
-    .trim();
+  let t = text || '';
+
+  // (1) Bỏ marker "ĐÚNG"/"SAI" viết hoa (whole word) — chỉ marker cuối cùng.
+  const upperMarkerRe = /(^|[^A-Za-zÀ-ỹ])(ĐÚNG|SAI)([^A-Za-zÀ-ỹ]|$)/g;
+  let lastMatch = null, m;
+  while ((m = upperMarkerRe.exec(t)) !== null) lastMatch = m;
+  if (lastMatch) {
+    const start = lastMatch.index + lastMatch[1].length;
+    const end = start + lastMatch[2].length;
+    t = (t.slice(0, start) + t.slice(end)).replace(/\s{2,}/g, ' ').trim();
+  }
+
+  // (2) Bỏ phần giải thích "(...)" cuối cùng nếu có.
+  t = t.replace(/\s*\(([^()]*)\)\s*$/, '').trim();
+
+  // (3) Bỏ marker cuối: đ / đúng / d / s / sai (kèm dấu câu xung quanh)
+  t = t.replace(/[\s.,;:–-]+(đúng|đ|dung|d|sai|s)\s*[.!?…]*\s*$/i, '').trim();
+
+  return t;
 }
 
 // ─── Color helpers ────────────────────────────────────────────────────────────

@@ -284,7 +284,8 @@ function detectLayout(blocks) {
   const paraABCD = blocks.filter(b => /^\s*[A-D]\s*[.)]\s*\S/.test(b.textContent));
 
   // Check for 2-choices-per-paragraph (A...B... on same line)
-  const twoPerLine = blocks.filter(b => /^\s*[A-D]\s*[.)].+[B-D]\s*[.)]/i.test(b.textContent));
+  // Require ≥2 spaces / tab between markers to avoid false positives like "D. Cả A và B."
+  const twoPerLine = blocks.filter(b => /^\s*[A-D]\s*[.)].+?(?:\t|\s{2,})[B-D]\s*[.)]\s/.test(b.textContent));
 
   // Check for paragraph-based abcd
   const paraAbcd = blocks.filter(b => /^\s*[a-d]\s*[.)]\s*\S/.test(b.textContent));
@@ -410,7 +411,8 @@ function extractChoicesABCD(blocks) {
     for (const b of paraItems) {
       const t = b.textContent;
       // Block contains a second choice marker → split with parseInlineChoices
-      if (/^\s*[A-D]\s*[.)].+[B-D]\s*[.)]/i.test(t)) {
+      // Only if separated by tab or ≥2 spaces (avoids "D. Cả A và B." false split)
+      if (/^\s*[A-D]\s*[.)].+?(?:\t|\s{2,})[B-D]\s*[.)]\s/.test(t)) {
         choices.push(...parseInlineChoices(b));
       } else {
         const m = t.match(/^\s*([A-D])\s*[.)]\s*(.*)/s);
@@ -443,9 +445,10 @@ function parseInlineChoices(block) {
   const runs = Array.from(block.querySelectorAll('[data-run]'));
   const fullText = block.textContent;
 
-  // Split by A. B. C. D. markers
+  // Split by A. B. C. D. markers — only at start of text or after tab/≥2 spaces,
+  // so phrases like "Cả A và B." inside an answer aren't treated as new choices.
   const parts = [];
-  const regex = /([A-D])\s*[.)]\s*/g;
+  const regex = /(?:^|\t|\s{2,})([A-D])\s*[.)]\s*/g;
   let match;
   const positions = [];
   while ((match = regex.exec(fullText)) !== null) {

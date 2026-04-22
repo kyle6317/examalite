@@ -284,8 +284,8 @@ function detectLayout(blocks) {
   const paraABCD = blocks.filter(b => /^\s*[A-D]\s*[.)]\s*\S/.test(b.textContent));
 
   // Check for 2-choices-per-paragraph (A...B... on same line)
-  // Require ≥2 spaces / tab between markers to avoid false positives like "D. Cả A và B."
-  const twoPerLine = blocks.filter(b => /^\s*[A-D]\s*[.)].+?(?:\t|\s{2,})[B-D]\s*[.)]\s/.test(b.textContent));
+  // Separator before next marker: tab, ≥2 spaces, or sentence-ending punctuation (.?!)
+  const twoPerLine = blocks.filter(b => /^\s*[A-D]\s*[.)].+?(?:\t|\s{2,}|[.?!]\s*)[B-D]\s*[.)]\s/.test(b.textContent));
 
   // Check for paragraph-based abcd
   const paraAbcd = blocks.filter(b => /^\s*[a-d]\s*[.)]\s*\S/.test(b.textContent));
@@ -405,26 +405,68 @@ function extractChoicesABCD(blocks) {
 
   // Layout 2: paragraphs starting with A. / B. / C. / D.
   // A paragraph may contain 1 OR 2 choices (e.g. "A. text [tab] B. text")
+  // Also handles mixed layout where some choices are list items (data-marker-type upperLetter)
+  // and others are plain text paragraphs.
   const paraItems = blocks.filter(b => /^\s*[A-D]\s*[.)]\s*\S/.test(b.textContent));
-  if (paraItems.length >= 2) {
+  // List items whose textContent has no letter prefix (letter is in data-marker-type attribute)
+  const listItemsAll = blocks.filter(b =>
+    b.hasAttribute('data-marker-type') &&
+    /^[A-D]\.$/.test((b.getAttribute('data-marker-type') || '').trim()) &&
+    b.getAttribute('data-list-numbering-type') === 'upperLetter'
+  );
+  // In mixed layout, paraItems may have A/B/C but D is a list item (or vice versa).
+  // We need to merge and de-duplicate.
+  const hasMixed = paraItems.length >= 1 && listItemsAll.length >= 1;
+  if (paraItems.length >= 2 || hasMixed) {
     const choices = [];
+    const seenLetters = new Set();
+
     for (const b of paraItems) {
       const t = b.textContent;
       // Block contains a second choice marker → split with parseInlineChoices
-      // Only if separated by tab or ≥2 spaces (avoids "D. Cả A và B." false split)
-      if (/^\s*[A-D]\s*[.)].+?(?:\t|\s{2,})[B-D]\s*[.)]\s/.test(t)) {
-        choices.push(...parseInlineChoices(b));
+      // Separator before next marker: tab, ≥2 spaces, or sentence-ending punctuation (.?!)
+      if (/^\s*[A-D]\s*[.)].+?(?:\t|\s{2,}|[.?!]\s*)[B-D]\s*[.)]\s/.test(t)) {
+        const inlineChoices = parseInlineChoices(b);
+        for (const c of inlineChoices) {
+          if (!seenLetters.has(c.letter)) {
+            seenLetters.add(c.letter);
+            choices.push(c);
+          }
+        }
       } else {
         const m = t.match(/^\s*([A-D])\s*[.)]\s*(.*)/s);
+        const letter = m ? m[1] : '?';
+        if (!seenLetters.has(letter)) {
+          seenLetters.add(letter);
+          choices.push({
+            letter,
+            text: m ? m[2].trim() : t.trim(),
+            media: extractMediaRefs([b]),
+            formatting: getFormatting(b),
+            block: b,
+          });
+        }
+      }
+    }
+
+    // Add any list items not already captured (mixed layout)
+    for (const b of listItemsAll) {
+      const letter = (b.getAttribute('data-marker-type') || '').replace('.', '').trim();
+      if (!seenLetters.has(letter)) {
+        seenLetters.add(letter);
         choices.push({
-          letter: m ? m[1] : '?',
-          text: m ? m[2].trim() : t.trim(),
+          letter,
+          text: b.textContent.trim(),
           media: extractMediaRefs([b]),
           formatting: getFormatting(b),
           block: b,
         });
       }
     }
+
+    // Sort by letter so choices are always A→B→C→D order
+    choices.sort((a, b) => a.letter.localeCompare(b.letter));
+
     if (choices.length >= 2) return choices;
   }
 
@@ -445,10 +487,14 @@ function parseInlineChoices(block) {
   const runs = Array.from(block.querySelectorAll('[data-run]'));
   const fullText = block.textContent;
 
-  // Split by A. B. C. D. markers — only at start of text or after tab/≥2 spaces,
-  // so phrases like "Cả A và B." inside an answer aren't treated as new choices.
+  // Split by A. B. C. D. markers. Accepted separators before a new marker:
+  //   • start of string
+  //   • tab or ≥2 spaces
+  //   • sentence-ending punctuation (. ? !) optionally followed by spaces
+  // This avoids splitting on mid-sentence phrases like "Cả A và B" (no trailing punctuation + letter)
+  // while correctly handling "...mở.B. Hòa khí" or "...và B.D. Vòi phun".
   const parts = [];
-  const regex = /(?:^|\t|\s{2,})([A-D])\s*[.)]\s*/g;
+  const regex = /(?:^|(?<=[.?!])\s*|\t|\s{2,})([A-D])\s*[.)]\s*/g;
   let match;
   const positions = [];
   while ((match = regex.exec(fullText)) !== null) {
@@ -581,14 +627,42 @@ function getFormatting(block) {
 
 // ─── Get formatting from inline run positions ─────────────────────────────────
 function getFormattingFromText(runs, startIdx, endIdx) {
-  // Approximate: return formatting of runs near position
-  // For inline layout, collect formatting from all runs
+  // Build a map of run text offsets within the block so we can find which runs
+  // overlap the [startIdx, endIdx) range of the block's full text.
+  // This is critical for inline choices (A. text  B. text) where each choice
+  // must get only the formatting of its own runs, not all runs combined.
+
+  let offset = 0;
   let bold = false, italic = false, underline = false, color = null, highlight = null;
-  runs.forEach(r => {
+
+  for (const r of runs) {
+    const runText = r.textContent || '';
+    const runStart = offset;
+    const runEnd = offset + runText.length;
+    offset = runEnd;
+
+    // Does this run overlap with [startIdx, endIdx)?
+    if (runEnd <= startIdx || runStart >= endIdx) continue;
+
+    // Check bold
     if (r.querySelector('strong') || r.closest('strong')) bold = true;
     const style = r.getAttribute('style') || '';
     if (/font-weight\s*:\s*(bold|[6-9]\d{2})/.test(style)) bold = true;
-  });
+    if (/font-style\s*:\s*italic/.test(style)) italic = true;
+    if (/text-decoration[^;]*underline/.test(style)) underline = true;
+
+    const colorMatch = style.match(/(?:^|;)\s*color\s*:\s*([^;]+)/);
+    if (colorMatch) color = colorMatch[1].trim();
+
+    const mark = r.querySelector('mark[data-color]') || (r.tagName === 'MARK' ? r : null);
+    if (mark) {
+      const bg = mark.getAttribute('data-color') || mark.style?.backgroundColor;
+      if (bg && bg !== '#ffffff' && bg !== 'rgb(255, 255, 255)' && bg !== 'transparent') {
+        highlight = bg;
+      }
+    }
+  }
+
   return { bold, italic, underline, color, highlight };
 }
 

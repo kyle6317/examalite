@@ -186,6 +186,98 @@
       .topbar-label { display: none; }
     }
 
+    /* ═══ Layout: sidebar + main ═══ */
+    .editor-layout { display: flex; min-height: calc(100vh - 56px); }
+    #editor-sidebar {
+      width: 280px; flex-shrink: 0;
+      background: #f4f2ec; border-right: 1px solid #e8e4d9;
+      position: sticky; top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+    }
+    @media (max-width: 1023px) {
+      #editor-sidebar { display: none; }
+    }
+    .editor-main-wrap { flex: 1; min-width: 0; }
+    .editor-main-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 32px 24px 96px;
+    }
+    @media (min-width: 1280px) {
+      .editor-main-inner { max-width: 1320px; padding: 32px 40px 96px; }
+    }
+    @media (min-width: 1600px) {
+      .editor-main-inner { max-width: 1480px; }
+    }
+    @media (max-width: 640px) {
+      .editor-main-inner { padding: 16px 12px 96px; }
+    }
+
+    /* Question map bubbles */
+    .qmap-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    /* Mobile drawer: auto-fill bubbles with fixed size matching desktop */
+    #qmap-mobile .qmap-grid {
+      grid-template-columns: repeat(auto-fill, minmax(40px, 40px));
+      justify-content: start;
+    }
+    #qmap-mobile .qmap-bubble { width: 40px; height: 40px; aspect-ratio: auto; }
+    .qmap-bubble {
+      aspect-ratio: 1 / 1;
+      border-radius: 6px;
+      border: 1px solid #d6d0c4;
+      background: #fff;
+      font-size: 12px; font-weight: 600;
+      color: #5e5a52;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.12s ease;
+      position: relative;
+      padding: 0; line-height: 1;
+    }
+    .qmap-bubble:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(58,55,49,.12); }
+    .qmap-bubble.qmap-ok { background: #f0f7f0; border-color: #a0cfa0; color: #256825; }
+    .qmap-bubble.qmap-warn { background: #fdf8ed; border-color: #eecf88; color: #8f6a14; }
+    .qmap-bubble.qmap-empty { background: #fdf0f0; border-color: #e8a0a0; color: #8a2020; }
+    .qmap-bubble .qmap-dot {
+      position: absolute; top: 2px; right: 2px;
+      width: 6px; height: 6px; border-radius: 99px;
+    }
+    .qmap-group-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: #8c8679;
+      margin: 14px 0 6px; padding: 0 2px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .qmap-group-label:first-child { margin-top: 0; }
+    .qmap-legend {
+      display: flex; flex-direction: column; gap: 4px;
+      font-size: 11px; color: #5e5a52;
+      padding: 12px 16px; border-top: 1px solid #e8e4d9;
+      background: #faf9f6;
+    }
+    .qmap-legend-row { display: flex; align-items: center; gap: 6px; }
+    .qmap-legend-sw {
+      width: 12px; height: 12px; border-radius: 3px; border: 1px solid;
+    }
+
+    /* Mobile question map drawer */
+    #editor-qmap-drawer {
+      position: fixed; top: 56px; left: 0; right: 0;
+      background: #fff; border-bottom: 1px solid #e8e4d9;
+      box-shadow: 0 8px 20px rgba(58,55,49,0.10);
+      max-height: calc(100vh - 56px);
+      overflow-y: auto;
+      z-index: 35;
+      display: none;
+      padding: 16px;
+    }
+    #editor-qmap-drawer.open { display: block; }
+    #btn-qmap-toggle { display: none; }
+    @media (max-width: 1023px) {
+      #btn-qmap-toggle { display: inline-flex; align-items: center; justify-content: center; }
+    }
+
+
     /* Choice row */
     .choice-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
     .choice-letter {
@@ -211,6 +303,12 @@
   <div class="flex items-center justify-between h-full px-4 gap-3">
     <!-- Left -->
     <div class="flex items-center gap-2 flex-shrink-0">
+      <button id="btn-qmap-toggle" onclick="toggleQmapDrawer()" title="Danh sách câu hỏi"
+              class="items-center justify-center w-9 h-9 rounded text-ink-500 hover:bg-paper-100 transition-base">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+        </svg>
+      </button>
       <a href="app.html" id="btn-back" title="Quay lại Dashboard"
          class="flex items-center gap-1.5 px-3 py-1.5 rounded text-ink-400 hover:bg-paper-100 transition-base text-sm font-medium">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -274,9 +372,46 @@
 </header>
 
 <!-- ═══════════════════════════════════════════════
-     MAIN CONTENT
+     MOBILE QUESTION MAP DRAWER
 ═══════════════════════════════════════════════ -->
-<main class="relative z-10 max-w-3xl mx-auto px-4 py-8 pb-24">
+<div id="editor-qmap-drawer">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="font-serif font-bold text-ink-600 text-base">Danh sách câu hỏi</h3>
+    <button onclick="toggleQmapDrawer()" class="w-8 h-8 flex items-center justify-center rounded text-ink-400 hover:bg-paper-100">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+  <div id="qmap-mobile" class="space-y-2"></div>
+  <div class="qmap-legend mt-3 -mx-4 -mb-4">
+    <div class="qmap-legend-row"><span class="qmap-legend-sw" style="background:#f0f7f0;border-color:#a0cfa0"></span> Đã cấu hình đầy đủ</div>
+    <div class="qmap-legend-row"><span class="qmap-legend-sw" style="background:#fdf8ed;border-color:#eecf88"></span> Chưa có đáp án đúng</div>
+    <div class="qmap-legend-row"><span class="qmap-legend-sw" style="background:#fdf0f0;border-color:#e8a0a0"></span> Có lựa chọn / đáp án rỗng</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MAIN LAYOUT (sidebar + content)
+═══════════════════════════════════════════════ -->
+<div class="editor-layout">
+  <!-- Desktop sidebar -->
+  <aside id="editor-sidebar">
+    <div class="px-4 pt-4 pb-2">
+      <div class="text-xs font-semibold text-ink-300 uppercase tracking-wide">Danh sách câu hỏi</div>
+      <p class="text-[11px] text-ink-300 mt-0.5">Click để cuộn tới câu hỏi</p>
+    </div>
+    <div id="qmap-desktop" class="flex-1 overflow-y-auto px-4 pb-4 space-y-2"></div>
+    <div class="qmap-legend">
+      <div class="qmap-legend-row"><span class="qmap-legend-sw" style="background:#f0f7f0;border-color:#a0cfa0"></span> Đầy đủ</div>
+      <div class="qmap-legend-row"><span class="qmap-legend-sw" style="background:#fdf8ed;border-color:#eecf88"></span> Thiếu đáp án đúng</div>
+      <div class="qmap-legend-row"><span class="qmap-legend-sw" style="background:#fdf0f0;border-color:#e8a0a0"></span> Lựa chọn rỗng</div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+<main class="editor-main-wrap relative z-10">
+ <div class="editor-main-inner">
 
   <!-- Loading state -->
   <div id="loading-state" class="hidden flex flex-col items-center justify-center py-24 gap-4 text-ink-400">
@@ -382,7 +517,9 @@
     </section>
 
   </div><!-- end #editor-content -->
+ </div><!-- end .editor-main-inner -->
 </main>
+</div><!-- end .editor-layout -->
 
 <!-- ═══════════════════════════════════════════════
      SHARE MODAL
@@ -599,7 +736,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('editor-content').classList.remove('hidden');
     // New exam — set defaults
     const now = new Date();
-    const later = new Date(now.getTime() + 7 * 24 * 3600 * 1000);
+    const later = new Date(now.getTime());
+    later.setFullYear(later.getFullYear() + 1);
     document.getElementById('cfg-from').value = toDatetimeLocal(now);
     document.getElementById('cfg-expires').value = toDatetimeLocal(later);
     renderGroups();
@@ -1120,6 +1258,108 @@ function renderGroups() {
       autoResize(textarea);
     });
   }, 0);
+
+  renderQuestionMap();
+}
+
+// ═══════════════════════════════════════════
+// QUESTION MAP (sidebar + mobile drawer)
+// ═══════════════════════════════════════════
+function getQuestionStatus(q) {
+  // returns 'ok' | 'warn' (no correct answer) | 'empty' (has empty option/answer)
+  const t = q.type;
+  if (t === 'single_choice' || t === 'multi_choice') {
+    const choices = q.choices || [];
+    if (choices.length === 0) return 'empty';
+    const anyEmpty = choices.some(c => !c.text || !c.text.trim());
+    if (anyEmpty) return 'empty';
+    if (t === 'single_choice') {
+      if (!q.answer) return 'warn';
+    } else {
+      if (!Array.isArray(q.answer) || q.answer.length === 0) return 'warn';
+    }
+    return 'ok';
+  }
+  if (t === 'true_false') {
+    return (q.answer === 'true' || q.answer === 'false') ? 'ok' : 'warn';
+  }
+  if (t === 'fill_number') {
+    return (q.answer === null || q.answer === undefined || q.answer === '') ? 'warn' : 'ok';
+  }
+  if (t === 'fill_text') {
+    return (!q.answer || !String(q.answer).trim()) ? 'warn' : 'ok';
+  }
+  if (t === 'fill_blank') {
+    const blankCount = (q.prompt || '').split('___').length - 1;
+    if (blankCount === 0) return 'warn';
+    const arr = Array.isArray(q.answer) ? q.answer : [];
+    if (arr.length < blankCount) return 'warn';
+    if (arr.slice(0, blankCount).some(a => !a || !String(a).trim())) return 'empty';
+    return 'ok';
+  }
+  return 'ok';
+}
+
+function renderQuestionMap() {
+  const groups = state.groups || [];
+  let counter = 0;
+  let html = '';
+  if (groups.length === 0) {
+    html = '<p class="text-xs text-ink-300 italic px-1 py-2">Chưa có câu hỏi nào.</p>';
+  } else {
+    groups.forEach((g, gi) => {
+      const label = (g.label && g.label.trim()) ? g.label : `Nhóm ${gi + 1}`;
+      const qs = g.questions || [];
+      html += `<div class="qmap-group-label" title="${escHtml(label)}">
+        <span class="truncate">${escHtml(label)}</span>
+        <span class="text-ink-300 font-normal normal-case tracking-normal text-[10px]">${qs.length}</span>
+      </div>`;
+      if (qs.length === 0) {
+        html += '<p class="text-[11px] text-ink-300 italic px-1">— trống —</p>';
+      } else {
+        html += '<div class="qmap-grid">';
+        qs.forEach((q, qi) => {
+          counter += 1;
+          const status = getQuestionStatus(q);
+          const cls = status === 'ok' ? 'qmap-ok' : (status === 'warn' ? 'qmap-warn' : 'qmap-empty');
+          const titleStatus = status === 'ok' ? 'Đầy đủ' : (status === 'warn' ? 'Chưa có đáp án đúng' : 'Có lựa chọn/đáp án rỗng');
+          html += `<button type="button" class="qmap-bubble ${cls}" title="Câu ${counter} — ${titleStatus}" onclick="scrollToQuestion(${gi}, ${qi})">${counter}</button>`;
+        });
+        html += '</div>';
+      }
+    });
+  }
+  const d = document.getElementById('qmap-desktop');
+  const m = document.getElementById('qmap-mobile');
+  if (d) d.innerHTML = html;
+  if (m) m.innerHTML = html;
+}
+
+function scrollToQuestion(gi, qi) {
+  // Close mobile drawer
+  const drawer = document.getElementById('editor-qmap-drawer');
+  if (drawer) drawer.classList.remove('open');
+  // Ensure group expanded
+  const body = document.getElementById(`group-body-${gi}`);
+  if (body && body.style.display === 'none') {
+    const icon = body.closest('.group-card')?.querySelector('.collapse-icon');
+    body.style.display = '';
+    if (icon) icon.style.transform = '';
+  }
+  setTimeout(() => {
+    const el = document.getElementById(`qcard-${gi}-${qi}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.style.transition = 'box-shadow 0.4s ease';
+      el.style.boxShadow = '0 0 0 3px rgba(77,132,180,0.35)';
+      setTimeout(() => { el.style.boxShadow = ''; }, 1200);
+    }
+  }, 50);
+}
+
+function toggleQmapDrawer() {
+  const d = document.getElementById('editor-qmap-drawer');
+  if (d) d.classList.toggle('open');
 }
 
 function createGroupCard(group, gi) {
@@ -1603,6 +1843,7 @@ function updateQuestionField(gi, qi, field, value) {
     q[field] = value;
     markContentDirty();
   }
+  if (field === 'answer' || field === 'prompt') renderQuestionMap();
 }
 
 function moveQuestion(gi, qi, dir) {
@@ -1647,7 +1888,7 @@ function removeChoice(gi, qi, ci) {
 
 function updateChoiceText(gi, qi, ci, value) {
   const q = state.groups[gi]?.questions[qi];
-  if (q?.choices[ci]) { q.choices[ci].text = value; markContentDirty(); }
+  if (q?.choices[ci]) { q.choices[ci].text = value; markContentDirty(); renderQuestionMap(); }
 }
 
 function toggleCorrectAnswer(gi, qi, choiceId, multi) {
@@ -1662,7 +1903,22 @@ function toggleCorrectAnswer(gi, qi, choiceId, multi) {
     q.answer = choiceId;
   }
   markContentDirty();
-  renderGroups();
+  // Patch DOM in-place to avoid re-rendering everything (which causes input jitter)
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const answerArr = multi
+    ? (Array.isArray(q.answer) ? q.answer : [])
+    : [q.answer];
+  (q.choices || []).forEach((c, ci) => {
+    const btn = document.getElementById(`cletter-${gi}-${qi}-${ci}`);
+    if (!btn) return;
+    const isCorrect = answerArr.includes(c.id);
+    const letter = letters[ci] || String(ci + 1);
+    btn.classList.toggle('choice-correct', isCorrect);
+    btn.innerHTML = isCorrect
+      ? `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`
+      : letter;
+  });
+  renderQuestionMap();
 }
 
 function updateBlankAnswer(gi, qi, idx, value) {
@@ -1671,6 +1927,7 @@ function updateBlankAnswer(gi, qi, idx, value) {
   if (!Array.isArray(q.answer)) q.answer = [];
   q.answer[idx] = value;
   markContentDirty();
+  renderQuestionMap();
 }
 
 // ═══════════════════════════════════════════

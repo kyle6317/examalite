@@ -216,6 +216,22 @@
         <p id="dialogMessage" class="text-base text-ink-400 text-center mb-6"></p>
         <div id="dialogButtons" class="flex gap-3 justify-center"></div>
     </div>
+    </div>
+</div>
+
+<!-- Jump-to-slot dialog (Learning mode) -->
+<div id="jumpDialog" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-ink-700/50" onclick="closeJumpDialog()"></div>
+    <div class="relative bg-white rounded-xl shadow-[0_8px_20px_0_rgba(58,55,49,0.12),0_2px_6px_-1px_rgba(58,55,49,0.08)] p-6 max-w-sm w-full">
+        <h3 class="font-serif text-xl font-bold text-ink-600 text-center mb-2">Nhảy đến câu</h3>
+        <p id="jumpDialogHint" class="text-sm text-ink-400 text-center mb-4"></p>
+        <input id="jumpDialogInput" type="number" min="1" class="w-full px-4 py-3 border-2 border-paper-200 rounded-lg focus:border-accent-500 focus:outline-none text-ink-600 text-center text-lg font-semibold mb-2" placeholder="Số thứ tự">
+        <p id="jumpDialogError" class="text-sm text-danger-500 text-center mb-3 hidden"></p>
+        <div class="flex gap-3 justify-center">
+            <button onclick="closeJumpDialog()" class="px-5 py-2.5 bg-paper-100 hover:bg-paper-200 text-ink-500 rounded-lg text-sm font-semibold transition-colors">Hủy</button>
+            <button onclick="confirmJump()" class="px-5 py-2.5 bg-accent-500 hover:bg-accent-600 text-white rounded-lg text-sm font-semibold transition-colors">Nhảy</button>
+        </div>
+    </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════ -->
@@ -286,8 +302,12 @@
     <div class="max-w-3xl mx-auto py-8 pt-16">
         <!-- Info Card -->
         <div class="bg-white rounded-xl shadow-[0_3px_8px_0_rgba(58,55,49,0.10),0_1px_3px_-1px_rgba(58,55,49,0.08)] overflow-hidden mb-6">
-            <div class="p-8">
-                <h1 id="examTitle" class="font-serif text-3xl font-bold text-ink-600 mb-3"></h1>
+            <div class="p-8 relative">
+                <a id="downloadExamBtn" href="#" title="Tải file đề về máy" class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-paper-100 hover:bg-paper-200 text-ink-500 text-xs font-semibold transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                    Tải về
+                </a>
+                <h1 id="examTitle" class="font-serif text-3xl font-bold text-ink-600 mb-3 pr-24"></h1>
                 <p id="examDescription" class="text-base text-ink-400 mb-6 leading-relaxed"></p>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">

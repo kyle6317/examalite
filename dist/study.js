@@ -21,6 +21,10 @@ let learningAnswered = new Set();
 let learningCorrectSet = new Set();
 let learningFirstTryCorrect = 0;
 let learningStartTime = null;
+// Per-slot attempt history: parallel to learningQueue
+// Each entry: { userAnswer, isCorrect } | null  (null = not yet attempted)
+let learningAttempts = [];
+let learningMaxSlot = 0; // highest slot index the user has reached
 
 // Test mode state
 let testAnswers = {};
@@ -244,7 +248,14 @@ function showPrepScreen() {
     document.getElementById('examDuration').textContent = durationText;
     
     document.getElementById('totalQuestions').textContent = '...';
-    
+
+    // Wire up download-exam button
+    const dlBtn = document.getElementById('downloadExamBtn');
+    if (dlBtn) {
+        const uuid = getExamUuid();
+        dlBtn.setAttribute('href', `/download?uuid=${encodeURIComponent(uuid)}`);
+    }
+
     startDownload();
 }
 
@@ -408,6 +419,8 @@ function startLearningMode() {
             learningAnswered = new Set();
             learningCorrectSet = new Set();
             learningFirstTryCorrect = 0;
+            learningAttempts = new Array(learningQueue.length).fill(null);
+            learningMaxSlot = 0;
             learningStartTime = Date.now();
         }
         renderLearningQuestion();
@@ -419,21 +432,27 @@ function renderLearningQuestion() {
         showLearningResults();
         return;
     }
-    
+
+    // Track furthest slot reached
+    if (learningIndex > learningMaxSlot) learningMaxSlot = learningIndex;
+
     const q = learningQueue[learningIndex];
     const qData = questionIdToOriginal[q.id];
     const group = qData.group;
-    
-    // FIXED: Progress only shows correct count
+    const attempt = learningAttempts[learningIndex] || null;
+    const isReview = !!attempt; // already submitted at this slot
+
+    // Header progress: show current slot / total attempts so far + correct count
     const total = countTotalQuestions();
-    document.getElementById('learningProgress').textContent = `${learningCorrectSet.size} / ${total} đúng`;
-    
+    document.getElementById('learningProgress').textContent =
+        `Câu ${learningIndex + 1} / ${learningQueue.length} • ${learningCorrectSet.size}/${total} đúng`;
+
     const progressPercent = (learningCorrectSet.size / total) * 100;
     document.getElementById('learningProgressBar').style.width = progressPercent + '%';
-    
+
     // Build question HTML
     let html = '<div class="fade-in">';
-    
+
     // Group label and context
     if (group.label || group.context) {
         html += '<div class="mb-6 pb-6 border-b border-paper-200">';
@@ -448,50 +467,169 @@ function renderLearningQuestion() {
         }
         html += '</div>';
     }
-    
+
     // Question prompt
     html += `<div class="text-lg font-semibold text-ink-600 mb-4">${marked.parse(q.prompt)}</div>`;
-    
+
     if (q.prompt_media && q.prompt_media.length > 0) {
         html += renderMedia(q.prompt_media);
     }
-    
+
     // Answer section
     html += `<div id="answerSection">`;
     html += renderQuestionChoices(q, 'learning');
     html += `</div>`;
-    
-    // Buttons area (stays in fixed position)
-    html += `<div id="learningBtnArea" class="mt-6">
-        <button id="confirmBtn" onclick="checkLearningAnswer()" class="w-full bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-lg font-semibold transition-colors">
-            Xác nhận
-        </button>
-    </div>`;
-    
-    // Feedback area (BELOW buttons)
+
+    // Buttons area
+    if (isReview) {
+        html += `<div id="learningBtnArea" class="mt-6"></div>`;
+    } else {
+        html += `<div id="learningBtnArea" class="mt-6">
+            <button id="confirmBtn" onclick="checkLearningAnswer()" class="w-full bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-lg font-semibold transition-colors">
+                Xác nhận
+            </button>
+        </div>`;
+    }
+
+    // Feedback area
     html += `<div id="learningFeedback"></div>`;
-    
+
     html += '</div>';
-    
+
     document.getElementById('learningQuestion').innerHTML = html;
+
+    // If this slot was already submitted, restore the user answer + show feedback in review mode
+    if (isReview) {
+        restoreLearningAnswerToDOM(q, attempt.userAnswer);
+        // Disable inputs (review-only)
+        document.querySelectorAll('#answerSection input').forEach(inp => inp.disabled = true);
+        renderReviewFeedback(q, attempt);
+    }
+
+    // Always render the navigation bar (Back / Jump / Forward) below the card
+    renderLearningNav();
+}
+
+// Restore user's prior answer into the freshly-rendered DOM
+function restoreLearningAnswerToDOM(q, userAnswer) {
+    if (userAnswer === undefined || userAnswer === null) return;
+    switch (q.type) {
+        case 'single_choice':
+        case 'true_false': {
+            const radio = document.querySelector(`input[name="learn_${q.id}"][value="${userAnswer}"]`);
+            if (radio) radio.checked = true;
+            break;
+        }
+        case 'multi_choice': {
+            if (Array.isArray(userAnswer)) {
+                userAnswer.forEach(val => {
+                    const cb = document.querySelector(`input[name="learn_${q.id}"][value="${val}"]`);
+                    if (cb) cb.checked = true;
+                });
+            }
+            break;
+        }
+        case 'fill_number':
+        case 'fill_text': {
+            const input = document.getElementById(`learn_${q.id}`);
+            if (input) input.value = userAnswer;
+            break;
+        }
+        case 'fill_blank': {
+            if (Array.isArray(userAnswer)) {
+                const inputs = document.querySelectorAll(`.blank-input-${q.id}`);
+                inputs.forEach((input, i) => { if (userAnswer[i] !== undefined) input.value = userAnswer[i]; });
+            }
+            break;
+        }
+    }
+}
+
+// Render the feedback block for a previously-submitted slot (review mode)
+function renderReviewFeedback(q, attempt) {
+    const feedbackArea = document.getElementById('learningFeedback');
+    if (!feedbackArea) return;
+    const isCorrect = attempt.isCorrect;
+    const userText = formatUserAnswer(q, attempt.userAnswer) || '<em class="text-ink-300">Không có</em>';
+    feedbackArea.innerHTML = `
+        <div class="mt-4 p-4 rounded-lg ${isCorrect ? 'bg-success-50 border border-success-200' : 'bg-danger-50 border border-danger-200'}">
+            <div class="flex items-center gap-2 mb-2">
+                ${isCorrect
+                    ? '<svg class="w-5 h-5 text-success-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
+                    : '<svg class="w-5 h-5 text-danger-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>'}
+                <span class="font-semibold ${isCorrect ? 'text-success-500' : 'text-danger-500'}">
+                    ${isCorrect ? 'Chính xác!' : 'Chưa chính xác'}
+                </span>
+            </div>
+            <div class="text-sm text-ink-500 mb-1">Câu trả lời của bạn: <span class="font-semibold ${isCorrect ? 'text-success-500' : 'text-danger-500'}">${userText}</span></div>
+            <div class="text-sm text-ink-500">Đáp án đúng: <span class="font-semibold text-success-500">${formatCorrectAnswer(q)}</span></div>
+        </div>
+    `;
+}
+
+// Bottom nav: Quay lại | Nhảy | Tiến tới
+function renderLearningNav() {
+    // Append once after the question card
+    const card = document.getElementById('learningQuestion');
+    let nav = document.getElementById('learningNav');
+    if (!nav) {
+        nav = document.createElement('div');
+        nav.id = 'learningNav';
+        nav.className = 'mt-4 flex items-center justify-between gap-3';
+        card.parentNode.insertBefore(nav, card.nextSibling);
+    }
+
+    const canBack = learningIndex > 0;
+    // Forward only when the current slot has been submitted.
+    const canForward = !!learningAttempts[learningIndex];
+    const disabledCls = 'opacity-40 cursor-not-allowed';
+    const baseBtn = 'inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors';
+
+    nav.innerHTML = `
+        <button onclick="learningGoBack()" ${canBack ? '' : 'disabled'}
+            class="${baseBtn} bg-paper-100 hover:bg-paper-200 text-ink-500 ${canBack ? '' : disabledCls}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Quay lại
+        </button>
+        <button onclick="openJumpDialog()"
+            class="${baseBtn} bg-accent-50 hover:bg-accent-100 text-accent-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+            Nhảy
+        </button>
+        <button onclick="learningGoForward()" ${canForward ? '' : 'disabled'}
+            title="${canForward ? 'Đi tới câu tiếp theo' : 'Hãy trả lời câu hiện tại trước'}"
+            class="${baseBtn} bg-paper-100 hover:bg-paper-200 text-ink-500 ${canForward ? '' : disabledCls}">
+            Tiến tới
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+    `;
 }
 
 function checkLearningAnswer() {
     const q = learningQueue[learningIndex];
     const userAnswer = getUserAnswer(q.id, 'learning');
     const isCorrect = checkAnswer(q, userAnswer);
-    
-    // Mark as answered if first time
+
+    // First-attempt-ever bookkeeping (per question id, regardless of slot)
     if (!learningAnswered.has(q.id)) {
         learningAnswered.add(q.id);
-        if (isCorrect) {
-            learningFirstTryCorrect++;
-        }
+        if (isCorrect) learningFirstTryCorrect++;
     }
-    if (isCorrect) {
-        learningCorrectSet.add(q.id);
+    if (isCorrect) learningCorrectSet.add(q.id);
+
+    // Record the attempt at THIS slot
+    learningAttempts[learningIndex] = { userAnswer, isCorrect };
+
+    // If wrong → append a new slot (a future re-attempt of the same question)
+    if (!isCorrect) {
+        const insertPos = shuffleQuestions
+            ? learningQueue.length - Math.floor(Math.random() * Math.max(1, Math.min(3, learningQueue.length - learningIndex)))
+            : learningQueue.length;
+        const safePos = Math.max(learningIndex + 1, insertPos);
+        learningQueue.splice(safePos, 0, q);
+        learningAttempts.splice(safePos, 0, null);
     }
-    
+
     autoSaveLearning();
     showLearningResult(q, userAnswer, isCorrect);
 }
@@ -500,63 +638,127 @@ function showLearningResult(q, userAnswer, isCorrect) {
     const answerSection = document.getElementById('answerSection');
     const btnArea = document.getElementById('learningBtnArea');
     const feedbackArea = document.getElementById('learningFeedback');
-    
+
     // Disable inputs
-    const inputs = answerSection.querySelectorAll('input');
-    inputs.forEach(input => input.disabled = true);
-    
-    // FIXED: Feedback goes BELOW buttons
-    const feedbackHtml = `
+    answerSection.querySelectorAll('input').forEach(input => input.disabled = true);
+
+    feedbackArea.innerHTML = `
         <div class="mt-4 p-4 rounded-lg ${isCorrect ? 'bg-success-50 border border-success-200' : 'bg-danger-50 border border-danger-200'} fade-in">
             <div class="flex items-center gap-2 mb-2">
-                ${isCorrect 
+                ${isCorrect
                     ? '<svg class="w-5 h-5 text-success-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
-                    : '<svg class="w-5 h-5 text-danger-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>'
-                }
+                    : '<svg class="w-5 h-5 text-danger-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>'}
                 <span class="font-semibold ${isCorrect ? 'text-success-500' : 'text-danger-500'}">
                     ${isCorrect ? 'Chính xác!' : 'Chưa chính xác'}
                 </span>
             </div>
-            ${!isCorrect ? `<div class="text-sm text-ink-500">Đáp án đúng: ${formatCorrectAnswer(q)}</div>` : ''}
+            ${!isCorrect ? `<div class="text-sm text-ink-500">Đáp án đúng: <span class="font-semibold text-success-500">${formatCorrectAnswer(q)}</span></div>` : ''}
         </div>
     `;
-    
-    feedbackArea.innerHTML = feedbackHtml;
-    
-    // Update button text
-    if (isCorrect) {
-        btnArea.innerHTML = `<button onclick="nextLearningQuestion()" class="w-full bg-success-300 hover:bg-success-400 text-white py-3 rounded-lg font-semibold transition-colors">Câu tiếp theo</button>`;
-    } else {
-        btnArea.innerHTML = `<button onclick="requeueQuestion()" class="w-full bg-warning-300 hover:bg-warning-400 text-white py-3 rounded-lg font-semibold transition-colors">Thử lại sau</button>`;
-    }
-    
-    // Update progress bar
+
+    btnArea.innerHTML = isCorrect
+        ? `<button onclick="nextLearningQuestion()" class="w-full bg-success-300 hover:bg-success-400 text-white py-3 rounded-lg font-semibold transition-colors">Câu tiếp theo</button>`
+        : `<button onclick="nextLearningQuestion()" class="w-full bg-warning-300 hover:bg-warning-400 text-white py-3 rounded-lg font-semibold transition-colors">Thử lại sau</button>`;
+
+    // Update header progress
     const total = countTotalQuestions();
-    document.getElementById('learningProgress').textContent = `${learningCorrectSet.size} / ${total} đúng`;
+    document.getElementById('learningProgress').textContent =
+        `Câu ${learningIndex + 1} / ${learningQueue.length} • ${learningCorrectSet.size}/${total} đúng`;
     const progressPercent = (learningCorrectSet.size / total) * 100;
     document.getElementById('learningProgressBar').style.width = progressPercent + '%';
+
+    // Refresh nav (Forward now enabled because current slot is submitted)
+    renderLearningNav();
 }
 
 function nextLearningQuestion() {
     learningIndex++;
+    if (learningIndex > learningMaxSlot) learningMaxSlot = learningIndex;
     autoSaveLearning();
     renderLearningQuestion();
 }
 
-function requeueQuestion() {
-    const q = learningQueue[learningIndex];
-    learningQueue.splice(learningIndex, 1);
-    
-    if (shuffleQuestions) {
-        const insertPos = learningIndex + Math.floor(Math.random() * (learningQueue.length - learningIndex + 1));
-        learningQueue.splice(insertPos, 0, q);
-    } else {
-        learningQueue.push(q);
-    }
-    
+// Navigation: back / forward / jump
+function learningGoBack() {
+    if (learningIndex <= 0) return;
+    learningIndex--;
     autoSaveLearning();
     renderLearningQuestion();
 }
+
+function learningGoForward() {
+    // Only allowed if current slot has been submitted
+    if (!learningAttempts[learningIndex]) return;
+    if (learningIndex >= learningQueue.length - 1) {
+        // All slots done → results
+        learningIndex = learningQueue.length;
+        renderLearningQuestion();
+        return;
+    }
+    learningIndex++;
+    if (learningIndex > learningMaxSlot) learningMaxSlot = learningIndex;
+    autoSaveLearning();
+    renderLearningQuestion();
+}
+
+// ── Jump dialog ─────────────────────────────────────────────────────
+function openJumpDialog() {
+    const dialog = document.getElementById('jumpDialog');
+    const hint = document.getElementById('jumpDialogHint');
+    const input = document.getElementById('jumpDialogInput');
+    const err = document.getElementById('jumpDialogError');
+    // Max slot the user is allowed to jump to: any slot they have already
+    // attempted, plus the current (next-to-answer) slot.
+    const maxAllowed = computeMaxJumpSlot(); // 1-based
+    hint.textContent = `Nhập số từ 1 đến ${maxAllowed} (chỉ được nhảy đến những câu đã làm).`;
+    input.max = maxAllowed;
+    input.value = (learningIndex + 1);
+    err.classList.add('hidden');
+    dialog.classList.remove('hidden');
+    setTimeout(() => { input.focus(); input.select(); }, 50);
+    input.onkeydown = (e) => { if (e.key === 'Enter') confirmJump(); else if (e.key === 'Escape') closeJumpDialog(); };
+}
+
+function computeMaxJumpSlot() {
+    // The latest slot that has an attempt + 1 (the next un-answered slot)
+    let lastAnswered = -1;
+    for (let i = 0; i < learningAttempts.length; i++) {
+        if (learningAttempts[i]) lastAnswered = i;
+    }
+    // Allowed: slots [0 .. lastAnswered+1] (1-based: 1 .. lastAnswered+2),
+    // capped at the queue length.
+    const max1 = Math.min(lastAnswered + 2, learningQueue.length);
+    return Math.max(1, max1);
+}
+
+function closeJumpDialog() {
+    document.getElementById('jumpDialog').classList.add('hidden');
+}
+
+function confirmJump() {
+    const input = document.getElementById('jumpDialogInput');
+    const err = document.getElementById('jumpDialogError');
+    const val = parseInt(input.value, 10);
+    const maxAllowed = computeMaxJumpSlot();
+    if (!Number.isFinite(val) || val < 1 || val > maxAllowed) {
+        err.textContent = `Vui lòng nhập số từ 1 đến ${maxAllowed}.`;
+        err.classList.remove('hidden');
+        return;
+    }
+    const targetIdx = val - 1;
+    // Disallow jumping to a future un-answered slot (only current or earlier-answered)
+    if (targetIdx > 0 && !learningAttempts[targetIdx] && !learningAttempts[targetIdx - 1] && targetIdx !== learningIndex) {
+        err.textContent = 'Không thể nhảy đến câu chưa làm.';
+        err.classList.remove('hidden');
+        return;
+    }
+    closeJumpDialog();
+    learningIndex = targetIdx;
+    if (learningIndex > learningMaxSlot) learningMaxSlot = learningIndex;
+    autoSaveLearning();
+    renderLearningQuestion();
+}
+
 
 function showLearningResults() {
     const totalTime = Math.floor((Date.now() - learningStartTime) / 1000);
@@ -599,22 +801,28 @@ function showLearningResults() {
     `;
     
     document.getElementById('learningQuestion').innerHTML = html;
+    const nav = document.getElementById('learningNav');
+    if (nav) nav.remove();
     clearSavedAnswers('learning');
 }
 
 async function quitLearning() {
     const result = await showCustomDialog({
         title: 'Thoát chế độ học tập?',
-        message: 'Tiến trình sẽ không được lưu.',
-        icon: 'warning',
+        message: 'Tiến trình sẽ được tự động lưu để bạn tiếp tục lần sau.',
+        icon: 'question',
         buttons: [
             { label: 'Hủy', value: false },
-            { label: 'Thoát', value: true, danger: true }
+            { label: 'Lưu & Thoát', value: true, primary: true }
         ]
     });
-    
+
     if (result) {
-        clearAutoSave('learning');
+        // Auto-save before exiting
+        autoSaveLearning();
+        // Remove the learning nav bar (it was appended outside the question card)
+        const nav = document.getElementById('learningNav');
+        if (nav) nav.remove();
         // Go back to prep screen
         document.getElementById('learningScreen').classList.add('hidden');
         document.getElementById('prepScreen').classList.remove('hidden');
@@ -1149,6 +1357,10 @@ function retakeExam() {
     learningAnswered = new Set();
     learningCorrectSet = new Set();
     learningFirstTryCorrect = 0;
+    learningAttempts = [];
+    learningMaxSlot = 0;
+    const navEl = document.getElementById('learningNav');
+    if (navEl) navEl.remove();
     
     // Re-parse exam data from cached ZIP
     if (cachedZipArrayBuffer) {
@@ -1487,12 +1699,18 @@ function autoSaveTest() {
 
 function autoSaveLearning() {
     try {
+        // Serialize per-slot attempts (parallel to queue)
+        const attemptsSer = learningAttempts.map(a =>
+            a ? { userAnswer: a.userAnswer, isCorrect: a.isCorrect } : null
+        );
         const data = {
             uuid: getExamUuid(),
             fingerprint: buildQuestionFingerprint(),
             index: learningIndex,
+            maxSlot: learningMaxSlot,
             // Store original IDs for the full queue (including re-queued items)
             queue: learningQueue.map(q => questionIdToOriginal[q.id].originalId),
+            attempts: attemptsSer,
             answered: [...learningAnswered].map(id => questionIdToOriginal[id]?.originalId).filter(Boolean),
             correctSet: [...learningCorrectSet].map(id => questionIdToOriginal[id]?.originalId).filter(Boolean),
             firstTryCorrect: learningFirstTryCorrect,
@@ -1611,6 +1829,7 @@ function restoreLearningQueueFromSave(save) {
 
     learningQueue = restoredQueue;
     learningIndex = Math.min(save.index || 0, Math.max(restoredQueue.length - 1, 0));
+    learningMaxSlot = Math.max(save.maxSlot || 0, learningIndex);
 
     // Restore Sets using current shuffled IDs
     learningAnswered = new Set(
@@ -1621,6 +1840,13 @@ function restoreLearningQueueFromSave(save) {
     );
     learningFirstTryCorrect = save.firstTryCorrect || 0;
     learningStartTime = save.startTime || Date.now();
+
+    // Restore per-slot attempts (parallel to learningQueue)
+    const savedAttempts = Array.isArray(save.attempts) ? save.attempts : [];
+    learningAttempts = learningQueue.map((_, i) => {
+        const a = savedAttempts[i];
+        return a ? { userAnswer: a.userAnswer, isCorrect: !!a.isCorrect } : null;
+    });
 }
 
 // ═══════════════════════════════════════════════════════════════════

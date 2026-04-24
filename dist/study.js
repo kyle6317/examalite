@@ -1382,7 +1382,7 @@ function renderQuestionChoices(q, mode) {
                 html += `
                     <label class="choice-item flex items-start gap-3 p-4 border-2 border-paper-200 rounded-lg cursor-pointer mb-3 hover:bg-paper-50 transition-colors">
                         <input type="radio" name="${prefix}_${q.id}" value="${choice.id}" onchange="saveAnswer('${q.id}', '${choice.id}', '${mode}')" class="mt-0.5 w-4 h-4 text-accent-500 border-paper-300">
-                        <div class="flex-1 prose prose-sm max-w-none">${marked.parse(choice.text)}</div>
+                        <div class="flex-1 prose prose-sm max-w-none">${marked.parseInline(choice.text)}</div>
                     </label>
                 `;
             });
@@ -1393,7 +1393,7 @@ function renderQuestionChoices(q, mode) {
                 html += `
                     <label class="choice-item flex items-start gap-3 p-4 border-2 border-paper-200 rounded-lg cursor-pointer mb-3 hover:bg-paper-50 transition-colors">
                         <input type="checkbox" name="${prefix}_${q.id}" value="${choice.id}" onchange="saveMultiAnswer('${q.id}', '${mode}')" class="mt-0.5 w-4 h-4 text-accent-500 border-paper-300 rounded">
-                        <div class="flex-1 prose prose-sm max-w-none">${marked.parse(choice.text)}</div>
+                        <div class="flex-1 prose prose-sm max-w-none">${marked.parseInline(choice.text)}</div>
                     </label>
                 `;
             });

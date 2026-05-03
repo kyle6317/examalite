@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exama — So Sánh Đề Thi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --color-paper-50: #faf9f6;
+    --color-paper-100: #f4f2ec;
+    --color-paper-200: #e8e4d9;
+    --color-paper-300: #d6d0c4;
+    --color-ink-100: #e0ddd7;
+    --color-ink-200: #b8b3a8;
+    --color-ink-300: #8c8679;
+    --color-ink-400: #5e5a52;
+    --color-ink-500: #3a3731;
+    --color-ink-600: #27251f;
+    --color-ink-700: #1a1814;
+    --color-accent-100: #d9e5f0;
+    --color-accent-200: #adc5df;
+    --color-accent-300: #7aa3c8;
+    --color-accent-400: #4e84b4;
+    --color-accent-500: #2d6899;
+    --color-accent-600: #1f5280;
+    --color-success-50: #f0f7f0;
+    --color-success-200: #a0cfa0;
+    --color-success-300: #5fa85f;
+    --color-warning-50: #fdf8ed;
+    --color-warning-200: #eecf88;
+    --color-warning-300: #d9a93a;
+    --color-danger-50: #fdf0f0;
+    --color-danger-200: #e8a0a0;
+    --color-danger-300: #d05f5f;
+    --font-serif: 'Noto Serif', Georgia, serif;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+    --shadow-paper: 0 1px 3px 0 rgba(58,55,49,0.08), 0 1px 2px -1px rgba(58,55,49,0.06);
+    --shadow-paper-md: 0 3px 8px 0 rgba(58,55,49,0.10), 0 1px 3px -1px rgba(58,55,49,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-paper-50);
+    color: var(--color-ink-500);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  h1, h2, h3 { font-family: var(--font-serif); color: var(--color-ink-600); }
+  .card {
+    background: #fff;
+    border: 1px solid var(--color-paper-200);
+    border-radius: 8px;
+    box-shadow: var(--shadow-paper);
+    padding: 24px;
+  }
+  .btn-primary {
+    background: var(--color-accent-500);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: var(--color-accent-600); }
+  .btn-primary:disabled { background: var(--color-ink-200); cursor: not-allowed; }
+  .btn-secondary {
+    background: #fff;
+    color: var(--color-accent-500);
+    border: 1px solid var(--color-accent-300);
+    border-radius: 6px;
+    padding: 9px 18px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-secondary:hover { background: var(--color-accent-100); }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .badge-info { background: var(--color-accent-100); color: var(--color-accent-600); }
+  .badge-success { background: var(--color-success-50); color: #256825; border: 1px solid var(--color-success-200); }
+  .badge-warning { background: var(--color-warning-50); color: #8f6a14; border: 1px solid var(--color-warning-200); }
+  .badge-danger { background: var(--color-danger-50); color: #8a2020; border: 1px solid var(--color-danger-200); }
+  .drop-zone {
+    border: 2px dashed var(--color-paper-300);
+    border-radius: 8px;
+    background: var(--color-paper-100);
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--color-accent-400);
+    background: var(--color-accent-100);
+  }
+  input[type=range] {
+    width: 100%;
+    accent-color: var(--color-accent-500);
+  }
+  input[type=number], select {
+    border: 1px solid var(--color-paper-300);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    background: #fff;
+    color: var(--color-ink-500);
+    outline: none;
+  }
+  input[type=number]:focus, select:focus {
+    border-color: var(--color-accent-400);
+    box-shadow: 0 0 0 3px rgba(77,132,180,0.14);
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-300);
+    margin-bottom: 8px;
+  }
+  .diff-match { background: var(--color-success-50); border-left: 3px solid var(--color-success-300); }
+  .diff-mismatch { background: var(--color-danger-50); border-left: 3px solid var(--color-danger-300); }
+  .diff-missing { background: var(--color-warning-50); border-left: 3px solid var(--color-warning-300); }
+  .question-row {
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+  .radio-group { display: flex; flex-direction: column; gap: 10px; }
+  .radio-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--color-paper-200);
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s;
+  }
+  .radio-option:hover { border-color: var(--color-accent-300); background: var(--color-paper-100); }
+  .radio-option.selected { border-color: var(--color-accent-500); background: var(--color-accent-100); }
+  .radio-option input[type=radio] { margin-top: 2px; accent-color: var(--color-accent-500); }
+  .step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 32px;
+  }
+  .step { display: flex; align-items: center; gap: 8px; }
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    border: 2px solid var(--color-paper-200);
+    color: var(--color-ink-300);
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .step-dot.active { border-color: var(--color-accent-500); color: var(--color-accent-500); background: var(--color-accent-100); }
+  .step-dot.done { border-color: var(--color-success-300); color: #fff; background: var(--color-success-300); }
+  .step-label { font-size: 13px; color: var(--color-ink-300); }
+  .step-label.active { color: var(--color-accent-600); font-weight: 600; }
+  .step-line { flex: 1; height: 1px; background: var(--color-paper-300); margin: 0 8px; }
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--color-paper-200);
+    border-top-color: var(--color-accent-500);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .collapsible-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    padding: 10px 0;
+  }
+  .collapsible-header:hover { color: var(--color-ink-600); }
+  .arrow { transition: transform 0.2s; display: inline-block; }
+  .arrow.open { transform: rotate(90deg); }
+  table.stats-table { width: 100%; border-collapse: collapse; }
+  table.stats-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ink-300);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-paper-200);
+  }
+  table.stats-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--color-paper-100);
+    font-size: 13px;
+    vertical-align: top;
+  }
+  table.stats-table tr:last-child td { border-bottom: none; }
+  .highlight-q { background: rgba(209,168,0,0.1); border-radius: 2px; padding: 0 2px; }
+  .answer-box {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--color-paper-100);
+    border: 1px solid var(--color-paper-300);
+    font-family: monospace;
+  }
+</style>
+</head>
+<body>
+
+<div style="max-width: 880px; margin: 0 auto; padding: 32px 24px;">
+
+  <!-- Header -->
+  <div style="margin-bottom: 32px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="6" fill="#2d6899"/>
+        <rect x="7" y="8" width="14" height="2" rx="1" fill="white"/>
+        <rect x="7" y="13" width="10" height="2" rx="1" fill="white"/>
+        <rect x="7" y="18" width="12" height="2" rx="1" fill="white"/>
+      </svg>
+      <h1 style="font-size:22px; font-weight:700;">So Sánh Đề Thi</h1>
+    </div>
+    <p style="color: var(--color-ink-400); font-size:14px;">Tìm sự khác biệt giữa hai hay nhiều file <code style="font-size:12px; background:var(--color-paper-100); padding:1px 5px; border-radius:3px;">exam.json</code></p>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="step-indicator" id="stepIndicator">
+    <div class="step">
+      <div class="step-dot active" id="dot1">1</div>
+      <span class="step-label active" id="lbl1">Tải lên</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-dot" id="dot2">2</div>
+      <span class="step-label" id="lbl2">Phân tích</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-dot" id="dot3">3</div>
+      <span class="step-label" id="lbl3">So sánh</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-dot" id="dot4">4</div>
+      <span class="step-label" id="lbl4">Kết quả</span>
+    </div>
+  </div>
+
+  <!-- STEP 1: Upload -->
+  <div id="step1">
+    <div class="card">
+      <p class="section-label">Bước 1 — Tải lên file JSON</p>
+      <h2 style="font-size:18px; margin-bottom:16px;">Chọn ít nhất 2 file <code style="font-size:14px;">exam.json</code></h2>
+      
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#8c8679" stroke-width="1.5" style="margin: 0 auto 12px;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <p style="color: var(--color-ink-400); font-size:14px; margin-bottom:4px;">Kéo thả hoặc <span style="color: var(--color-accent-500); font-weight:600;">nhấn để chọn file</span></p>
+        <p style="color: var(--color-ink-300); font-size:12px;">Hỗ trợ nhiều file JSON cùng lúc</p>
+        <input type="file" id="fileInput" accept=".json,application/json" multiple style="display:none;" onchange="handleFiles(this.files)">
+      </div>
+
+      <div id="fileList" style="margin-top:16px; display:none;">
+        <p class="section-label" style="margin-bottom:10px;">File đã chọn</p>
+        <div id="fileListItems"></div>
+        <div style="margin-top:16px; display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn-secondary" onclick="clearFiles()">Xóa tất cả</button>
+          <button class="btn-primary" id="btnAnalyze" onclick="goToStep2()">Phân Tích →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Analysis -->
+  <div id="step2" style="display:none;">
+    <div class="card">
+      <p class="section-label">Bước 2 — Phân tích cấu trúc</p>
+      <h2 style="font-size:18px; margin-bottom:20px;">Tổng quan từng file</h2>
+      <div id="analysisContent"></div>
+      <div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+        <button class="btn-secondary" onclick="goToStep1()">← Tải lại</button>
+        <button class="btn-primary" onclick="goToStep3()">Chọn Cách So Sánh →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Compare options -->
+  <div id="step3" style="display:none;">
+    <div class="card">
+      <p class="section-label">Bước 3 — Phương thức so sánh</p>
+      <h2 style="font-size:18px; margin-bottom:20px;">Chọn cách so sánh đáp án</h2>
+      
+      <div class="radio-group" id="compareOptions">
+        <label class="radio-option selected" data-val="absolute">
+          <input type="radio" name="cmpMode" value="absolute" checked>
+          <div>
+            <div style="font-weight:600; font-size:14px; color:var(--color-ink-600);">So sánh tuyệt đối</div>
+            <div style="color:var(--color-ink-400); font-size:13px; margin-top:3px;">Khớp câu hỏi bằng nội dung chính xác (100% giống nhau). Tìm các câu có đáp án khác nhau.</div>
+          </div>
+        </label>
+        <label class="radio-option" data-val="fuzzy">
+          <input type="radio" name="cmpMode" value="fuzzy">
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:14px; color:var(--color-ink-600);">So sánh tương đối (Fuzzy)</div>
+            <div style="color:var(--color-ink-400); font-size:13px; margin-top:3px;">Dùng thuật toán fuzzy matching, phù hợp khi câu hỏi có chỉnh sửa nhỏ.</div>
+            <div id="fuzzyThresholdWrap" style="display:none; margin-top:12px;">
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+                <span style="font-size:13px; color:var(--color-ink-400);">Ngưỡng tương đồng tối thiểu:</span>
+                <span style="font-weight:700; font-size:16px; color:var(--color-accent-500);" id="thresholdVal">80%</span>
+              </div>
+              <input type="range" min="50" max="100" value="80" id="thresholdSlider" step="1" oninput="document.getElementById('thresholdVal').textContent=this.value+'%'">
+              <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--color-ink-300); margin-top:2px;">
+                <span>50% (rộng hơn)</span><span>100% (chính xác)</span>
+              </div>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <div style="margin-top:24px; display:flex; gap:10px; justify-content:flex-end;">
+        <button class="btn-secondary" onclick="goToStep2()">← Quay lại</button>
+        <button class="btn-primary" onclick="runComparison()">Chạy So Sánh →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Results -->
+  <div id="step4" style="display:none;">
+    <div id="resultsContent"></div>
+    <div style="margin-top:16px; display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn-secondary" onclick="goToStep3()">← Thay đổi cách so sánh</button>
+      <button class="btn-secondary" onclick="goToStep1()">Bắt đầu lại</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let parsedFiles = [];
+let currentMode = 'absolute';
+let currentThreshold = 80;
+
+// Drag & drop
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+function handleFiles(files) {
+  const jsonFiles = Array.from(files).filter(f => f.name.endsWith('.json') || f.type === 'application/json');
+  if (!jsonFiles.length) { alert('Vui lòng chọn file .json'); return; }
+  jsonFiles.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.groups) throw new Error('Không tìm thấy trường "groups"');
+        parsedFiles.push({ name: f.name, data, raw: e.target.result });
+        renderFileList();
+      } catch(err) {
+        alert(`File "${f.name}" không hợp lệ: ${err.message}`);
+      }
+    };
+    reader.readAsText(f);
+  });
+}
+
+function renderFileList() {
+  const container = document.getElementById('fileList');
+  const items = document.getElementById('fileListItems');
+  container.style.display = 'block';
+  items.innerHTML = parsedFiles.map((f,i) => {
+    const total = countQuestions(f.data);
+    return `<div style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--color-paper-100); border-radius:6px; margin-bottom:8px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5fa85f" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      <span style="flex:1; font-size:13px; color:var(--color-ink-600); font-weight:500;">${f.name}</span>
+      <span class="badge badge-info">${total} câu</span>
+      <button onclick="removeFile(${i})" style="background:none; border:none; cursor:pointer; color:var(--color-ink-300); font-size:16px; line-height:1;" title="Xóa">×</button>
+    </div>`;
+  }).join('');
+  document.getElementById('btnAnalyze').disabled = parsedFiles.length < 2;
+}
+
+function removeFile(i) { parsedFiles.splice(i,1); renderFileList(); }
+function clearFiles() { parsedFiles = []; document.getElementById('fileList').style.display='none'; }
+
+function countQuestions(data) {
+  return data.groups.reduce((s,g) => s + g.questions.length, 0);
+}
+
+function getTypeCounts(data) {
+  const counts = {};
+  data.groups.forEach(g => g.questions.forEach(q => { counts[q.type] = (counts[q.type]||0)+1; }));
+  return counts;
+}
+
+const TYPE_LABELS = {
+  single_choice: 'Trắc nghiệm 1 đáp án', multi_choice: 'Trắc nghiệm nhiều đáp án',
+  true_false: 'Đúng/Sai', fill_number: 'Điền số', fill_text: 'Điền từ', fill_blank: 'Điền chỗ trống'
+};
+
+function goToStep1() {
+  setActiveStep(1);
+  show(['step1']); hide(['step2','step3','step4']);
+}
+function goToStep2() {
+  if (parsedFiles.length < 2) { goToStep1(); return; }
+  setActiveStep(2);
+  renderAnalysis();
+  show(['step2']); hide(['step1','step3','step4']);
+}
+function goToStep3() {
+  setActiveStep(3);
+  show(['step3']); hide(['step1','step2','step4']);
+}
+function show(ids) { ids.forEach(id => document.getElementById(id).style.display=''); }
+function hide(ids) { ids.forEach(id => document.getElementById(id).style.display='none'); }
+
+function setActiveStep(n) {
+  for (let i=1;i<=4;i++) {
+    const dot = document.getElementById('dot'+i);
+    const lbl = document.getElementById('lbl'+i);
+    if (i < n) { dot.className='step-dot done'; dot.innerHTML='✓'; lbl.className='step-label'; }
+    else if (i===n) { dot.className='step-dot active'; dot.textContent=i; lbl.className='step-label active'; }
+    else { dot.className='step-dot'; dot.textContent=i; lbl.className='step-label'; }
+  }
+}
+
+function renderAnalysis() {
+  const allTypes = new Set();
+  parsedFiles.forEach(f => Object.keys(getTypeCounts(f.data)).forEach(t => allTypes.add(t)));
+  const types = [...allTypes];
+
+  const typeCounts = parsedFiles.map(f => getTypeCounts(f.data));
+  const totals = parsedFiles.map(f => countQuestions(f.data));
+  const allMatch = totals.every(t => t === totals[0]);
+
+  let html = '';
+
+  // Summary cards
+  html += `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:20px;">`;
+  parsedFiles.forEach((f,i) => {
+    html += `<div style="background:var(--color-paper-100); border-radius:6px; padding:14px 16px; border:1px solid var(--color-paper-200);">
+      <div style="font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--color-ink-300); margin-bottom:6px;">File ${i+1}</div>
+      <div style="font-size:13px; font-weight:600; color:var(--color-ink-600); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${f.name}">${f.name}</div>
+      <div style="font-size:22px; font-weight:700; color:var(--color-accent-500); margin-top:4px;">${totals[i]}</div>
+      <div style="font-size:12px; color:var(--color-ink-300);">câu hỏi • ${f.data.groups.length} nhóm</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Count match status
+  if (allMatch) {
+    html += `<div style="display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--color-success-50); border:1px solid var(--color-success-200); border-radius:6px; margin-bottom:16px; font-size:13px; color:#256825;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5fa85f" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Số lượng câu hỏi khớp nhau (${totals[0]} câu). So sánh theo thứ tự và nội dung.
+    </div>`;
+  } else {
+    html += `<div style="display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--color-warning-50); border:1px solid var(--color-warning-200); border-radius:6px; margin-bottom:16px; font-size:13px; color:#8f6a14;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d9a93a" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Số lượng câu hỏi <strong>không khớp</strong>. Mỗi câu sẽ được so khớp với toàn bộ câu hỏi của file khác.
+    </div>`;
+  }
+
+  // Type breakdown table
+  html += `<table class="stats-table">
+    <thead><tr>
+      <th>Loại câu hỏi</th>
+      ${parsedFiles.map((f,i)=>`<th>File ${i+1}</th>`).join('')}
+      <th>Trạng thái</th>
+    </tr></thead><tbody>`;
+  
+  types.forEach(type => {
+    const counts = typeCounts.map(c => c[type]||0);
+    const match = counts.every(c => c === counts[0]);
+    html += `<tr>
+      <td style="font-size:13px;">${TYPE_LABELS[type]||type}</td>
+      ${counts.map(c=>`<td><span style="font-weight:600; color:var(--color-ink-600);">${c}</span></td>`).join('')}
+      <td>${match ? `<span class="badge badge-success">Khớp</span>` : `<span class="badge badge-warning">Lệch</span>`}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+
+  document.getElementById('analysisContent').innerHTML = html;
+}
+
+// Radio selection
+document.querySelectorAll('.radio-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    opt.querySelector('input[type=radio]').checked = true;
+    const val = opt.dataset.val;
+    document.getElementById('fuzzyThresholdWrap').style.display = val==='fuzzy' ? 'block' : 'none';
+  });
+});
+
+// ============ COMPARISON ENGINE ============
+
+function normalizeText(s) {
+  if (typeof s !== 'string') s = String(s);
+  return s.toLowerCase().replace(/\s+/g,' ').trim();
+}
+
+function levenshtein(a, b) {
+  const m=a.length, n=b.length;
+  const dp = Array.from({length:m+1}, (_,i) => Array.from({length:n+1}, (_,j) => i===0?j:j===0?i:0));
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function similarity(a, b) {
+  a = normalizeText(a); b = normalizeText(b);
+  if (a===b) return 100;
+  if (!a || !b) return 0;
+  const maxLen = Math.max(a.length, b.length);
+  return Math.round((1 - levenshtein(a,b)/maxLen)*100);
+}
+
+function answerToString(answer, type) {
+  if (Array.isArray(answer)) return answer.map(String).sort().join('|');
+  return String(answer).toLowerCase().trim();
+}
+
+function flattenQuestions(data) {
+  const qs = [];
+  data.groups.forEach(g => g.questions.forEach(q => qs.push({...q, groupLabel: g.label||g.id})));
+  return qs;
+}
+
+function findBestMatch(q, candidates, threshold) {
+  let best = null, bestScore = -1;
+  candidates.forEach((c,i) => {
+    const score = similarity(q.prompt, c.prompt);
+    if (score > bestScore) { bestScore = score; best = {q:c, idx:i, score}; }
+  });
+  if (best && best.score >= threshold) return best;
+  return null;
+}
+
+function runComparison() {
+  const mode = document.querySelector('input[name=cmpMode]:checked').value;
+  const threshold = parseInt(document.getElementById('thresholdSlider').value);
+  currentMode = mode; currentThreshold = threshold;
+
+  setActiveStep(4);
+  show(['step4']); hide(['step1','step2','step3']);
+
+  const results = [];
+  const files = parsedFiles;
+  const refIdx = 0;
+  const refQs = flattenQuestions(files[refIdx].data);
+
+  // Compare each pair (ref vs others)
+  const pairResults = [];
+  for (let fi=1; fi < files.length; fi++) {
+    const cmpQs = flattenQuestions(files[fi].data);
+    const diffs = [];
+    const matched = new Set();
+    const matchedCmp = new Set();
+
+    if (mode === 'absolute') {
+      refQs.forEach((rq, ri) => {
+        const prompt = normalizeText(rq.prompt);
+        const cmpIdx = cmpQs.findIndex((cq,ci) => !matchedCmp.has(ci) && normalizeText(cq.prompt)===prompt);
+        if (cmpIdx >= 0) {
+          matchedCmp.add(cmpIdx);
+          const cq = cmpQs[cmpIdx];
+          const ra = answerToString(rq.answer, rq.type);
+          const ca = answerToString(cq.answer, cq.type);
+          if (ra !== ca) diffs.push({ type:'mismatch', rq, cq, ra, ca, score:100 });
+          else diffs.push({ type:'match', rq, cq, ra, ca, score:100 });
+        } else {
+          diffs.push({ type:'missing_in_cmp', rq, score:0 });
+        }
+      });
+      cmpQs.forEach((cq,ci) => {
+        if (!matchedCmp.has(ci)) diffs.push({ type:'missing_in_ref', cq, score:0 });
+      });
+    } else {
+      // Fuzzy
+      refQs.forEach((rq, ri) => {
+        const match = findBestMatch(rq, cmpQs.filter((_,ci)=>!matchedCmp.has(ci)), threshold);
+        if (match) {
+          // find real index
+          let realIdx = -1, count = 0;
+          cmpQs.forEach((cq,ci) => {
+            if (!matchedCmp.has(ci)) {
+              if (count === cmpQs.filter((_,cii)=>!matchedCmp.has(cii)).indexOf(match.q)) realIdx = ci;
+              count++;
+            }
+          });
+          // simpler: just search by reference
+          const ri2 = cmpQs.indexOf(match.q);
+          if (ri2 >= 0) matchedCmp.add(ri2);
+          const cq = match.q;
+          const ra = answerToString(rq.answer, rq.type);
+          const ca = answerToString(cq.answer, cq.type);
+          if (ra !== ca) diffs.push({ type:'mismatch', rq, cq, ra, ca, score:match.score });
+          else diffs.push({ type:'match', rq, cq, ra, ca, score:match.score });
+        } else {
+          diffs.push({ type:'missing_in_cmp', rq, score:0 });
+        }
+      });
+      cmpQs.forEach((cq,ci) => {
+        if (!matchedCmp.has(ci)) diffs.push({ type:'missing_in_ref', cq, score:0 });
+      });
+    }
+    pairResults.push({ fileA: files[refIdx].name, fileB: files[fi].name, diffs });
+  }
+
+  renderResults(pairResults);
+}
+
+function renderResults(pairResults) {
+  let html = '';
+  pairResults.forEach((pr, pi) => {
+    const mismatches = pr.diffs.filter(d=>d.type==='mismatch');
+    const matches = pr.diffs.filter(d=>d.type==='match');
+    const missingCmp = pr.diffs.filter(d=>d.type==='missing_in_cmp');
+    const missingRef = pr.diffs.filter(d=>d.type==='missing_in_ref');
+
+    html += `<div class="card" style="margin-bottom:20px;">`;
+    html += `<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
+      <div>
+        <p class="section-label">Kết quả so sánh ${pi+1}</p>
+        <h2 style="font-size:17px;">${pr.fileA} <span style="color:var(--color-ink-300);">vs</span> ${pr.fileB}</h2>
+        <p style="font-size:12px; color:var(--color-ink-300); margin-top:4px;">Chế độ: ${currentMode==='absolute'?'So sánh tuyệt đối':`Fuzzy (ngưỡng ${currentThreshold}%)`}</p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        ${mismatches.length ? `<span class="badge badge-danger">${mismatches.length} sai khác</span>` : ''}
+        ${matches.length ? `<span class="badge badge-success">${matches.length} khớp</span>` : ''}
+        ${(missingCmp.length+missingRef.length) ? `<span class="badge badge-warning">${missingCmp.length+missingRef.length} không khớp</span>` : ''}
+      </div>
+    </div>`;
+
+    if (mismatches.length===0 && missingCmp.length===0 && missingRef.length===0) {
+      html += `<div style="text-align:center; padding:24px; color:var(--color-ink-300);">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5fa85f" stroke-width="1.5" style="margin:0 auto 10px; display:block;"><polyline points="20 6 9 17 4 12"/></svg>
+        <p style="font-size:15px; font-weight:600; color:#256825;">Hai file hoàn toàn giống nhau!</p>
+        <p style="font-size:13px; margin-top:4px;">Không tìm thấy bất kỳ sự khác biệt nào.</p>
+      </div>`;
+    } else {
+      // Mismatches section
+      if (mismatches.length > 0) {
+        html += `<div style="margin-bottom:20px;">
+          <div class="collapsible-header" onclick="toggleCollapse('m${pi}')">
+            <span style="font-size:13px; font-weight:600; color:var(--color-danger-300);">
+              ● ${mismatches.length} câu hỏi có đáp án khác nhau
+            </span>
+            <span class="arrow open" id="arrow_m${pi}">▶</span>
+          </div>
+          <div id="collapse_m${pi}">`;
+        mismatches.forEach((d,i) => {
+          const scoreTag = currentMode==='fuzzy' ? `<span class="badge badge-info" style="margin-left:6px;">${d.score}% giống</span>` : '';
+          html += `<div class="question-row diff-mismatch">
+            <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+              <span style="font-size:11px; font-weight:600; color:var(--color-danger-300); text-transform:uppercase; letter-spacing:0.06em; flex-shrink:0; margin-top:1px;">Câu ${i+1}</span>
+              ${scoreTag}
+            </div>
+            <div style="font-size:13px; color:var(--color-ink-600); margin-bottom:10px; font-style:italic;">"${escHtml(d.rq.prompt.substring(0,120))}${d.rq.prompt.length>120?'…':''}"</div>
+            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+              <div>
+                <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--color-ink-300); margin-bottom:4px;">File 1: ${pr.fileA}</div>
+                <span class="answer-box" style="background:#f0f7f0; border-color:#a0cfa0; color:#256825;">${escHtml(d.ra)}</span>
+              </div>
+              <div>
+                <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--color-ink-300); margin-bottom:4px;">File 2: ${pr.fileB}</div>
+                <span class="answer-box" style="background:#fdf0f0; border-color:#e8a0a0; color:#8a2020;">${escHtml(d.ca)}</span>
+              </div>
+            </div>
+            ${d.cq && d.score < 100 ? `<div style="font-size:12px; color:var(--color-ink-300); margin-top:8px; font-style:italic;">Câu khớp (File 2): "${escHtml(d.cq.prompt.substring(0,100))}${d.cq.prompt.length>100?'…':''}"</div>` : ''}
+          </div>`;
+        });
+        html += `</div></div>`;
+      }
+
+      // Missing questions
+      if (missingCmp.length+missingRef.length > 0) {
+        html += `<div style="margin-bottom:20px;">
+          <div class="collapsible-header" onclick="toggleCollapse('w${pi}')">
+            <span style="font-size:13px; font-weight:600; color:#8f6a14;">
+              ● ${missingCmp.length+missingRef.length} câu hỏi không tìm được câu tương đương
+            </span>
+            <span class="arrow open" id="arrow_w${pi}">▶</span>
+          </div>
+          <div id="collapse_w${pi}">`;
+        missingCmp.forEach((d,i) => {
+          html += `<div class="question-row diff-missing">
+            <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:#8f6a14; margin-bottom:6px;">Chỉ có trong File 1 — ${pr.fileA}</div>
+            <div style="font-size:13px; color:var(--color-ink-600); font-style:italic;">"${escHtml(d.rq.prompt.substring(0,150))}${d.rq.prompt.length>150?'…':''}"</div>
+            <div style="margin-top:6px;"><span class="answer-box">${escHtml(answerToString(d.rq.answer, d.rq.type))}</span></div>
+          </div>`;
+        });
+        missingRef.forEach((d,i) => {
+          html += `<div class="question-row diff-missing">
+            <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:#8f6a14; margin-bottom:6px;">Chỉ có trong File 2 — ${pr.fileB}</div>
+            <div style="font-size:13px; color:var(--color-ink-600); font-style:italic;">"${escHtml(d.cq.prompt.substring(0,150))}${d.cq.prompt.length>150?'…':''}"</div>
+            <div style="margin-top:6px;"><span class="answer-box">${escHtml(answerToString(d.cq.answer, d.cq.type))}</span></div>
+          </div>`;
+        });
+        html += `</div></div>`;
+      }
+
+      // Matched (collapsed by default)
+      if (matches.length > 0) {
+        html += `<div>
+          <div class="collapsible-header" onclick="toggleCollapse('ok${pi}')">
+            <span style="font-size:13px; font-weight:600; color:#256825;">
+              ● ${matches.length} câu hỏi có đáp án giống nhau
+            </span>
+            <span class="arrow" id="arrow_ok${pi}">▶</span>
+          </div>
+          <div id="collapse_ok${pi}" style="display:none;">`;
+        matches.forEach((d,i) => {
+          const scoreTag = currentMode==='fuzzy' && d.score < 100 ? `<span class="badge badge-info" style="margin-left:6px;">${d.score}% giống</span>` : '';
+          html += `<div class="question-row diff-match">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px; flex-wrap:wrap;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5fa85f" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span style="font-size:13px; color:var(--color-ink-500);">${escHtml(d.rq.prompt.substring(0,100))}${d.rq.prompt.length>100?'…':''}</span>
+              ${scoreTag}
+            </div>
+            <span class="answer-box" style="background:#f0f7f0; border-color:#a0cfa0; color:#256825;">${escHtml(d.ra)}</span>
+          </div>`;
+        });
+        html += `</div></div>`;
+      }
+    }
+
+    html += `</div>`;
+  });
+
+  document.getElementById('resultsContent').innerHTML = html;
+}
+
+function toggleCollapse(id) {
+  const el = document.getElementById('collapse_'+id);
+  const arrow = document.getElementById('arrow_'+id);
+  if (el.style.display === 'none') { el.style.display=''; arrow.classList.add('open'); }
+  else { el.style.display='none'; arrow.classList.remove('open'); }
+}
+
+function escHtml(s) {
+  if (typeof s !== 'string') s = String(s||'');
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

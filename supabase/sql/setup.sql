@@ -64,3 +64,8 @@ ON exams
 FOR SELECT
 TO anon
 USING (is_public = true);
+
+
+GRANT SELECT ON public.exams TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.exams TO authenticated;
+GRANT ALL ON public.exams TO service_role;
